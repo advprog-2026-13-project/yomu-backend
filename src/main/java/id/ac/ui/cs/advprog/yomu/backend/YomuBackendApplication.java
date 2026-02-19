@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class YomuBackendApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(YomuBackendApplication.class, args);
-    }
-
+  public static void main(String[] args) {
+    SpringApplication.run(YomuBackendApplication.class, args);
+  }
 }
