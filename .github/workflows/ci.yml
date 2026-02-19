@@ -2,9 +2,9 @@ name: Backend CI
 
 on:
   push:
-    branches: [ "main", "staging", "cicd-setup" ]
+    branches: [ "main", "staging" ]
   pull_request:
-    branches: [ "main", "staging", "cicd-setup"]
+    branches: [ "main", "staging" ]
 
 jobs:
   build-test:
@@ -26,3 +26,11 @@ jobs:
 
       - name: Build & Test
         run: ./gradlew spotlessCheck clean test jacocoTestReport
+
+      - name: SonarCloud Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: ./gradlew sonar

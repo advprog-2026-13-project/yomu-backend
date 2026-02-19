@@ -2,7 +2,7 @@ plugins {
     java
     id("org.springframework.boot") version "3.5.11"
     id("io.spring.dependency-management") version "1.1.7"
-
+    id("org.sonarqube") version "6.0.1.5171"
     id("jacoco")
     id("com.diffplug.spotless") version "6.25.0"
 }
@@ -69,5 +69,14 @@ spotless {
     java {
         googleJavaFormat()
         target("src/**/*.java")
+    }
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", System.getenv("SONAR_PROJECT_KEY"))
+        property("sonar.organization", System.getenv("SONAR_ORGANIZATION"))
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
     }
 }
