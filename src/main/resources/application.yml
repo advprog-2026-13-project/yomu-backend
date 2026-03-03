@@ -1,13 +1,20 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/yomu
-    username: postgres
-    password: postgres
+    username: yomu
+    password: yomu
 
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: true
+      ddl-auto: update
+    open-in-view: false
+
+  flyway:
+    enabled: false
 
 server:
   port: 8080
+
+logging:
+  level:
+    org.springframework.boot.context.config: DEBUG
