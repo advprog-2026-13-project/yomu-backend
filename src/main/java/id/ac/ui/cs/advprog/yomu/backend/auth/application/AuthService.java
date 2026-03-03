@@ -38,6 +38,20 @@ public class AuthService {
     return new MeResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
   }
 
+  public AuthResponse login(LoginRequest req) {
+    var userOpt =
+        req.getIdentifier().contains("@")
+            ? userRepository.findByEmail(req.getIdentifier())
+            : userRepository.findByUsername(req.getIdentifier());
+
+    var user = userOpt.orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+
+    if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash()))
+      throw new IllegalArgumentException("Invalid credentials");
+
+    return new AuthResponse(jwtService.generateToken(user));
+  }
+
   public MeResponse me() {
     var auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth == null || !(auth.getPrincipal() instanceof SecurityUser principal))
