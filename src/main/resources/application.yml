@@ -17,5 +17,9 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:dev-secret-change-this}
+    secret: ${JWT_SECRET:dev-secret-key-change-in-prod-1234567890123456}
     expiration-minutes: 120
+
+logging:
+  level:
+    org.springframework.security: DEBUG

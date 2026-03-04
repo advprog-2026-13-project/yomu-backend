@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/me")
 public class MeController {
-    private final AuthService authService;
+  private final AuthService authService;
 
-    public MeController(AuthService authService) { this.authService = authService; }
+  public MeController(AuthService authService) {
+    this.authService = authService;
+  }
 
-    @GetMapping
-    public ResponseEntity<MeResponse> me() {
-        return ResponseEntity.ok(authService.me());
-    }
+  @GetMapping
+  public ResponseEntity<MeResponse> me() {
+    return ResponseEntity.ok(authService.me());
+  }
 }
