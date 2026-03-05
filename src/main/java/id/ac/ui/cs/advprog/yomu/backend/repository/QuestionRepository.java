@@ -9,5 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, UUID> {
-    List<Question> findByReadingId(UUID readingId);
+    // Gunakan underscore untuk mengakses properti dari objek relasinya
+    List<Question> findByReading_ReadingId(UUID readingId);
 }

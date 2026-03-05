@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -22,6 +23,31 @@ public class AdminContentServiceImpl implements AdminContentService {
     @Transactional
     public Reading createReading(Reading reading) {
         return readingRepository.save(reading);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Reading getReadingById(UUID readingId) {
+        return readingRepository.findById(readingId)
+                .orElseThrow(() -> new RuntimeException("Reading dengan ID " + readingId + " tidak ditemukan."));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Reading> getAllReadings() {
+        return readingRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public Reading updateReading(UUID id, Reading updatedReading) {
+        Reading existingReading = getReadingById(id);
+
+        existingReading.setTitle(updatedReading.getTitle());
+        existingReading.setContent(updatedReading.getContent());
+        existingReading.setCategory(updatedReading.getCategory());
+
+        return readingRepository.save(existingReading);
     }
 
     @Override
@@ -39,9 +65,21 @@ public class AdminContentServiceImpl implements AdminContentService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Reading getReadingById(UUID readingId) {
-        return readingRepository.findById(readingId)
-                .orElseThrow(() -> new RuntimeException("Reading dengan ID " + readingId + " tidak ditemukan."));
+    @Transactional
+    public Question updateQuestion(UUID questionId, Question updatedQuestion) {
+        Question existingQuestion = questionRepository.findById(questionId)
+                .orElseThrow(() -> new RuntimeException("Question dengan ID " + questionId + " tidak ditemukan."));
+
+        existingQuestion.setQuestionText(updatedQuestion.getQuestionText());
+        existingQuestion.setOptions(updatedQuestion.getOptions());
+        existingQuestion.setCorrectAnswer(updatedQuestion.getCorrectAnswer());
+
+        return questionRepository.save(existingQuestion);
+    }
+
+    @Override
+    @Transactional
+    public void deleteQuestion(UUID questionId) {
+        questionRepository.deleteById(questionId);
     }
 }
