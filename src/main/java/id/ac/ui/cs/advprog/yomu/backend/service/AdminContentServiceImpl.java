@@ -21,15 +21,12 @@ public class AdminContentServiceImpl implements AdminContentService {
     @Override
     @Transactional
     public Reading createReading(Reading reading) {
-        // Validasi tambahan bisa diletakkan di sini sebelum save
         return readingRepository.save(reading);
     }
 
     @Override
     @Transactional
     public void deleteReading(UUID readingId) {
-        // Karena kita set cascade = CascadeType.ALL di entity Reading,
-        // menghapus reading otomatis menghapus semua question yang terikat.
         readingRepository.deleteById(readingId);
     }
 
@@ -37,10 +34,7 @@ public class AdminContentServiceImpl implements AdminContentService {
     @Transactional
     public Question addQuestionToReading(UUID readingId, Question question) {
         Reading reading = getReadingById(readingId);
-
-        // Mengaitkan soal dengan bacaannya
         question.setReading(reading);
-
         return questionRepository.save(question);
     }
 

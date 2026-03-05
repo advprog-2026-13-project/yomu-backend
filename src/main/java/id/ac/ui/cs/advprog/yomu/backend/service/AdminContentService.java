@@ -12,6 +12,5 @@ public interface AdminContentService {
 
     Question addQuestionToReading(UUID readingId, Question question);
 
-    // Tambahan untuk mengambil data (opsional untuk testing/validasi)
     Reading getReadingById(UUID readingId);
 }

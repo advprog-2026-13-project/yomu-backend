@@ -9,6 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, UUID> {
-    // Custom query method untuk mengambil semua soal dari satu bacaan
     List<Question> findByReadingId(UUID readingId);
 }

@@ -18,7 +18,8 @@ public class Question {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reading_id")
-    @JsonIgnore // Mencegah infinite recursion saat serialisasi JSON
+    // Mencegah infinite recursion saat serialisasi JSON
+    @JsonIgnore
     private Reading reading;
 
     @Column(columnDefinition = "TEXT")
