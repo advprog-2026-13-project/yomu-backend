@@ -8,18 +8,18 @@ import org.junit.jupiter.api.Test;
 
 class MeResponseTest {
 
-    @Test
-    void shouldCreateMeResponseCorrectly() {
-        UUID id = UUID.randomUUID();
-        String username = "rifqi";
-        String email = "rifqi@mail.com";
-        Role role = Role.USER;
+  @Test
+  void shouldCreateMeResponseCorrectly() {
+    UUID id = UUID.randomUUID();
+    String username = "rifqi";
+    String email = "rifqi@mail.com";
+    Role role = Role.USER;
 
-        MeResponse response = new MeResponse(id, username, email, role);
+    MeResponse response = new MeResponse(id, username, email, role);
 
-        assertEquals(id, response.getId());
-        assertEquals(username, response.getUsername());
-        assertEquals(email, response.getEmail());
-        assertEquals(role, response.getRole());
-    }
+    assertEquals(id, response.getId());
+    assertEquals(username, response.getUsername());
+    assertEquals(email, response.getEmail());
+    assertEquals(role, response.getRole());
+  }
 }

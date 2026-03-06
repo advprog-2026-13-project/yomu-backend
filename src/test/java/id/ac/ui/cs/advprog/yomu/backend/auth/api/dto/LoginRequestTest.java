@@ -13,74 +13,70 @@ import org.junit.jupiter.api.Test;
 
 class LoginRequestTest {
 
-    private Validator validator;
+  private Validator validator;
 
-    @BeforeEach
-    void setUp() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
+  @BeforeEach
+  void setUp() {
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    validator = factory.getValidator();
+  }
 
-    @Test
-    void shouldCreateLoginRequestWithNoArgsConstructor() {
-        LoginRequest request = new LoginRequest();
+  @Test
+  void shouldCreateLoginRequestWithNoArgsConstructor() {
+    LoginRequest request = new LoginRequest();
 
-        assertEquals(null, request.getIdentifier());
-        assertEquals(null, request.getPassword());
-    }
+    assertEquals(null, request.getIdentifier());
+    assertEquals(null, request.getPassword());
+  }
 
-    @Test
-    void shouldCreateLoginRequestWithAllArgsConstructor() {
-        String identifier = "rifqi";
-        String password = "secret123";
+  @Test
+  void shouldCreateLoginRequestWithAllArgsConstructor() {
+    String identifier = "rifqi";
+    String password = "secret123";
 
-        LoginRequest request = new LoginRequest(identifier, password);
+    LoginRequest request = new LoginRequest(identifier, password);
 
-        assertEquals(identifier, request.getIdentifier());
-        assertEquals(password, request.getPassword());
-    }
+    assertEquals(identifier, request.getIdentifier());
+    assertEquals(password, request.getPassword());
+  }
 
-    @Test
-    void shouldPassValidationWhenFieldsAreValid() {
-        LoginRequest request = new LoginRequest("rifqi", "secret123");
+  @Test
+  void shouldPassValidationWhenFieldsAreValid() {
+    LoginRequest request = new LoginRequest("rifqi", "secret123");
 
-        Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
 
-        assertTrue(violations.isEmpty());
-    }
+    assertTrue(violations.isEmpty());
+  }
 
-    @Test
-    void shouldFailValidationWhenIdentifierIsBlank() {
-        LoginRequest request = new LoginRequest("", "secret123");
+  @Test
+  void shouldFailValidationWhenIdentifierIsBlank() {
+    LoginRequest request = new LoginRequest("", "secret123");
 
-        Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
 
-        assertEquals(1, violations.size());
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("identifier"))
-        );
-    }
+    assertEquals(1, violations.size());
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("identifier")));
+  }
 
-    @Test
-    void shouldFailValidationWhenPasswordIsBlank() {
-        LoginRequest request = new LoginRequest("rifqi", "");
+  @Test
+  void shouldFailValidationWhenPasswordIsBlank() {
+    LoginRequest request = new LoginRequest("rifqi", "");
 
-        Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
 
-        assertEquals(1, violations.size());
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("password"))
-        );
-    }
+    assertEquals(1, violations.size());
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("password")));
+  }
 
-    @Test
-    void shouldFailValidationWhenAllFieldsAreBlank() {
-        LoginRequest request = new LoginRequest("", "");
+  @Test
+  void shouldFailValidationWhenAllFieldsAreBlank() {
+    LoginRequest request = new LoginRequest("", "");
 
-        Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
 
-        assertEquals(2, violations.size());
-    }
+    assertEquals(2, violations.size());
+  }
 }

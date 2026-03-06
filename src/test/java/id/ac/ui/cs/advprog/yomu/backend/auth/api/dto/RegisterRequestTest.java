@@ -13,146 +13,120 @@ import org.junit.jupiter.api.Test;
 
 class RegisterRequestTest {
 
-    private Validator validator;
+  private Validator validator;
 
-    @BeforeEach
-    void setUp() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
-    }
+  @BeforeEach
+  void setUp() {
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    validator = factory.getValidator();
+  }
 
-    @Test
-    void shouldCreateRegisterRequestWithNoArgsConstructor() {
-        RegisterRequest request = new RegisterRequest();
+  @Test
+  void shouldCreateRegisterRequestWithNoArgsConstructor() {
+    RegisterRequest request = new RegisterRequest();
 
-        assertEquals(null, request.getUsername());
-        assertEquals(null, request.getEmail());
-        assertEquals(null, request.getPassword());
-    }
+    assertEquals(null, request.getUsername());
+    assertEquals(null, request.getEmail());
+    assertEquals(null, request.getPassword());
+  }
 
-    @Test
-    void shouldCreateRegisterRequestWithAllArgsConstructor() {
-        String username = "rifqi";
-        String email = "rifqi@mail.com";
-        String password = "secret123";
+  @Test
+  void shouldCreateRegisterRequestWithAllArgsConstructor() {
+    String username = "rifqi";
+    String email = "rifqi@mail.com";
+    String password = "secret123";
 
-        RegisterRequest request = new RegisterRequest(username, email, password);
+    RegisterRequest request = new RegisterRequest(username, email, password);
 
-        assertEquals(username, request.getUsername());
-        assertEquals(email, request.getEmail());
-        assertEquals(password, request.getPassword());
-    }
+    assertEquals(username, request.getUsername());
+    assertEquals(email, request.getEmail());
+    assertEquals(password, request.getPassword());
+  }
 
-    @Test
-    void shouldPassValidationWhenFieldsAreValid() {
-        RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
+  @Test
+  void shouldPassValidationWhenFieldsAreValid() {
+    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(violations.isEmpty());
-    }
+    assertTrue(violations.isEmpty());
+  }
 
-    @Test
-    void shouldFailValidationWhenUsernameIsBlank() {
-        RegisterRequest request = new RegisterRequest("", "rifqi@mail.com", "secret123");
+  @Test
+  void shouldFailValidationWhenUsernameIsBlank() {
+    RegisterRequest request = new RegisterRequest("", "rifqi@mail.com", "secret123");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("username"))
-        );
-    }
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("username")));
+  }
 
-    @Test
-    void shouldFailValidationWhenUsernameTooShort() {
-        RegisterRequest request = new RegisterRequest("ab", "rifqi@mail.com", "secret123");
+  @Test
+  void shouldFailValidationWhenUsernameTooShort() {
+    RegisterRequest request = new RegisterRequest("ab", "rifqi@mail.com", "secret123");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("username"))
-        );
-    }
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("username")));
+  }
 
-    @Test
-    void shouldFailValidationWhenUsernameTooLong() {
-        RegisterRequest request = new RegisterRequest(
-                "a".repeat(41),
-                "rifqi@mail.com",
-                "secret123"
-        );
+  @Test
+  void shouldFailValidationWhenUsernameTooLong() {
+    RegisterRequest request = new RegisterRequest("a".repeat(41), "rifqi@mail.com", "secret123");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("username"))
-        );
-    }
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("username")));
+  }
 
-    @Test
-    void shouldFailValidationWhenEmailIsBlank() {
-        RegisterRequest request = new RegisterRequest("rifqi", "", "secret123");
+  @Test
+  void shouldFailValidationWhenEmailIsBlank() {
+    RegisterRequest request = new RegisterRequest("rifqi", "", "secret123");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("email"))
-        );
-    }
+    assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
+  }
 
-    @Test
-    void shouldFailValidationWhenEmailIsInvalid() {
-        RegisterRequest request = new RegisterRequest("rifqi", "not-an-email", "secret123");
+  @Test
+  void shouldFailValidationWhenEmailIsInvalid() {
+    RegisterRequest request = new RegisterRequest("rifqi", "not-an-email", "secret123");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("email"))
-        );
-    }
+    assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
+  }
 
-    @Test
-    void shouldFailValidationWhenPasswordIsBlank() {
-        RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "");
+  @Test
+  void shouldFailValidationWhenPasswordIsBlank() {
+    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("password"))
-        );
-    }
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("password")));
+  }
 
-    @Test
-    void shouldFailValidationWhenPasswordTooShort() {
-        RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "12345");
+  @Test
+  void shouldFailValidationWhenPasswordTooShort() {
+    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "12345");
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("password"))
-        );
-    }
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("password")));
+  }
 
-    @Test
-    void shouldFailValidationWhenPasswordTooLong() {
-        RegisterRequest request = new RegisterRequest(
-                "rifqi",
-                "rifqi@mail.com",
-                "a".repeat(101)
-        );
+  @Test
+  void shouldFailValidationWhenPasswordTooLong() {
+    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "a".repeat(101));
 
-        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
+    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
-        assertTrue(
-                violations.stream()
-                        .anyMatch(v -> v.getPropertyPath().toString().equals("password"))
-        );
-    }
+    assertTrue(
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("password")));
+  }
 }

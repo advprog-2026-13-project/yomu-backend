@@ -34,7 +34,6 @@ val coverageExclusions = listOf(
     "**/entity/**",
     "**/repository/**",
     "**/exception/**",
-    "**/security/**",
     "**/model/**"
 )
 
