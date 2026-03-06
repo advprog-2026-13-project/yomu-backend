@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +25,7 @@ public class Reading {
 
     private String authorId;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "reading", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 }
