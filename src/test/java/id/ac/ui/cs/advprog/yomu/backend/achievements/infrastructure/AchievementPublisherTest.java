@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.yomu.backend.achievements.infrastructure;
 
 import static org.mockito.Mockito.*;
 
-import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.*;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementEnvelope;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
