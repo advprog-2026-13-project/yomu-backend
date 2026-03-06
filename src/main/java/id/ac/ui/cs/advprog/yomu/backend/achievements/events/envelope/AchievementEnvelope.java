@@ -5,19 +5,19 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class AchievementEnvelope<TPayload> {
+public class AchievementEnvelope<Payload> {
   private final UUID achievementId;
   private final AchievementType achievementType;
   private final int version;
   private final Instant occurredAt;
-  private final TPayload payload;
+  private final Payload payload;
 
   protected AchievementEnvelope(
       UUID achievementId,
       AchievementType achievementType,
       int version,
       Instant occurredAt,
-      TPayload payload) {
+      Payload payload) {
     this.achievementId = achievementId;
     this.achievementType = achievementType;
     this.version = version;
