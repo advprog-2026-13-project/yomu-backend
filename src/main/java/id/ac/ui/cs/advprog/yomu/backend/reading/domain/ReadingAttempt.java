@@ -1,3 +1,4 @@
-package id.ac.ui.cs.advprog.yomu.backend.application.domain;
+package id.ac.ui.cs.advprog.yomu.backend.reading.domain;
 
-public class ReadingAttempt {}
+public class ReadingAttempt {
+}
