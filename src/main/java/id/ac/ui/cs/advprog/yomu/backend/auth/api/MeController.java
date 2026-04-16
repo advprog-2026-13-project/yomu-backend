@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.api;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.MeResponse;
+import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.UpdateAccountRequest; // Jangan lupa import ini
 import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,5 +18,16 @@ public class MeController {
   @GetMapping
   public ResponseEntity<MeResponse> me() {
     return ResponseEntity.ok(authService.me());
+  }
+
+  @PatchMapping
+  public ResponseEntity<MeResponse> update(@RequestBody UpdateAccountRequest req) {
+    return ResponseEntity.ok(authService.updateAccount(req));
+  }
+
+  @DeleteMapping
+  public ResponseEntity<Void> delete() {
+    authService.deleteAccount();
+    return ResponseEntity.noContent().build(); 
   }
 }
