@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map; 
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -23,5 +25,21 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
     return ResponseEntity.ok(authService.login(req));
+  }
+
+  @PostMapping("/google")
+  public ResponseEntity<AuthResponse> googleLogin(@RequestBody Map<String, String> request) {
+    String token = request.get("token");
+    
+    if (token == null || token.isBlank()) {
+        return ResponseEntity.badRequest().build();
+    }
+
+    return ResponseEntity.ok(authService.loginWithGoogle(token));
+  }
+
+  @GetMapping("/me")
+  public ResponseEntity<MeResponse> getMe() {
+      return ResponseEntity.ok(authService.me());
   }
 }

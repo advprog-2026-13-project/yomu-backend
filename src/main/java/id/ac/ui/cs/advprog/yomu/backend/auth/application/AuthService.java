@@ -16,12 +16,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final GoogleService googleService;
 
     public AuthService(
-            UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+            UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService, GoogleService googleService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.googleService = googleService;
     }
 
     @Transactional
@@ -29,7 +31,6 @@ public class AuthService {
         if (userRepository.existsByUsername(req.getUsername()))
             throw new IllegalArgumentException("Username already taken");
         
-        // Logika: Harus ada salah satu, email atau phone
         if ((req.getEmail() == null || req.getEmail().isBlank()) && 
             (req.getPhoneNumber() == null || req.getPhoneNumber().isBlank())) {
             throw new IllegalArgumentException("Email or Phone Number is required");
@@ -43,7 +44,7 @@ public class AuthService {
 
         var user = new User(
                 req.getUsername(),
-                req.getDisplayName(), // Sekarang pakai Display Name
+                req.getDisplayName(), 
                 req.getEmail(),
                 req.getPhoneNumber(),
                 passwordEncoder.encode(req.getPassword()),
@@ -57,7 +58,6 @@ public class AuthService {
     public AuthResponse login(LoginRequest req) {
         String identifier = req.getIdentifier();
         
-        // Cari berdasarkan Email, Username, atau Phone Number
         var user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))
                 .or(() -> userRepository.findByPhoneNumber(identifier))
@@ -81,7 +81,6 @@ public class AuthService {
         if (req.getDisplayName() != null) user.setDisplayName(req.getDisplayName());
         if (req.getPassword() != null) user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
         
-        // Tambah/Update Email atau Phone
         if (req.getEmail() != null) {
             if (!req.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(req.getEmail())) {
                 throw new IllegalArgumentException("Email already used");
@@ -107,19 +106,51 @@ public class AuthService {
         SecurityContextHolder.clearContext();
     }
 
-    // Helper untuk mengambil user yang sedang login
     private User getCurrentUser() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof SecurityUser principal))
             throw new IllegalStateException("Unauthenticated");
         
-        // Re-fetch dari DB untuk memastikan data terbaru (Penting untuk Hibernate session)
         return userRepository.findById(principal.getUser().getId())
                 .orElseThrow(() -> new IllegalStateException("User not found"));
     }
 
-    // Helper mapping ke response DTO
     private MeResponse mapToMeResponse(User u) {
         return new MeResponse(u.getId(), u.getUsername(), u.getDisplayName(), u.getEmail(), u.getPhoneNumber(), u.getRole());
+    }
+
+    @Transactional
+    public AuthResponse loginWithGoogle(String idToken) {
+        var payload = googleService.verifyToken(idToken);
+        if (payload == null) {
+            throw new IllegalArgumentException("Invalid Google Token");
+        }
+
+        String email = payload.getEmail();
+        String googleSub = payload.getSubject(); 
+        String name = (String) payload.get("name");
+
+        // Find user berdasarkan Google ID atau Email
+        User user = userRepository.findByGoogleSub(googleSub)
+                .orElseGet(() -> userRepository.findByEmail(email).orElse(null));
+
+        // Auto-Register
+        if (user == null) {
+            user = new User(
+                email.split("@")[0] + "_" + googleSub.substring(0, 5), 
+                name,
+                email,
+                null, 
+                "",   
+                Role.USER
+            );
+            user.setGoogleSub(googleSub); 
+            userRepository.save(user);
+        } else if (user.getGoogleSub() == null) {
+            user.setGoogleSub(googleSub);
+            userRepository.save(user);
+        }
+
+        return new AuthResponse(jwtService.generateToken(user));
     }
 }

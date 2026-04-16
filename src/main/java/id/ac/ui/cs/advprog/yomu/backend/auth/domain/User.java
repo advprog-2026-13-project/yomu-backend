@@ -31,7 +31,7 @@ public class User {
   @Column(length = 200)
   private String passwordHash;
 
-  @Column(length = 255)
+  @Column(length = 255, unique = true)
   private String googleSub;
 
   @Enumerated(EnumType.STRING)
