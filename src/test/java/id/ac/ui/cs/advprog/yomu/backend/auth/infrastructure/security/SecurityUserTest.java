@@ -9,10 +9,14 @@ import org.junit.jupiter.api.Test;
 
 class SecurityUserTest {
 
+  private User createTestUser() {
+    return new User(
+        "rifqi", "Rifqi Ilham", "rifqi@mail.com", "0812345678", "hashed-password", Role.USER);
+  }
+
   @Test
   void shouldReturnWrappedUser() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertEquals(user, securityUser.getUser());
@@ -20,8 +24,7 @@ class SecurityUserTest {
 
   @Test
   void shouldReturnCorrectAuthorities() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertEquals(1, securityUser.getAuthorities().size());
@@ -30,8 +33,7 @@ class SecurityUserTest {
 
   @Test
   void shouldReturnPasswordFromUser() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertEquals("hashed-password", securityUser.getPassword());
@@ -39,8 +41,7 @@ class SecurityUserTest {
 
   @Test
   void shouldReturnUsernameFromUser() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertEquals("rifqi", securityUser.getUsername());
@@ -48,8 +49,7 @@ class SecurityUserTest {
 
   @Test
   void shouldAlwaysBeNonExpired() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isAccountNonExpired());
@@ -57,8 +57,7 @@ class SecurityUserTest {
 
   @Test
   void shouldAlwaysBeNonLocked() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isAccountNonLocked());
@@ -66,8 +65,7 @@ class SecurityUserTest {
 
   @Test
   void shouldAlwaysHaveNonExpiredCredentials() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isCredentialsNonExpired());
@@ -75,8 +73,7 @@ class SecurityUserTest {
 
   @Test
   void shouldAlwaysBeEnabled() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createTestUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isEnabled());

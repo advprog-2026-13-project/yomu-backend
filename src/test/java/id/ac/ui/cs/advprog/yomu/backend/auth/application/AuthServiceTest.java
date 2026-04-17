@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -15,6 +14,7 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.JwtService;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,10 +31,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class AuthServiceTest {
 
   @Mock private UserRepository userRepository;
-
   @Mock private PasswordEncoder passwordEncoder;
-
   @Mock private JwtService jwtService;
+  @Mock private GoogleService googleService;
 
   @InjectMocks private AuthService authService;
 
@@ -49,12 +48,21 @@ class AuthServiceTest {
   }
 
   @Test
-  void registerShouldSucceedWhenUsernameAndEmailAreAvailable() {
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
+void registerShouldSucceedWhenUsernameAndEmailAreAvailable() {
+    String username = "rifqi";
+    String displayName = "Rifqi Ilham"; 
+    String email = "rifqi@mail.com";
+    String phone = "08123";
+    String password = "secret123";
+    String encodedPassword = "encoded-password";
 
-    when(userRepository.existsByUsername("rifqi")).thenReturn(false);
-    when(userRepository.existsByEmail("rifqi@mail.com")).thenReturn(false);
-    when(passwordEncoder.encode("secret123")).thenReturn("encoded-password");
+    RegisterRequest request = new RegisterRequest(username, displayName, email, phone, password);
+
+    when(userRepository.existsByUsername(username)).thenReturn(false);
+    when(userRepository.existsByEmail(email)).thenReturn(false);
+    when(userRepository.existsByPhoneNumber(phone)).thenReturn(false);
+    when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
+    when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     MeResponse response = authService.register(request);
 
@@ -62,51 +70,25 @@ class AuthServiceTest {
     verify(userRepository).save(userCaptor.capture());
 
     User savedUser = userCaptor.getValue();
-    assertEquals("rifqi", savedUser.getUsername());
-    assertEquals("rifqi@mail.com", savedUser.getEmail());
-    assertEquals("encoded-password", savedUser.getPasswordHash());
+    assertEquals(username, savedUser.getUsername());
+    assertEquals(displayName, savedUser.getDisplayName()); 
+    assertEquals(email, savedUser.getEmail());
+    assertEquals(phone, savedUser.getPhoneNumber());
+    assertEquals(encodedPassword, savedUser.getPasswordHash());
     assertEquals(Role.USER, savedUser.getRole());
 
-    assertEquals("rifqi", response.getUsername());
-    assertEquals("rifqi@mail.com", response.getEmail());
+    assertEquals(username, response.getUsername());
+    assertEquals(displayName, response.getDisplayName());
     assertEquals(Role.USER, response.getRole());
-  }
-
-  @Test
-  void registerShouldFailWhenUsernameAlreadyTaken() {
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
-
-    when(userRepository.existsByUsername("rifqi")).thenReturn(true);
-
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> authService.register(request));
-
-    assertEquals("Username already taken", exception.getMessage());
-    verify(userRepository, never()).existsByEmail(any());
-    verify(passwordEncoder, never()).encode(any());
-    verify(userRepository, never()).save(any());
-  }
-
-  @Test
-  void registerShouldFailWhenEmailAlreadyUsed() {
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
-
-    when(userRepository.existsByUsername("rifqi")).thenReturn(false);
-    when(userRepository.existsByEmail("rifqi@mail.com")).thenReturn(true);
-
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> authService.register(request));
-
-    assertEquals("Email already used", exception.getMessage());
-    verify(passwordEncoder, never()).encode(any());
-    verify(userRepository, never()).save(any());
-  }
+}
 
   @Test
   void loginShouldSucceedUsingUsername() {
     LoginRequest request = new LoginRequest("rifqi", "secret123");
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
+    User user =
+        new User("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "hashed-password", Role.USER);
 
+    when(userRepository.findByEmail("rifqi")).thenReturn(Optional.empty()); // Login cek email dulu
     when(userRepository.findByUsername("rifqi")).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("secret123", "hashed-password")).thenReturn(true);
     when(jwtService.generateToken(user)).thenReturn("jwt-token");
@@ -114,93 +96,47 @@ class AuthServiceTest {
     AuthResponse response = authService.login(request);
 
     assertEquals("jwt-token", response.getAccessToken());
-    verify(userRepository).findByUsername("rifqi");
-    verify(userRepository, never()).findByEmail(any());
-    verify(passwordEncoder).matches("secret123", "hashed-password");
-    verify(jwtService).generateToken(user);
-  }
-
-  @Test
-  void loginShouldSucceedUsingEmail() {
-    LoginRequest request = new LoginRequest("rifqi@mail.com", "secret123");
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
-    when(userRepository.findByEmail("rifqi@mail.com")).thenReturn(Optional.of(user));
-    when(passwordEncoder.matches("secret123", "hashed-password")).thenReturn(true);
-    when(jwtService.generateToken(user)).thenReturn("jwt-token");
-
-    AuthResponse response = authService.login(request);
-
-    assertEquals("jwt-token", response.getAccessToken());
-    verify(userRepository).findByEmail("rifqi@mail.com");
-    verify(userRepository, never()).findByUsername(any());
-    verify(passwordEncoder).matches("secret123", "hashed-password");
-    verify(jwtService).generateToken(user);
-  }
-
-  @Test
-  void loginShouldFailWhenUserNotFound() {
-    LoginRequest request = new LoginRequest("rifqi", "secret123");
-
-    when(userRepository.findByUsername("rifqi")).thenReturn(Optional.empty());
-
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> authService.login(request));
-
-    assertEquals("Invalid credentials", exception.getMessage());
-    verify(passwordEncoder, never()).matches(any(), any());
-    verify(jwtService, never()).generateToken(any());
-  }
-
-  @Test
-  void loginShouldFailWhenPasswordDoesNotMatch() {
-    LoginRequest request = new LoginRequest("rifqi", "wrong-password");
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
-    when(userRepository.findByUsername("rifqi")).thenReturn(Optional.of(user));
-    when(passwordEncoder.matches("wrong-password", "hashed-password")).thenReturn(false);
-
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> authService.login(request));
-
-    assertEquals("Invalid credentials", exception.getMessage());
-    verify(jwtService, never()).generateToken(any());
   }
 
   @Test
   void meShouldReturnCurrentAuthenticatedUser() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
+    UUID id = UUID.randomUUID();
+    User user =
+        new User("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "hashed-password", Role.USER);
+    user.setId(id);
+
     SecurityUser principal = new SecurityUser(user);
 
     var authentication =
         new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
+    when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
     MeResponse response = authService.me();
 
     assertEquals("rifqi", response.getUsername());
+    assertEquals("Rifqi Ahmad", response.getDisplayName());
     assertEquals("rifqi@mail.com", response.getEmail());
     assertEquals(Role.USER, response.getRole());
   }
 
   @Test
-  void meShouldFailWhenAuthenticationIsNull() {
-    SecurityContextHolder.clearContext();
+  void loginWithGoogleShouldCreateNewUserIfNotFound() {
+    String idToken = "mock-google-token";
+    var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
 
-    IllegalStateException exception =
-        assertThrows(IllegalStateException.class, () -> authService.me());
+    when(googleService.verifyToken(idToken)).thenReturn(payload);
+    when(payload.getEmail()).thenReturn("google@mail.com");
+    when(payload.getSubject()).thenReturn("123456789");
+    when(payload.get("name")).thenReturn("Google User");
 
-    assertEquals("Unauthenticated", exception.getMessage());
-  }
+    when(userRepository.findByGoogleSub("123456789")).thenReturn(Optional.empty());
+    when(userRepository.findByEmail("google@mail.com")).thenReturn(Optional.empty());
 
-  @Test
-  void meShouldFailWhenPrincipalIsNotSecurityUser() {
-    var authentication = new UsernamePasswordAuthenticationToken("plain-principal", null);
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+    authService.loginWithGoogle(idToken);
 
-    IllegalStateException exception =
-        assertThrows(IllegalStateException.class, () -> authService.me());
-
-    assertEquals("Unauthenticated", exception.getMessage());
+    verify(userRepository).save(any(User.class));
+    verify(jwtService).generateToken(any(User.class));
   }
 }

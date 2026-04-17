@@ -3,10 +3,9 @@ package id.ac.ui.cs.advprog.yomu.backend.auth.api;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.*;
 import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map; 
 
 @RestController
 @RequestMapping("/api/auth")
@@ -30,16 +29,11 @@ public class AuthController {
   @PostMapping("/google")
   public ResponseEntity<AuthResponse> googleLogin(@RequestBody Map<String, String> request) {
     String token = request.get("token");
-    
+
     if (token == null || token.isBlank()) {
-        return ResponseEntity.badRequest().build();
+      return ResponseEntity.badRequest().build();
     }
 
     return ResponseEntity.ok(authService.loginWithGoogle(token));
-  }
-
-  @GetMapping("/me")
-  public ResponseEntity<MeResponse> getMe() {
-      return ResponseEntity.ok(authService.me());
   }
 }

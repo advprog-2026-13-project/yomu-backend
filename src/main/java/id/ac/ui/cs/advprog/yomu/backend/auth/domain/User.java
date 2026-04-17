@@ -3,8 +3,12 @@ package id.ac.ui.cs.advprog.yomu.backend.auth.domain;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(
     name = "users",
     uniqueConstraints = {
@@ -43,7 +47,13 @@ public class User {
 
   protected User() {}
 
-  public User(String username, String displayName, String email, String phoneNumber, String passwordHash, Role role) {
+  public User(
+      String username,
+      String displayName,
+      String email,
+      String phoneNumber,
+      String passwordHash,
+      Role role) {
     this.username = username;
     this.displayName = displayName;
     this.email = email;
@@ -52,62 +62,63 @@ public class User {
     this.role = role;
   }
 
-  public UUID getId() { 
-    return id; 
-  }
-  
-  public String getUsername() { 
-    return username; 
-  }
-  public void setUsername(String username) { 
-    this.username = username; 
+  public UUID getId() {
+    return id;
   }
 
-  public String getDisplayName() { 
-    return displayName; 
+  public String getUsername() {
+    return username;
   }
 
-  public void setDisplayName(String displayName) { 
-    this.displayName = displayName; 
+  public void setUsername(String username) {
+    this.username = username;
   }
 
-  public String getEmail() { 
-    return email; 
+  public String getDisplayName() {
+    return displayName;
   }
 
-  public void setEmail(String email) { 
-    this.email = email; 
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 
-  public String getPhoneNumber() { 
-    return phoneNumber; 
+  public String getEmail() {
+    return email;
   }
 
-  public void setPhoneNumber(String phoneNumber) { 
-    this.phoneNumber = phoneNumber; 
+  public void setEmail(String email) {
+    this.email = email;
   }
 
-  public String getPasswordHash() { 
-    return passwordHash; 
+  public String getPhoneNumber() {
+    return phoneNumber;
   }
 
-  public void setPasswordHash(String passwordHash) { 
-    this.passwordHash = passwordHash; 
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
   }
 
-  public String getGoogleSub() { 
-    return googleSub; 
+  public String getPasswordHash() {
+    return passwordHash;
   }
 
-  public void setGoogleSub(String googleSub) { 
-    this.googleSub = googleSub; 
+  public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
   }
 
-  public Role getRole() { 
-    return role; 
+  public String getGoogleSub() {
+    return googleSub;
   }
 
-  public void setRole(Role role) { 
-    this.role = role; 
+  public void setGoogleSub(String googleSub) {
+    this.googleSub = googleSub;
+  }
+
+  public Role getRole() {
+    return role;
+  }
+
+  public void setRole(Role role) {
+    this.role = role;
   }
 }

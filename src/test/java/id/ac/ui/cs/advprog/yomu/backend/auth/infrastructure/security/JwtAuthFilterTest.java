@@ -67,7 +67,9 @@ class JwtAuthFilterTest {
   @Test
   void shouldSetAuthenticationWhenTokenIsValidAndUserExists() throws Exception {
     UUID userId = UUID.randomUUID();
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
+    User user =
+        new User(
+            "rifqi", "Rifqi Ahmad", "rifqi@mail.com", "0812345678", "hashed-password", Role.USER);
 
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.addHeader("Authorization", "Bearer valid-token");
@@ -90,7 +92,8 @@ class JwtAuthFilterTest {
     SecurityUser principal =
         (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     assertEquals("rifqi", principal.getUsername());
-    assertEquals("ROLE_USER", principal.getAuthorities().get(0).getAuthority());
+    assertTrue(
+        principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER")));
   }
 
   @Test

@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/me")
+@RequestMapping("/api/auth/me")
 public class MeController {
   private final AuthService authService;
 
@@ -28,6 +28,6 @@ public class MeController {
   @DeleteMapping
   public ResponseEntity<Void> delete() {
     authService.deleteAccount();
-    return ResponseEntity.noContent().build(); 
+    return ResponseEntity.noContent().build();
   }
 }

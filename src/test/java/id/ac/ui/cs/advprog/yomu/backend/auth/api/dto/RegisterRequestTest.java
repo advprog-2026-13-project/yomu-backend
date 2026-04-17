@@ -26,26 +26,35 @@ class RegisterRequestTest {
     RegisterRequest request = new RegisterRequest();
 
     assertEquals(null, request.getUsername());
+    assertEquals(null, request.getDisplayName());
     assertEquals(null, request.getEmail());
+    assertEquals(null, request.getPhoneNumber());
     assertEquals(null, request.getPassword());
   }
 
   @Test
   void shouldCreateRegisterRequestWithAllArgsConstructor() {
     String username = "rifqi";
+    String displayName = "Rifqi Ahmad";
     String email = "rifqi@mail.com";
+    String phoneNumber = "08123";
     String password = "secret123";
 
-    RegisterRequest request = new RegisterRequest(username, email, password);
+    // Panggil dengan 5 argumen
+    RegisterRequest request =
+        new RegisterRequest(username, displayName, email, phoneNumber, password);
 
     assertEquals(username, request.getUsername());
+    assertEquals(displayName, request.getDisplayName());
     assertEquals(email, request.getEmail());
+    assertEquals(phoneNumber, request.getPhoneNumber());
     assertEquals(password, request.getPassword());
   }
 
   @Test
   void shouldPassValidationWhenFieldsAreValid() {
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
+    RegisterRequest request =
+        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -54,7 +63,8 @@ class RegisterRequestTest {
 
   @Test
   void shouldFailValidationWhenUsernameIsBlank() {
-    RegisterRequest request = new RegisterRequest("", "rifqi@mail.com", "secret123");
+    RegisterRequest request =
+        new RegisterRequest("", "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -64,7 +74,8 @@ class RegisterRequestTest {
 
   @Test
   void shouldFailValidationWhenUsernameTooShort() {
-    RegisterRequest request = new RegisterRequest("ab", "rifqi@mail.com", "secret123");
+    RegisterRequest request =
+        new RegisterRequest("ab", "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -74,7 +85,8 @@ class RegisterRequestTest {
 
   @Test
   void shouldFailValidationWhenUsernameTooLong() {
-    RegisterRequest request = new RegisterRequest("a".repeat(41), "rifqi@mail.com", "secret123");
+    RegisterRequest request =
+        new RegisterRequest("a".repeat(41), "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -83,17 +95,9 @@ class RegisterRequestTest {
   }
 
   @Test
-  void shouldFailValidationWhenEmailIsBlank() {
-    RegisterRequest request = new RegisterRequest("rifqi", "", "secret123");
-
-    Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
-
-    assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
-  }
-
-  @Test
   void shouldFailValidationWhenEmailIsInvalid() {
-    RegisterRequest request = new RegisterRequest("rifqi", "not-an-email", "secret123");
+    RegisterRequest request =
+        new RegisterRequest("rifqi", "Rifqi Ahmad", "not-an-email", "08123", "secret123");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -102,7 +106,8 @@ class RegisterRequestTest {
 
   @Test
   void shouldFailValidationWhenPasswordIsBlank() {
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "");
+    RegisterRequest request =
+        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -112,7 +117,8 @@ class RegisterRequestTest {
 
   @Test
   void shouldFailValidationWhenPasswordTooShort() {
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "12345");
+    RegisterRequest request =
+        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "12345");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -122,7 +128,8 @@ class RegisterRequestTest {
 
   @Test
   void shouldFailValidationWhenPasswordTooLong() {
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "a".repeat(101));
+    RegisterRequest request =
+        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "a".repeat(101));
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 

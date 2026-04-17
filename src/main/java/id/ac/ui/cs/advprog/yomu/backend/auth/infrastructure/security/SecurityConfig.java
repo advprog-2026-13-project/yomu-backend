@@ -18,9 +18,11 @@ public class SecurityConfig {
     return http.csrf(csrf -> csrf.disable())
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
-            auth -> auth
-                    .requestMatchers("/api/auth/me").authenticated()
-                    .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/google", "/error")
+            auth ->
+                auth.requestMatchers("/api/auth/me")
+                    .authenticated()
+                    .requestMatchers(
+                        "/api/auth/login", "/api/auth/register", "/api/auth/google", "/error")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

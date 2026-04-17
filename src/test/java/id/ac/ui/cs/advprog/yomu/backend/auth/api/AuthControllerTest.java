@@ -42,8 +42,10 @@ class AuthControllerTest {
   @Test
   void registerShouldReturnOkWhenRequestIsValid() throws Exception {
     UUID id = UUID.randomUUID();
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
-    MeResponse response = new MeResponse(id, "rifqi", "rifqi@mail.com", Role.USER);
+    RegisterRequest request =
+        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
+    MeResponse response =
+        new MeResponse(id, "rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", Role.USER);
 
     when(authService.register(any(RegisterRequest.class))).thenReturn(response);
 
@@ -55,7 +57,9 @@ class AuthControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(id.toString()))
         .andExpect(jsonPath("$.username").value("rifqi"))
+        .andExpect(jsonPath("$.displayName").value("Rifqi Ahmad")) // Verifikasi field baru
         .andExpect(jsonPath("$.email").value("rifqi@mail.com"))
+        .andExpect(jsonPath("$.phoneNumber").value("08123")) // Verifikasi field baru
         .andExpect(jsonPath("$.role").value("USER"));
 
     verify(authService).register(any(RegisterRequest.class));
