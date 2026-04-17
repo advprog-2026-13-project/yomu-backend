@@ -18,28 +18,30 @@ public class SecurityConfig implements WebMvcConfigurer {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-            .csrf(csrf -> csrf.disable())
-            // Enable CORS and use the configuration defined in addCorsMappings below
-            .cors(Customizer.withDefaults())
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+    http.csrf(csrf -> csrf.disable())
+        // Enable CORS and use the configuration defined in addCorsMappings below
+        .cors(Customizer.withDefaults())
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN")
                     // Note: .authenticated() requires a login.
                     // If you want students to see readings without login, change to .permitAll()
-                    .anyRequest().authenticated()
-            );
+                    .anyRequest()
+                    .authenticated());
 
     return http.build();
   }
 
   @Override
   public void addCorsMappings(CorsRegistry registry) {
-    registry.addMapping("/api/**")
-            .allowedOrigins("http://localhost:3000")
-            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-            .allowedHeaders("*")
-            .allowCredentials(true);
+    registry
+        .addMapping("/api/**")
+        .allowedOrigins("http://localhost:3000")
+        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        .allowedHeaders("*")
+        .allowCredentials(true);
   }
 }
