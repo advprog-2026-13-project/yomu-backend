@@ -9,7 +9,6 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.MeResponse;
 import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
-import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -25,37 +23,38 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @ExtendWith(MockitoExtension.class)
 class MeControllerTest {
 
-    @Mock private AuthService authService;
+  @Mock private AuthService authService;
 
-    @InjectMocks private MeController meController;
+  @InjectMocks private MeController meController;
 
-    private MockMvc mockMvc;
+  private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(meController).build();
-        SecurityContextHolder.clearContext();
-    }
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.standaloneSetup(meController).build();
+    SecurityContextHolder.clearContext();
+  }
 
-    @Test
-    void meShouldReturnOk() throws Exception {
-        UUID id = UUID.randomUUID();
-        User user = new User("rifqi", "Rifqi Ilham", "rifqi@mail.com", "08123", "hashed", Role.USER);
-        user.setId(id);
-        
-        MeResponse response = new MeResponse(id, "rifqi", "Rifqi Ilham", "rifqi@mail.com", "08123", Role.USER);
-        
-        when(authService.me()).thenReturn(response);
+  @Test
+  void meShouldReturnOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    User user = new User("rifqi", "Rifqi Ilham", "rifqi@mail.com", "08123", "hashed", Role.USER);
+    user.setId(id);
 
-        mockMvc
-            .perform(get("/api/auth/me")) 
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(id.toString()))
-            .andExpect(jsonPath("$.username").value("rifqi"))
-            .andExpect(jsonPath("$.displayName").value("Rifqi Ilham"))
-            .andExpect(jsonPath("$.email").value("rifqi@mail.com"))
-            .andExpect(jsonPath("$.role").value("USER"));
+    MeResponse response =
+        new MeResponse(id, "rifqi", "Rifqi Ilham", "rifqi@mail.com", "08123", Role.USER);
 
-        verify(authService).me();
-    }
+    when(authService.me()).thenReturn(response);
+
+    mockMvc
+        .perform(get("/api/auth/me"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(id.toString()))
+        .andExpect(jsonPath("$.username").value("rifqi"))
+        .andExpect(jsonPath("$.displayName").value("Rifqi Ilham"))
+        .andExpect(jsonPath("$.email").value("rifqi@mail.com"))
+        .andExpect(jsonPath("$.role").value("USER"));
+
+    verify(authService).me();
+  }
 }

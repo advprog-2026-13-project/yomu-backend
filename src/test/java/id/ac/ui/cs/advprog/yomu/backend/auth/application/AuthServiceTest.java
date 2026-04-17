@@ -48,9 +48,9 @@ class AuthServiceTest {
   }
 
   @Test
-void registerShouldSucceedWhenUsernameAndEmailAreAvailable() {
+  void registerShouldSucceedWhenUsernameAndEmailAreAvailable() {
     String username = "rifqi";
-    String displayName = "Rifqi Ilham"; 
+    String displayName = "Rifqi Ilham";
     String email = "rifqi@mail.com";
     String phone = "08123";
     String password = "secret123";
@@ -71,7 +71,7 @@ void registerShouldSucceedWhenUsernameAndEmailAreAvailable() {
 
     User savedUser = userCaptor.getValue();
     assertEquals(username, savedUser.getUsername());
-    assertEquals(displayName, savedUser.getDisplayName()); 
+    assertEquals(displayName, savedUser.getDisplayName());
     assertEquals(email, savedUser.getEmail());
     assertEquals(phone, savedUser.getPhoneNumber());
     assertEquals(encodedPassword, savedUser.getPasswordHash());
@@ -80,7 +80,7 @@ void registerShouldSucceedWhenUsernameAndEmailAreAvailable() {
     assertEquals(username, response.getUsername());
     assertEquals(displayName, response.getDisplayName());
     assertEquals(Role.USER, response.getRole());
-}
+  }
 
   @Test
   void loginShouldSucceedUsingUsername() {

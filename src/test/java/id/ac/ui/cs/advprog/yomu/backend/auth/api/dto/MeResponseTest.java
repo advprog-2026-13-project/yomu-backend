@@ -24,7 +24,7 @@ class MeResponseTest {
     assertEquals(username, response.getUsername());
     assertEquals(displayName, response.getDisplayName());
     assertEquals(email, response.getEmail());
-    assertEquals(phoneNumber, response.getPhoneNumber()); 
+    assertEquals(phoneNumber, response.getPhoneNumber());
     assertEquals(role, response.getRole());
   }
 }
