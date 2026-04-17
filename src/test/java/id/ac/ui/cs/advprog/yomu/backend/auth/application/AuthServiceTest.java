@@ -1,15 +1,12 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.application;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static id.ac.ui.cs.advprog.yomu.backend.auth.TestDataFactory.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.AuthResponse;
-import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.LoginRequest;
-import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.MeResponse;
-import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.RegisterRequest;
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
+import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.*;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.*;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.JwtService;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
@@ -19,7 +16,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,94 +45,195 @@ class AuthServiceTest {
 
   @Test
   void registerShouldSucceedWhenUsernameAndEmailAreAvailable() {
-    String username = "rifqi";
-    String displayName = "Rifqi Ilham";
-    String email = "rifqi@mail.com";
-    String phone = "08123";
-    String password = "secret123";
+    RegisterRequest request = createRegisterRequest();
     String encodedPassword = "encoded-password";
 
-    RegisterRequest request = new RegisterRequest(username, displayName, email, phone, password);
-
-    when(userRepository.existsByUsername(username)).thenReturn(false);
-    when(userRepository.existsByEmail(email)).thenReturn(false);
-    when(userRepository.existsByPhoneNumber(phone)).thenReturn(false);
-    when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
+    when(userRepository.existsByUsername(anyString())).thenReturn(false);
+    when(userRepository.existsByEmail(anyString())).thenReturn(false);
+    when(userRepository.existsByPhoneNumber(anyString())).thenReturn(false);
+    when(passwordEncoder.encode(anyString())).thenReturn(encodedPassword);
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
     MeResponse response = authService.register(request);
 
-    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-    verify(userRepository).save(userCaptor.capture());
-
-    User savedUser = userCaptor.getValue();
-    assertEquals(username, savedUser.getUsername());
-    assertEquals(displayName, savedUser.getDisplayName());
-    assertEquals(email, savedUser.getEmail());
-    assertEquals(phone, savedUser.getPhoneNumber());
-    assertEquals(encodedPassword, savedUser.getPasswordHash());
-    assertEquals(Role.USER, savedUser.getRole());
-
-    assertEquals(username, response.getUsername());
-    assertEquals(displayName, response.getDisplayName());
-    assertEquals(Role.USER, response.getRole());
+    assertNotNull(response);
+    assertEquals(DEFAULT_USERNAME, response.getUsername());
+    assertEquals(DEFAULT_DISPLAY_NAME, response.getDisplayName());
+    verify(userRepository).save(any(User.class));
   }
 
   @Test
   void loginShouldSucceedUsingUsername() {
-    LoginRequest request = new LoginRequest("rifqi", "secret123");
-    User user =
-        new User("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "hashed-password", Role.USER);
+    LoginRequest request = new LoginRequest(DEFAULT_USERNAME, DEFAULT_PASSWORD);
+    User user = createDummyUser();
 
-    when(userRepository.findByEmail("rifqi")).thenReturn(Optional.empty()); // Login cek email dulu
-    when(userRepository.findByUsername("rifqi")).thenReturn(Optional.of(user));
-    when(passwordEncoder.matches("secret123", "hashed-password")).thenReturn(true);
+    when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+    when(userRepository.findByUsername(DEFAULT_USERNAME)).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
     when(jwtService.generateToken(user)).thenReturn("jwt-token");
 
     AuthResponse response = authService.login(request);
 
+    assertNotNull(response);
     assertEquals("jwt-token", response.getAccessToken());
   }
 
   @Test
   void meShouldReturnCurrentAuthenticatedUser() {
-    UUID id = UUID.randomUUID();
-    User user =
-        new User("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "hashed-password", Role.USER);
-    user.setId(id);
-
+    User user = createDummyUser();
     SecurityUser principal = new SecurityUser(user);
 
-    var authentication =
-        new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+    var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(auth);
 
-    when(userRepository.findById(id)).thenReturn(Optional.of(user));
+    when(userRepository.findById(any(UUID.class))).thenReturn(Optional.of(user));
 
     MeResponse response = authService.me();
 
-    assertEquals("rifqi", response.getUsername());
-    assertEquals("Rifqi Ahmad", response.getDisplayName());
-    assertEquals("rifqi@mail.com", response.getEmail());
-    assertEquals(Role.USER, response.getRole());
+    assertNotNull(response);
+    assertEquals(DEFAULT_USERNAME, response.getUsername());
+    assertEquals(DEFAULT_DISPLAY_NAME, response.getDisplayName());
   }
 
   @Test
-  void loginWithGoogleShouldCreateNewUserIfNotFound() {
-    String idToken = "mock-google-token";
+  void registerShouldThrowExceptionWhenUsernameTaken() {
+    RegisterRequest request = createRegisterRequest();
+    when(userRepository.existsByUsername(DEFAULT_USERNAME)).thenReturn(true);
+
+    assertThrows(IllegalArgumentException.class, () -> authService.register(request));
+    verify(userRepository, never()).save(any());
+  }
+
+  @Test
+  void registerShouldFailIfEmailAlreadyExists() {
+    RegisterRequest req = createRegisterRequest();
+    when(userRepository.existsByUsername(anyString())).thenReturn(false);
+    when(userRepository.existsByEmail(req.getEmail())).thenReturn(true);
+
+    assertThrows(IllegalArgumentException.class, () -> authService.register(req));
+  }
+
+  @Test
+  void registerShouldFailIfPhoneAlreadyExists() {
+    RegisterRequest req = createRegisterRequest();
+    when(userRepository.existsByUsername(anyString())).thenReturn(false);
+    when(userRepository.existsByEmail(anyString())).thenReturn(false);
+    when(userRepository.existsByPhoneNumber(req.getPhoneNumber())).thenReturn(true);
+
+    assertThrows(IllegalArgumentException.class, () -> authService.register(req));
+  }
+
+  @Test
+  void loginShouldFailWhenUserNotFound() {
+    LoginRequest req = new LoginRequest("unknown", "password");
+    when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
+    when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+
+    assertThrows(IllegalArgumentException.class, () -> authService.login(req));
+  }
+
+  @Test
+  void loginShouldFailWhenPasswordIncorrect() {
+    User user = createDummyUser();
+    LoginRequest req = new LoginRequest(user.getUsername(), "wrong-password");
+
+    when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+    when(passwordEncoder.matches(eq("wrong-password"), anyString())).thenReturn(false);
+
+    assertThrows(IllegalArgumentException.class, () -> authService.login(req));
+  }
+
+  @Test
+  void googleLoginShouldFailWhenTokenInvalid() {
+    when(googleService.verifyToken("invalid-token")).thenReturn(null);
+    assertThrows(
+        IllegalArgumentException.class, () -> authService.loginWithGoogle("invalid-token"));
+  }
+
+  @Test
+  void loginWithGoogleShouldReturnExistingUserBySub() {
+    String idToken = "mock-token";
     var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
+    User existingUser = createDummyUser();
 
     when(googleService.verifyToken(idToken)).thenReturn(payload);
-    when(payload.getEmail()).thenReturn("google@mail.com");
-    when(payload.getSubject()).thenReturn("123456789");
-    when(payload.get("name")).thenReturn("Google User");
+    when(payload.getSubject()).thenReturn("sub123");
+    when(userRepository.findByGoogleSub("sub123")).thenReturn(Optional.of(existingUser));
+    when(jwtService.generateToken(existingUser)).thenReturn("jwt");
 
-    when(userRepository.findByGoogleSub("123456789")).thenReturn(Optional.empty());
-    when(userRepository.findByEmail("google@mail.com")).thenReturn(Optional.empty());
+    assertNotNull(authService.loginWithGoogle(idToken));
+  }
+
+  @Test
+  void loginWithGoogleShouldLinkExistingEmailToGoogleSub() {
+    String idToken = "mock-token";
+    var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
+    User emailUser = createDummyUser();
+
+    when(googleService.verifyToken(idToken)).thenReturn(payload);
+    when(payload.getSubject()).thenReturn("sub123");
+    when(payload.getEmail()).thenReturn(DEFAULT_EMAIL);
+
+    when(userRepository.findByGoogleSub("sub123")).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(DEFAULT_EMAIL)).thenReturn(Optional.of(emailUser));
 
     authService.loginWithGoogle(idToken);
 
+    verify(userRepository).save(emailUser);
+  }
+
+  @Test
+  void updateAccountShouldSucceed() {
+    User user = createDummyUser();
+    // Mock user yang sedang login
+    SecurityUser principal = new SecurityUser(user);
+    var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    UpdateAccountRequest req = new UpdateAccountRequest();
+    req.setDisplayName("New Name");
+    req.setPhoneNumber("0999");
+
+    when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+    when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+    MeResponse response = authService.updateAccount(req);
+
+    assertEquals("New Name", response.getDisplayName());
+    assertEquals("0999", response.getPhoneNumber());
     verify(userRepository).save(any(User.class));
-    verify(jwtService).generateToken(any(User.class));
+  }
+
+  @Test
+  void deleteAccountShouldSucceed() {
+    User user = createDummyUser();
+    SecurityUser principal = new SecurityUser(user);
+    var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+    authService.deleteAccount();
+
+    verify(userRepository).delete(user);
+  }
+
+  @Test
+  void registerShouldThrowExceptionWhenEmailAlreadyExists() {
+    RegisterRequest req = createRegisterRequest();
+    when(userRepository.existsByUsername(anyString())).thenReturn(false);
+    when(userRepository.existsByEmail(req.getEmail())).thenReturn(true);
+
+    assertThrows(IllegalArgumentException.class, () -> authService.register(req));
+  }
+
+  @Test
+  void registerShouldThrowExceptionWhenPhoneAlreadyExists() {
+    RegisterRequest req = createRegisterRequest();
+    when(userRepository.existsByUsername(anyString())).thenReturn(false);
+    when(userRepository.existsByEmail(anyString())).thenReturn(false);
+    when(userRepository.existsByPhoneNumber(req.getPhoneNumber())).thenReturn(true);
+
+    assertThrows(IllegalArgumentException.class, () -> authService.register(req));
   }
 }

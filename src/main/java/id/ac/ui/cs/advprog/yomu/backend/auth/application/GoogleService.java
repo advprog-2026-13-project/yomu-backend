@@ -14,19 +14,24 @@ public class GoogleService {
   @Value("${app.google.client-id}")
   private String googleClientId;
 
+  private GoogleIdTokenVerifier verifier;
+
+  public GoogleService() {}
+
   public GoogleIdToken.Payload verifyToken(String idTokenString) {
-    try {
-      GoogleIdTokenVerifier verifier =
+    if (this.verifier == null) {
+      this.verifier =
           new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
               .setAudience(Collections.singletonList(googleClientId))
               .build();
+    }
 
+    try {
       GoogleIdToken idToken = verifier.verify(idTokenString);
       if (idToken != null) {
         return idToken.getPayload();
       }
     } catch (Exception e) {
-      System.err.println("Google Verification Error: " + e.getMessage());
     }
     return null;
   }

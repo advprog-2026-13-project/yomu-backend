@@ -1,9 +1,10 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security;
 
+// Static import dari Factory
+import static id.ac.ui.cs.advprog.yomu.backend.auth.TestDataFactory.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -66,17 +67,16 @@ class JwtAuthFilterTest {
 
   @Test
   void shouldSetAuthenticationWhenTokenIsValidAndUserExists() throws Exception {
-    UUID userId = UUID.randomUUID();
-    User user =
-        new User(
-            "rifqi", "Rifqi Ahmad", "rifqi@mail.com", "0812345678", "hashed-password", Role.USER);
+    // GANTI: Gunakan Factory
+    User user = createDummyUser();
+    UUID userId = user.getId();
 
     MockHttpServletRequest request = new MockHttpServletRequest();
     request.addHeader("Authorization", "Bearer valid-token");
     MockHttpServletResponse response = new MockHttpServletResponse();
 
     when(jwtService.parse("valid-token"))
-        .thenReturn(new JwtService.Payload(userId.toString(), "rifqi", "USER"));
+        .thenReturn(new JwtService.Payload(userId.toString(), user.getUsername(), "USER"));
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
     jwtAuthFilter.doFilterInternal(request, response, filterChain);
@@ -91,7 +91,7 @@ class JwtAuthFilterTest {
 
     SecurityUser principal =
         (SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    assertEquals("rifqi", principal.getUsername());
+    assertEquals(user.getUsername(), principal.getUsername());
     assertTrue(
         principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER")));
   }

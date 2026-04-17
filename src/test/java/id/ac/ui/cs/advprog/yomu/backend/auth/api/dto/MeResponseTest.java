@@ -12,7 +12,7 @@ class MeResponseTest {
   void shouldCreateMeResponseCorrectly() {
     UUID id = UUID.randomUUID();
     String username = "rifqi";
-    String displayName = "Rifqi Ahmad";
+    String displayName = "Rifqi Ilham";
     String email = "rifqi@mail.com";
     String phoneNumber = "08123456789";
     Role role = Role.USER;

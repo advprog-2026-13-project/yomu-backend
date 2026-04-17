@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.api.dto;
 
+import static id.ac.ui.cs.advprog.yomu.backend.auth.TestDataFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import jakarta.validation.ConstraintViolation;
@@ -25,36 +27,29 @@ class RegisterRequestTest {
   void shouldCreateRegisterRequestWithNoArgsConstructor() {
     RegisterRequest request = new RegisterRequest();
 
-    assertEquals(null, request.getUsername());
-    assertEquals(null, request.getDisplayName());
-    assertEquals(null, request.getEmail());
-    assertEquals(null, request.getPhoneNumber());
-    assertEquals(null, request.getPassword());
+    assertNull(request.getUsername());
+    assertNull(request.getDisplayName());
+    assertNull(request.getEmail());
+    assertNull(request.getPhoneNumber());
+    assertNull(request.getPassword());
   }
 
   @Test
   void shouldCreateRegisterRequestWithAllArgsConstructor() {
-    String username = "rifqi";
-    String displayName = "Rifqi Ahmad";
-    String email = "rifqi@mail.com";
-    String phoneNumber = "08123";
-    String password = "secret123";
-
-    // Panggil dengan 5 argumen
     RegisterRequest request =
-        new RegisterRequest(username, displayName, email, phoneNumber, password);
+        new RegisterRequest(
+            DEFAULT_USERNAME, DEFAULT_DISPLAY_NAME, DEFAULT_EMAIL, DEFAULT_PHONE, DEFAULT_PASSWORD);
 
-    assertEquals(username, request.getUsername());
-    assertEquals(displayName, request.getDisplayName());
-    assertEquals(email, request.getEmail());
-    assertEquals(phoneNumber, request.getPhoneNumber());
-    assertEquals(password, request.getPassword());
+    assertEquals(DEFAULT_USERNAME, request.getUsername());
+    assertEquals(DEFAULT_DISPLAY_NAME, request.getDisplayName());
+    assertEquals(DEFAULT_EMAIL, request.getEmail());
+    assertEquals(DEFAULT_PHONE, request.getPhoneNumber());
+    assertEquals(DEFAULT_PASSWORD, request.getPassword());
   }
 
   @Test
   void shouldPassValidationWhenFieldsAreValid() {
-    RegisterRequest request =
-        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
+    RegisterRequest request = createRegisterRequest();
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -64,7 +59,8 @@ class RegisterRequestTest {
   @Test
   void shouldFailValidationWhenUsernameIsBlank() {
     RegisterRequest request =
-        new RegisterRequest("", "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
+        new RegisterRequest(
+            "", DEFAULT_DISPLAY_NAME, DEFAULT_EMAIL, DEFAULT_PHONE, DEFAULT_PASSWORD);
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -75,7 +71,8 @@ class RegisterRequestTest {
   @Test
   void shouldFailValidationWhenUsernameTooShort() {
     RegisterRequest request =
-        new RegisterRequest("ab", "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
+        new RegisterRequest(
+            "ab", DEFAULT_DISPLAY_NAME, DEFAULT_EMAIL, DEFAULT_PHONE, DEFAULT_PASSWORD);
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -86,7 +83,8 @@ class RegisterRequestTest {
   @Test
   void shouldFailValidationWhenUsernameTooLong() {
     RegisterRequest request =
-        new RegisterRequest("a".repeat(41), "Rifqi Ahmad", "rifqi@mail.com", "08123", "secret123");
+        new RegisterRequest(
+            "a".repeat(41), DEFAULT_DISPLAY_NAME, DEFAULT_EMAIL, DEFAULT_PHONE, DEFAULT_PASSWORD);
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -97,7 +95,12 @@ class RegisterRequestTest {
   @Test
   void shouldFailValidationWhenEmailIsInvalid() {
     RegisterRequest request =
-        new RegisterRequest("rifqi", "Rifqi Ahmad", "not-an-email", "08123", "secret123");
+        new RegisterRequest(
+            DEFAULT_USERNAME,
+            DEFAULT_DISPLAY_NAME,
+            "not-an-email",
+            DEFAULT_PHONE,
+            DEFAULT_PASSWORD);
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -107,7 +110,8 @@ class RegisterRequestTest {
   @Test
   void shouldFailValidationWhenPasswordIsBlank() {
     RegisterRequest request =
-        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "");
+        new RegisterRequest(
+            DEFAULT_USERNAME, DEFAULT_DISPLAY_NAME, DEFAULT_EMAIL, DEFAULT_PHONE, "");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -118,7 +122,8 @@ class RegisterRequestTest {
   @Test
   void shouldFailValidationWhenPasswordTooShort() {
     RegisterRequest request =
-        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "12345");
+        new RegisterRequest(
+            DEFAULT_USERNAME, DEFAULT_DISPLAY_NAME, DEFAULT_EMAIL, DEFAULT_PHONE, "12345");
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
@@ -129,7 +134,8 @@ class RegisterRequestTest {
   @Test
   void shouldFailValidationWhenPasswordTooLong() {
     RegisterRequest request =
-        new RegisterRequest("rifqi", "Rifqi Ahmad", "rifqi@mail.com", "08123", "a".repeat(101));
+        new RegisterRequest(
+            DEFAULT_USERNAME, DEFAULT_DISPLAY_NAME, DEFAULT_EMAIL, DEFAULT_PHONE, "a".repeat(101));
 
     Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
 
