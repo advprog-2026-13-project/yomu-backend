@@ -1,24 +1,29 @@
 package id.ac.ui.cs.advprog.yomu.backend.service;
 
+import id.ac.ui.cs.advprog.yomu.backend.dto.QuestionDTO;
+import id.ac.ui.cs.advprog.yomu.backend.dto.ReadingDTO;
 import id.ac.ui.cs.advprog.yomu.backend.model.Question;
 import id.ac.ui.cs.advprog.yomu.backend.model.Reading;
 import java.util.List;
 import java.util.UUID;
 
 public interface AdminContentService {
-  Reading createReading(Reading reading);
+  // Use DTO for Creation
+  Reading createReading(ReadingDTO readingDto);
 
   Reading getReadingById(UUID readingId);
 
   List<Reading> getAllReadings();
 
-  Reading updateReading(UUID id, Reading updatedReading);
+  // Use DTO for Updates
+  Reading updateReading(UUID id, ReadingDTO updatedReadingDto);
 
   void deleteReading(UUID readingId);
 
-  Question addQuestionToReading(UUID readingId, Question question);
+  // Use DTO for Questions
+  Question addQuestionToReading(UUID readingId, QuestionDTO questionDto);
 
-  Question updateQuestion(UUID questionId, Question updatedQuestion);
+  Question updateQuestion(UUID questionId, QuestionDTO updatedQuestionDto);
 
   void deleteQuestion(UUID questionId);
 }

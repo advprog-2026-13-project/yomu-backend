@@ -1,9 +1,11 @@
 package id.ac.ui.cs.advprog.yomu.backend.controller;
 
+import id.ac.ui.cs.advprog.yomu.backend.dto.QuestionDTO;
+import id.ac.ui.cs.advprog.yomu.backend.dto.ReadingDTO;
 import id.ac.ui.cs.advprog.yomu.backend.model.Question;
 import id.ac.ui.cs.advprog.yomu.backend.model.Reading;
 import id.ac.ui.cs.advprog.yomu.backend.service.AdminContentService;
-import jakarta.validation.Valid; // Ensure validation is used
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -30,14 +32,15 @@ public class AdminContentController {
   }
 
   @PostMapping("/readings")
-  public ResponseEntity<Reading> createReading(@Valid @RequestBody Reading reading) {
-    return ResponseEntity.ok(adminContentService.createReading(reading));
+  public ResponseEntity<Reading> createReading(@Valid @RequestBody ReadingDTO readingDto) {
+    // Service should now take DTO and convert to Entity internally
+    return ResponseEntity.ok(adminContentService.createReading(readingDto));
   }
 
   @PutMapping("/readings/{id}")
   public ResponseEntity<Reading> updateReading(
-      @PathVariable UUID id, @Valid @RequestBody Reading updatedReading) {
-    return ResponseEntity.ok(adminContentService.updateReading(id, updatedReading));
+          @PathVariable UUID id, @Valid @RequestBody ReadingDTO updatedReadingDto) {
+    return ResponseEntity.ok(adminContentService.updateReading(id, updatedReadingDto));
   }
 
   @DeleteMapping("/readings/{id}")
@@ -48,14 +51,14 @@ public class AdminContentController {
 
   @PostMapping("/readings/{readingId}/questions")
   public ResponseEntity<Question> addQuestion(
-      @PathVariable UUID readingId, @Valid @RequestBody Question question) {
-    return ResponseEntity.ok(adminContentService.addQuestionToReading(readingId, question));
+          @PathVariable UUID readingId, @Valid @RequestBody QuestionDTO questionDto) {
+    return ResponseEntity.ok(adminContentService.addQuestionToReading(readingId, questionDto));
   }
 
   @PutMapping("/questions/{questionId}")
   public ResponseEntity<Question> updateQuestion(
-      @PathVariable UUID questionId, @Valid @RequestBody Question updatedQuestion) {
-    return ResponseEntity.ok(adminContentService.updateQuestion(questionId, updatedQuestion));
+          @PathVariable UUID questionId, @Valid @RequestBody QuestionDTO updatedQuestionDto) {
+    return ResponseEntity.ok(adminContentService.updateQuestion(questionId, updatedQuestionDto));
   }
 
   @DeleteMapping("/questions/{questionId}")

@@ -14,8 +14,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
             reading ->
                 !quizAttemptRepository.existsByStudentIdAndReadingId(
                     studentId, reading.getReadingId()))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @Override
@@ -104,7 +106,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   private void validateNotAttempted(String studentId, UUID readingId) {
     if (quizAttemptRepository.existsByStudentIdAndReadingId(studentId, readingId)) {
-      throw new RuntimeException("Pelajar sudah pernah menyelesaikan bacaan/kuis ini.");
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "...");
     }
   }
 }
