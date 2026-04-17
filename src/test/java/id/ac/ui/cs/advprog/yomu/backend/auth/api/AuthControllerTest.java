@@ -1,8 +1,11 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.api;
 
+// Import static dari Factory dan MockMvc
+import static id.ac.ui.cs.advprog.yomu.backend.auth.TestDataFactory.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,8 +14,7 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.LoginRequest;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.MeResponse;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.RegisterRequest;
 import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
-import java.util.UUID;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,9 +43,17 @@ class AuthControllerTest {
 
   @Test
   void registerShouldReturnOkWhenRequestIsValid() throws Exception {
-    UUID id = UUID.randomUUID();
-    RegisterRequest request = new RegisterRequest("rifqi", "rifqi@mail.com", "secret123");
-    MeResponse response = new MeResponse(id, "rifqi", "rifqi@mail.com", Role.USER);
+    RegisterRequest request = createRegisterRequest();
+    User dummyUser = createDummyUser();
+
+    MeResponse response =
+        new MeResponse(
+            dummyUser.getId(),
+            dummyUser.getUsername(),
+            dummyUser.getDisplayName(),
+            dummyUser.getEmail(),
+            dummyUser.getPhoneNumber(),
+            dummyUser.getRole());
 
     when(authService.register(any(RegisterRequest.class))).thenReturn(response);
 
@@ -53,17 +63,17 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(id.toString()))
-        .andExpect(jsonPath("$.username").value("rifqi"))
-        .andExpect(jsonPath("$.email").value("rifqi@mail.com"))
-        .andExpect(jsonPath("$.role").value("USER"));
+        .andExpect(jsonPath("$.username").value(DEFAULT_USERNAME))
+        .andExpect(jsonPath("$.displayName").value(DEFAULT_DISPLAY_NAME))
+        .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
+        .andExpect(jsonPath("$.phoneNumber").value(DEFAULT_PHONE));
 
     verify(authService).register(any(RegisterRequest.class));
   }
 
   @Test
   void loginShouldReturnOkWhenRequestIsValid() throws Exception {
-    LoginRequest request = new LoginRequest("rifqi", "secret123");
+    LoginRequest request = new LoginRequest(DEFAULT_USERNAME, DEFAULT_PASSWORD);
     AuthResponse response = new AuthResponse("dummy-jwt-token");
 
     when(authService.login(any(LoginRequest.class))).thenReturn(response);
@@ -77,5 +87,26 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.accessToken").value("dummy-jwt-token"));
 
     verify(authService).login(any(LoginRequest.class));
+  }
+
+  @Test
+  void googleLoginShouldReturnOk() throws Exception {
+    String mockToken = "some-google-token";
+    AuthResponse response = new AuthResponse("google-jwt-token");
+
+    when(authService.loginWithGoogle(mockToken)).thenReturn(response);
+
+    java.util.Map<String, String> body = java.util.Map.of("token", mockToken);
+
+    mockMvc
+        .perform(
+            post("/api/auth/google")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").value("google-jwt-token"));
+
+    verify(authService).loginWithGoogle(mockToken);
   }
 }

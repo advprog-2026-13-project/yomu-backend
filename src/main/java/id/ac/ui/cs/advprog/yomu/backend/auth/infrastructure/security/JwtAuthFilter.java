@@ -5,11 +5,13 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
@@ -34,16 +36,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     try {
       String token = header.substring(7).trim();
       var payload = jwtService.parse(token);
-      UUID userId = UUID.fromString(payload.userId());
+      String userIdStr = payload.userId();
 
-      var userOpt = userRepository.findById(userId);
-      if (userOpt.isPresent()) {
-        var principal = new SecurityUser(userOpt.get());
-        var auth =
-            new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(auth);
+      if (userIdStr != null && !userIdStr.isBlank()) {
+        UUID userId = UUID.fromString(userIdStr);
+
+        userRepository
+            .findById(userId)
+            .ifPresent(
+                user -> {
+                  SecurityUser principal = new SecurityUser(user);
+                  UsernamePasswordAuthenticationToken auth =
+                      new UsernamePasswordAuthenticationToken(
+                          principal, null, principal.getAuthorities());
+                  SecurityContextHolder.getContext().setAuthentication(auth);
+                });
+      } else {
+        log.warn("JWT payload missing user ID");
       }
-    } catch (Exception ignored) {
+
+    } catch (Exception e) {
+      log.error("JWT Authentication failed: {}", e.getMessage());
       SecurityContextHolder.clearContext();
     }
 

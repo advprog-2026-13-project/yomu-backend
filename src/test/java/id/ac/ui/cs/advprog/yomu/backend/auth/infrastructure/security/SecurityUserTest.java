@@ -1,9 +1,10 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security;
 
+// Import static dari Factory kita
+import static id.ac.ui.cs.advprog.yomu.backend.auth.TestDataFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import org.junit.jupiter.api.Test;
 
@@ -11,8 +12,7 @@ class SecurityUserTest {
 
   @Test
   void shouldReturnWrappedUser() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertEquals(user, securityUser.getUser());
@@ -20,8 +20,7 @@ class SecurityUserTest {
 
   @Test
   void shouldReturnCorrectAuthorities() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertEquals(1, securityUser.getAuthorities().size());
@@ -30,8 +29,7 @@ class SecurityUserTest {
 
   @Test
   void shouldReturnPasswordFromUser() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertEquals("hashed-password", securityUser.getPassword());
@@ -39,17 +37,15 @@ class SecurityUserTest {
 
   @Test
   void shouldReturnUsernameFromUser() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
-    assertEquals("rifqi", securityUser.getUsername());
+    assertEquals(DEFAULT_USERNAME, securityUser.getUsername());
   }
 
   @Test
   void shouldAlwaysBeNonExpired() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isAccountNonExpired());
@@ -57,8 +53,7 @@ class SecurityUserTest {
 
   @Test
   void shouldAlwaysBeNonLocked() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isAccountNonLocked());
@@ -66,8 +61,7 @@ class SecurityUserTest {
 
   @Test
   void shouldAlwaysHaveNonExpiredCredentials() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isCredentialsNonExpired());
@@ -75,8 +69,7 @@ class SecurityUserTest {
 
   @Test
   void shouldAlwaysBeEnabled() {
-    User user = new User("rifqi", "rifqi@mail.com", "hashed-password", Role.USER);
-
+    User user = createDummyUser();
     SecurityUser securityUser = new SecurityUser(user);
 
     assertTrue(securityUser.isEnabled());
