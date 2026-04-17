@@ -1,13 +1,26 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/yomu
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/yomu}
+    username: ${SPRING_DATASOURCE_USERNAME:yomu}
+    password: ${SPRING_DATASOURCE_PASSWORD:yomu}
 
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
 server:
-  port: 8080
+  port: ${PORT:8080}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-secret-key-change-in-prod-1234567890123456}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
+
+logging:
+  level:
+    org.springframework.security: INFO

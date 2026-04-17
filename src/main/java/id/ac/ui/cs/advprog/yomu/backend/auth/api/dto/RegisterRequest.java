@@ -1,13 +1,7 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.api.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class RegisterRequest {
   @NotBlank
   @Size(min = 3, max = 40)
@@ -18,4 +12,24 @@ public class RegisterRequest {
   @NotBlank
   @Size(min = 6, max = 100)
   private String password;
+
+  public RegisterRequest() {}
+
+  public RegisterRequest(String username, String email, String password) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getPassword() {
+    return password;
+  }
 }

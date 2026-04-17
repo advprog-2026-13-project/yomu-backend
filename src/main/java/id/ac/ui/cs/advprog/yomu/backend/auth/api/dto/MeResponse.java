@@ -2,16 +2,33 @@ package id.ac.ui.cs.advprog.yomu.backend.auth.api.dto;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class MeResponse {
-  private UUID id;
-  private String username;
-  private String email;
-  private Role role;
+  private final UUID id;
+  private final String username;
+  private final String email;
+  private final Role role;
+
+  public MeResponse(UUID id, String username, String email, Role role) {
+    this.id = id;
+    this.username = username;
+    this.email = email;
+    this.role = role;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public Role getRole() {
+    return role;
+  }
 }
