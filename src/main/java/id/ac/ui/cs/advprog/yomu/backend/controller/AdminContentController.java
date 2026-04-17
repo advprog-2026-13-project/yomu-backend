@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')") // Global protection for this class
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminContentController {
 
   private final AdminContentService adminContentService;

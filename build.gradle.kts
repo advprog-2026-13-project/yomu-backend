@@ -27,20 +27,36 @@ repositories {
     mavenCentral()
 }
 
+val coverageExclusions = listOf(
+    "**/*Application*",
+    "**/*Config*",
+    "**/*DTO*",
+    "**/entity/**",
+    "**/repository/**",
+    "**/exception/**",
+    "**/model/**"
+)
+
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
-
     runtimeOnly("org.postgresql:postgresql")
+
+    implementation("io.jsonwebtoken:jjwt-api:0.12.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
-
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -63,6 +79,12 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         html.required.set(true)
     }
+
+    classDirectories.setFrom(files(classDirectories.files.map {
+        fileTree(it).matching {
+            exclude(coverageExclusions)
+        }
+    }))
 }
 
 spotless {
@@ -74,9 +96,10 @@ spotless {
 
 sonar {
     properties {
-        property("sonar.projectKey", System.getenv("SONAR_PROJECT_KEY"))
-        property("sonar.organization", System.getenv("SONAR_ORGANIZATION"))
+        property("sonar.projectKey", System.getenv("SONAR_PROJECT_KEY") ?: "default_key")
+        property("sonar.organization", System.getenv("SONAR_ORGANIZATION") ?: "default_org")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.exclusions", coverageExclusions.joinToString(", "))
     }
 }
