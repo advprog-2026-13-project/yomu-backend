@@ -1,17 +1,17 @@
 package id.ac.ui.cs.advprog.yomu.backend.dto;
 
-import lombok.Data;
 import java.util.List;
 import java.util.UUID;
+import lombok.Data;
 
 @Data
 public class QuizSubmissionRequest {
-    private String studentId;
-    private List<StudentAnswer> answers;
+  private String studentId;
+  private List<StudentAnswer> answers;
 
-    @Data
-    public static class StudentAnswer {
-        private UUID questionId;
-        private String selectedAnswer;
-    }
+  @Data
+  public static class StudentAnswer {
+    private UUID questionId;
+    private String selectedAnswer;
+  }
 }
