@@ -94,10 +94,8 @@ class AuthControllerTest {
     String mockToken = "some-google-token";
     AuthResponse response = new AuthResponse("google-jwt-token");
 
-    // Pastikan Mockito menangkap argumen yang tepat
     when(authService.loginWithGoogle(mockToken)).thenReturn(response);
 
-    // Kirim JSON dengan key "token" (sesuai request.get("token") di Controller)
     java.util.Map<String, String> body = java.util.Map.of("token", mockToken);
 
     mockMvc
@@ -105,7 +103,7 @@ class AuthControllerTest {
             post("/api/auth/google")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)))
-        .andDo(print()) // Membantu debug jika ada error lagi
+        .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accessToken").value("google-jwt-token"));
 

@@ -139,13 +139,19 @@ public class AuthService {
     }
 
     String email = payload.getEmail();
+    if (email == null || email.isBlank()) {
+      throw new IllegalArgumentException("Google account must have an email");
+    }
+
     String googleSub = payload.getSubject();
-    String name = (String) payload.get("name");
+    Object nameObj = payload.get("name");
+    String name = (nameObj != null) ? nameObj.toString() : "Google User";
 
     User user =
         userRepository
             .findByGoogleSub(googleSub)
-            .orElseGet(() -> userRepository.findByEmail(email).orElse(null));
+            .or(() -> userRepository.findByEmail(email))
+            .orElse(null);
 
     if (user == null) {
       user =

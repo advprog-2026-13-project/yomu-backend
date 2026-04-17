@@ -158,6 +158,9 @@ class AuthServiceTest {
 
     when(googleService.verifyToken(idToken)).thenReturn(payload);
     when(payload.getSubject()).thenReturn("sub123");
+
+    when(payload.getEmail()).thenReturn(DEFAULT_EMAIL);
+
     when(userRepository.findByGoogleSub("sub123")).thenReturn(Optional.of(existingUser));
     when(jwtService.generateToken(existingUser)).thenReturn("jwt");
 
@@ -185,7 +188,6 @@ class AuthServiceTest {
   @Test
   void updateAccountShouldSucceed() {
     User user = createDummyUser();
-    // Mock user yang sedang login
     SecurityUser principal = new SecurityUser(user);
     var auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
     SecurityContextHolder.getContext().setAuthentication(auth);

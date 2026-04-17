@@ -47,7 +47,7 @@ class MeControllerTest {
     when(authService.me()).thenReturn(response);
 
     mockMvc
-        .perform(get("/api/auth/me")) // Pastikan URL ini sinkron dengan Controller
+        .perform(get("/api/auth/me"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(user.getId().toString()))
         .andExpect(jsonPath("$.username").value(DEFAULT_USERNAME))

@@ -1,30 +1,24 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.api.dto;
 
+import static id.ac.ui.cs.advprog.yomu.backend.auth.TestDataFactory.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
-import java.util.UUID;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import org.junit.jupiter.api.Test;
 
 class MeResponseTest {
 
   @Test
   void shouldCreateMeResponseCorrectly() {
-    UUID id = UUID.randomUUID();
-    String username = "rifqi";
-    String displayName = "Rifqi Ilham";
-    String email = "rifqi@mail.com";
-    String phoneNumber = "08123456789";
-    Role role = Role.USER;
-    ;
+    User user = createDummyUser();
 
-    MeResponse response = new MeResponse(id, username, displayName, email, phoneNumber, role);
+    MeResponse response = createMeResponse(user);
 
-    assertEquals(id, response.getId());
-    assertEquals(username, response.getUsername());
-    assertEquals(displayName, response.getDisplayName());
-    assertEquals(email, response.getEmail());
-    assertEquals(phoneNumber, response.getPhoneNumber());
-    assertEquals(role, response.getRole());
+    assertEquals(user.getId(), response.getId());
+    assertEquals(DEFAULT_USERNAME, response.getUsername());
+    assertEquals(DEFAULT_DISPLAY_NAME, response.getDisplayName());
+    assertEquals(DEFAULT_EMAIL, response.getEmail());
+    assertEquals(DEFAULT_PHONE, response.getPhoneNumber());
+    assertEquals(user.getRole(), response.getRole());
   }
 }

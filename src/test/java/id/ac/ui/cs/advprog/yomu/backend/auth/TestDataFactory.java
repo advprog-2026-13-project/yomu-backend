@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth;
 
+import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.LoginRequest;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.MeResponse;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.RegisterRequest;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
@@ -39,5 +40,19 @@ public class TestDataFactory {
         user.getEmail(),
         user.getPhoneNumber(),
         user.getRole());
+  }
+
+  public static LoginRequest createLoginRequest() {
+    return new LoginRequest(DEFAULT_USERNAME, DEFAULT_PASSWORD);
+  }
+
+  public static MeResponse createMeResponse() {
+    return new MeResponse(
+        UUID.randomUUID(),
+        DEFAULT_USERNAME,
+        DEFAULT_DISPLAY_NAME,
+        DEFAULT_EMAIL,
+        DEFAULT_PHONE,
+        Role.USER);
   }
 }
