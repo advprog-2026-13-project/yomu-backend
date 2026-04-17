@@ -13,7 +13,8 @@ public class DiamondRankingStrategy implements RankingStrategy {
     return clans.stream()
         .sorted(
             Comparator.comparingDouble(
-                    (ClanScoreData c) -> c.memberCount() > 0 ? (double) c.score() / c.memberCount() : 0)
+                    (ClanScoreData c) ->
+                        c.memberCount() > 0 ? (double) c.score() / c.memberCount() : 0)
                 .reversed())
         .toList();
   }

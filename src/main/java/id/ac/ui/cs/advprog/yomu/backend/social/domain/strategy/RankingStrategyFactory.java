@@ -10,8 +10,7 @@ public class RankingStrategyFactory {
   private final DiamondRankingStrategy diamondRankingStrategy;
 
   public RankingStrategyFactory(
-      BronzeRankingStrategy bronzeRankingStrategy,
-      DiamondRankingStrategy diamondRankingStrategy) {
+      BronzeRankingStrategy bronzeRankingStrategy, DiamondRankingStrategy diamondRankingStrategy) {
     this.bronzeRankingStrategy = bronzeRankingStrategy;
     this.diamondRankingStrategy = diamondRankingStrategy;
   }

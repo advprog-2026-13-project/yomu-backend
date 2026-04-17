@@ -19,9 +19,23 @@ public class LeaderboardEntryResponse {
     this.tier = tier;
   }
 
-  public int getRank() { return rank; }
-  public UUID getClanId() { return clanId; }
-  public String getClanName() { return clanName; }
-  public long getScore() { return score; }
-  public Tier getTier() { return tier; }
+  public int getRank() {
+    return rank;
+  }
+
+  public UUID getClanId() {
+    return clanId;
+  }
+
+  public String getClanName() {
+    return clanName;
+  }
+
+  public long getScore() {
+    return score;
+  }
+
+  public Tier getTier() {
+    return tier;
+  }
 }

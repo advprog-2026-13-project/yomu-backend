@@ -50,7 +50,8 @@ public class LeaderboardService {
     for (int i = 0; i < ranked.size(); i++) {
       ClanScoreData data = ranked.get(i);
       result.add(
-          new LeaderboardEntryResponse(i + 1, data.clanId(), data.clanName(), data.score(), data.tier()));
+          new LeaderboardEntryResponse(
+              i + 1, data.clanId(), data.clanName(), data.score(), data.tier()));
     }
     return result;
   }

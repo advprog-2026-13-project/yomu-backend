@@ -23,10 +23,10 @@ public class ClanController {
 
   @PostMapping
   public ResponseEntity<ClanResponse> createClan(
-      @Valid @RequestBody CreateClanRequest req,
-      @AuthenticationPrincipal SecurityUser principal) {
+      @Valid @RequestBody CreateClanRequest req, @AuthenticationPrincipal SecurityUser principal) {
     UUID userId = principal.getUser().getId();
-    return ResponseEntity.status(HttpStatus.CREATED).body(clanService.createClan(req.getName(), userId));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(clanService.createClan(req.getName(), userId));
   }
 
   @PostMapping("/{clanId}/join")

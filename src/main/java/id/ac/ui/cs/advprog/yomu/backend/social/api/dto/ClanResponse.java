@@ -22,10 +22,27 @@ public class ClanResponse {
     this.memberCount = memberCount;
   }
 
-  public UUID getId() { return id; }
-  public String getName() { return name; }
-  public Tier getTier() { return tier; }
-  public long getScore() { return score; }
-  public UUID getLeaderId() { return leaderId; }
-  public long getMemberCount() { return memberCount; }
+  public UUID getId() {
+    return id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Tier getTier() {
+    return tier;
+  }
+
+  public long getScore() {
+    return score;
+  }
+
+  public UUID getLeaderId() {
+    return leaderId;
+  }
+
+  public long getMemberCount() {
+    return memberCount;
+  }
 }
