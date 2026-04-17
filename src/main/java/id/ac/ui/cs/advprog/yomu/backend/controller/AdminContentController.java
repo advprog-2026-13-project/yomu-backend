@@ -3,15 +3,18 @@ package id.ac.ui.cs.advprog.yomu.backend.controller;
 import id.ac.ui.cs.advprog.yomu.backend.model.Question;
 import id.ac.ui.cs.advprog.yomu.backend.model.Reading;
 import id.ac.ui.cs.advprog.yomu.backend.service.AdminContentService;
+import jakarta.validation.Valid; // Ensure validation is used
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')") // Global protection for this class
 public class AdminContentController {
 
   private final AdminContentService adminContentService;
@@ -27,13 +30,13 @@ public class AdminContentController {
   }
 
   @PostMapping("/readings")
-  public ResponseEntity<Reading> createReading(@RequestBody Reading reading) {
+  public ResponseEntity<Reading> createReading(@Valid @RequestBody Reading reading) {
     return ResponseEntity.ok(adminContentService.createReading(reading));
   }
 
   @PutMapping("/readings/{id}")
   public ResponseEntity<Reading> updateReading(
-      @PathVariable UUID id, @RequestBody Reading updatedReading) {
+          @PathVariable UUID id, @Valid @RequestBody Reading updatedReading) {
     return ResponseEntity.ok(adminContentService.updateReading(id, updatedReading));
   }
 
@@ -45,13 +48,13 @@ public class AdminContentController {
 
   @PostMapping("/readings/{readingId}/questions")
   public ResponseEntity<Question> addQuestion(
-      @PathVariable UUID readingId, @RequestBody Question question) {
+          @PathVariable UUID readingId, @Valid @RequestBody Question question) {
     return ResponseEntity.ok(adminContentService.addQuestionToReading(readingId, question));
   }
 
   @PutMapping("/questions/{questionId}")
   public ResponseEntity<Question> updateQuestion(
-      @PathVariable UUID questionId, @RequestBody Question updatedQuestion) {
+          @PathVariable UUID questionId, @Valid @RequestBody Question updatedQuestion) {
     return ResponseEntity.ok(adminContentService.updateQuestion(questionId, updatedQuestion));
   }
 

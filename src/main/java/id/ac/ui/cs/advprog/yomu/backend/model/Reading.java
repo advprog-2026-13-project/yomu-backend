@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,8 +20,10 @@ public class Reading {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID readingId;
 
+  @NotBlank(message = "Title cannot be empty")
   private String title;
 
+  @NotNull(message = "Content is required")
   @Column(columnDefinition = "TEXT")
   private String content;
 
