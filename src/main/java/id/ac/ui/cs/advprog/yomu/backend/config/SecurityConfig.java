@@ -13,16 +13,19 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity // CRITICAL: This enables @PreAuthorize
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for Stateless APIs
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // Role enforcement
-                        .anyRequest().authenticated() // Everything else needs login
-                );
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.csrf(csrf -> csrf.disable()) // Disable CSRF for Stateless APIs
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN") // Role enforcement
+                    .anyRequest()
+                    .authenticated() // Everything else needs login
+            );
 
-        return http.build();
-    }
+    return http.build();
+  }
 }
