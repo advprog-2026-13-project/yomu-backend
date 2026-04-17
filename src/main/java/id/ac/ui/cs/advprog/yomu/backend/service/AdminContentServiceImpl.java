@@ -37,10 +37,11 @@ public class AdminContentServiceImpl implements AdminContentService {
   @Transactional(readOnly = true)
   public Reading getReadingById(UUID readingId) {
     return readingRepository
-            .findById(readingId)
-            .orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                            "Reading dengan ID " + readingId + " tidak ditemukan."));
+        .findById(readingId)
+        .orElseThrow(
+            () ->
+                new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Reading dengan ID " + readingId + " tidak ditemukan."));
   }
 
   @Override
@@ -88,9 +89,12 @@ public class AdminContentServiceImpl implements AdminContentService {
   @Override
   @Transactional
   public Question updateQuestion(UUID questionId, QuestionDTO updatedQuestionDto) {
-    Question existingQuestion = questionRepository.findById(questionId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Question tidak ditemukan."));
+    Question existingQuestion =
+        questionRepository
+            .findById(questionId)
+            .orElseThrow(
+                () ->
+                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Question tidak ditemukan."));
 
     existingQuestion.setQuestionText(updatedQuestionDto.questionText());
     existingQuestion.setOptions(updatedQuestionDto.options());

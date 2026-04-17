@@ -39,7 +39,7 @@ public class AdminContentController {
 
   @PutMapping("/readings/{id}")
   public ResponseEntity<Reading> updateReading(
-          @PathVariable UUID id, @Valid @RequestBody ReadingDTO updatedReadingDto) {
+      @PathVariable UUID id, @Valid @RequestBody ReadingDTO updatedReadingDto) {
     return ResponseEntity.ok(adminContentService.updateReading(id, updatedReadingDto));
   }
 
@@ -51,13 +51,13 @@ public class AdminContentController {
 
   @PostMapping("/readings/{readingId}/questions")
   public ResponseEntity<Question> addQuestion(
-          @PathVariable UUID readingId, @Valid @RequestBody QuestionDTO questionDto) {
+      @PathVariable UUID readingId, @Valid @RequestBody QuestionDTO questionDto) {
     return ResponseEntity.ok(adminContentService.addQuestionToReading(readingId, questionDto));
   }
 
   @PutMapping("/questions/{questionId}")
   public ResponseEntity<Question> updateQuestion(
-          @PathVariable UUID questionId, @Valid @RequestBody QuestionDTO updatedQuestionDto) {
+      @PathVariable UUID questionId, @Valid @RequestBody QuestionDTO updatedQuestionDto) {
     return ResponseEntity.ok(adminContentService.updateQuestion(questionId, updatedQuestionDto));
   }
 
