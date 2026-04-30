@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out;
 
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.UserAchievementProgress;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

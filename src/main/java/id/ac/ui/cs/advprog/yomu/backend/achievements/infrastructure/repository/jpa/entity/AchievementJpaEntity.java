@@ -2,12 +2,11 @@ package id.ac.ui.cs.advprog.yomu.backend.achievements.infrastructure.repository.
 
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
 import jakarta.persistence.*;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "achievements")
@@ -16,19 +15,18 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class AchievementJpaEntity {
-    @Id
-    private UUID id;
+  @Id private UUID id;
 
-    @Column(nullable = false)
-    private String name;
+  @Column(nullable = false)
+  private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+  @Column(columnDefinition = "TEXT")
+  private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "achievement_type", nullable = false)
-    private AchievementType achievementType;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "achievement_type", nullable = false)
+  private AchievementType achievementType;
 
-    @Column(nullable = false)
-    private int milestone;
+  @Column(nullable = false)
+  private int milestone;
 }

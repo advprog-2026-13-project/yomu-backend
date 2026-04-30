@@ -12,14 +12,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateAchievementRequest {
-    @NotBlank
-    private String name;
-    
-    private String description;
-    
-    @NotNull
-    private AchievementType type;
-    
-    @Min(1)
-    private int milestone;
+  @NotBlank private String name;
+
+  private String description;
+
+  @NotNull private AchievementType type;
+
+  @Min(1)
+  private int milestone;
 }
