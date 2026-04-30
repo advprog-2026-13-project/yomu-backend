@@ -16,12 +16,17 @@ public class UserAchievementProgress {
     private boolean isDisplayedOnProfile;
 
     public UserAchievementProgress(UUID id, UUID userId, UUID achievementId) {
+        this(id, userId, achievementId, 0, false, null, false);
+    }
+
+    public UserAchievementProgress(UUID id, UUID userId, UUID achievementId, int currentProgress, boolean isCompleted, Instant completedAt, boolean isDisplayedOnProfile) {
         this.id = id != null ? id : UUID.randomUUID();
         this.userId = userId;
         this.achievementId = achievementId;
-        this.currentProgress = 0;
-        this.isCompleted = false;
-        this.isDisplayedOnProfile = false;
+        this.currentProgress = currentProgress;
+        this.isCompleted = isCompleted;
+        this.completedAt = completedAt;
+        this.isDisplayedOnProfile = isDisplayedOnProfile;
     }
 
     public boolean addProgress(int amount, int milestoneTarget) {

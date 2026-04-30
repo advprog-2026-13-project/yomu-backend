@@ -10,10 +10,13 @@ import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.UserAchievemen
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.UserDailyMissionProgress;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
 
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@Service
 public class AchievementProgressService {
 
     private final IAchievementRepository achievementRepository;

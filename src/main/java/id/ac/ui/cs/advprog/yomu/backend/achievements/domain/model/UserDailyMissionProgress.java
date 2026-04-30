@@ -17,12 +17,17 @@ public class UserDailyMissionProgress {
     private Instant completedAt;
 
     public UserDailyMissionProgress(UUID id, UUID userId, UUID missionId, LocalDate date) {
+        this(id, userId, missionId, date, 0, false, null);
+    }
+
+    public UserDailyMissionProgress(UUID id, UUID userId, UUID missionId, LocalDate date, int currentProgress, boolean isCompleted, Instant completedAt) {
         this.id = id != null ? id : UUID.randomUUID();
         this.userId = userId;
         this.missionId = missionId;
         this.date = date != null ? date : LocalDate.now();
-        this.currentProgress = 0;
-        this.isCompleted = false;
+        this.currentProgress = currentProgress;
+        this.isCompleted = isCompleted;
+        this.completedAt = completedAt;
     }
 
     public boolean addProgress(int amount, int milestoneTarget) {
