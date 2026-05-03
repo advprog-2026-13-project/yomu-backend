@@ -44,4 +44,14 @@ public class MeResponse {
   public Role getRole() {
     return role;
   }
+
+  public static MeResponse fromEntity(id.ac.ui.cs.advprog.yomu.backend.auth.domain.User u) {
+    return new MeResponse(
+        u.getId(),
+        u.getUsername(),
+        u.getDisplayName(),
+        u.getEmail(),
+        u.getPhoneNumber(),
+        u.getRole());
+  }
 }

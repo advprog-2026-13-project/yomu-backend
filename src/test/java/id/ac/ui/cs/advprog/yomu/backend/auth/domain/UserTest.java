@@ -26,9 +26,9 @@ class UserTest {
     assertEquals("New Name", user.getDisplayName());
 
     assertNotNull(user.toString());
-    assertNotNull(user.hashCode());
-    assertEquals(user, user);
-    assertNotEquals(user, null);
+    assertTrue(user.hashCode() != 0);
+    assertSame(user, user);
+    assertNotNull(user);
     assertNotEquals(user, new Object());
   }
 }

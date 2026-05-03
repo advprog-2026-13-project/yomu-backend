@@ -16,8 +16,6 @@ public class GoogleService {
 
   private GoogleIdTokenVerifier verifier;
 
-  public GoogleService() {}
-
   public GoogleIdToken.Payload verifyToken(String idTokenString) {
     if (this.verifier == null) {
       this.verifier =
@@ -33,6 +31,6 @@ public class GoogleService {
       }
     } catch (Exception e) {
     }
-    return null;
+    return null; // No token payload on verification failure
   }
 }

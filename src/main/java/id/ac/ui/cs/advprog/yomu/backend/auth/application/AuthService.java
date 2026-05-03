@@ -52,9 +52,7 @@ public class AuthService {
             passwordEncoder.encode(req.getPassword()),
             Role.USER);
 
-    user = userRepository.save(user);
-
-    return mapToMeResponse(user);
+    return MeResponse.fromEntity(userRepository.save(user));
   }
 
   public AuthResponse login(LoginRequest req) {
@@ -74,7 +72,7 @@ public class AuthService {
   }
 
   public MeResponse me() {
-    return mapToMeResponse(getCurrentUser());
+    return MeResponse.fromEntity(getCurrentUser());
   }
 
   @Transactional
@@ -100,8 +98,7 @@ public class AuthService {
       user.setPhoneNumber(req.getPhoneNumber());
     }
 
-    userRepository.save(user);
-    return mapToMeResponse(user);
+    return MeResponse.fromEntity(userRepository.save(user));
   }
 
   @Transactional
@@ -121,29 +118,18 @@ public class AuthService {
         .orElseThrow(() -> new IllegalStateException("User not found"));
   }
 
-  private MeResponse mapToMeResponse(User u) {
-    return new MeResponse(
-        u.getId(),
-        u.getUsername(),
-        u.getDisplayName(),
-        u.getEmail(),
-        u.getPhoneNumber(),
-        u.getRole());
-  }
-
   @Transactional
   public AuthResponse loginWithGoogle(String idToken) {
     var payload = googleService.verifyToken(idToken);
-    if (payload == null) {
-      throw new IllegalArgumentException("Invalid Google Token");
-    }
+    if (payload == null) throw new IllegalArgumentException("Invalid Google Token");
 
     String email = payload.getEmail();
-    if (email == null || email.isBlank()) {
-      throw new IllegalArgumentException("Google account must have an email");
+    String googleSub = payload.getSubject();
+
+    if (email == null || googleSub == null) {
+      throw new IllegalArgumentException("Google account data is incomplete");
     }
 
-    String googleSub = payload.getSubject();
     Object nameObj = payload.get("name");
     String name = (nameObj != null) ? nameObj.toString() : "Google User";
 
@@ -151,23 +137,23 @@ public class AuthService {
         userRepository
             .findByGoogleSub(googleSub)
             .or(() -> userRepository.findByEmail(email))
-            .orElse(null);
-
-    if (user == null) {
-      user =
-          new User(
-              email.split("@")[0] + "_" + googleSub.substring(0, 5),
-              name,
-              email,
-              null,
-              "",
-              Role.USER);
-      user.setGoogleSub(googleSub);
-      userRepository.save(user);
-    } else if (user.getGoogleSub() == null) {
-      user.setGoogleSub(googleSub);
-      userRepository.save(user);
-    }
+            .map(
+                existingUser -> {
+                  if (existingUser.getGoogleSub() == null) {
+                    existingUser.setGoogleSub(googleSub);
+                    return userRepository.save(existingUser);
+                  }
+                  return existingUser;
+                })
+            .orElseGet(
+                () -> {
+                  String subSuffix = googleSub.length() > 5 ? googleSub.substring(0, 5) : googleSub;
+                  User newUser =
+                      new User(
+                          email.split("@")[0] + "_" + subSuffix, name, email, null, "", Role.USER);
+                  newUser.setGoogleSub(googleSub);
+                  return userRepository.save(newUser);
+                });
 
     return new AuthResponse(jwtService.generateToken(user));
   }

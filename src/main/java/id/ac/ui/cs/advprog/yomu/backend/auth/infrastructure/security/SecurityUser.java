@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class SecurityUser implements UserDetails {
 
-  private final User user;
+  private final transient User user;
 
   public SecurityUser(User user) {
     this.user = user;

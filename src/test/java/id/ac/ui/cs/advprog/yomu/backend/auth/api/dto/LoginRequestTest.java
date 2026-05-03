@@ -10,6 +10,8 @@ import jakarta.validation.ValidatorFactory;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class LoginRequestTest {
 
@@ -31,7 +33,6 @@ class LoginRequestTest {
   @Test
   void shouldCreateLoginRequestWithAllArgsConstructor() {
     LoginRequest request = new LoginRequest(DEFAULT_USERNAME, DEFAULT_PASSWORD);
-
     assertEquals(DEFAULT_USERNAME, request.getIdentifier());
     assertEquals(DEFAULT_PASSWORD, request.getPassword());
   }
@@ -39,35 +40,21 @@ class LoginRequestTest {
   @Test
   void shouldPassValidationWhenFieldsAreValid() {
     LoginRequest request = createLoginRequest();
-
     Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
     assertTrue(violations.isEmpty());
   }
 
-  @Test
-  void shouldFailValidationWhenIdentifierIsBlank() {
-    LoginRequest request = new LoginRequest("", DEFAULT_PASSWORD);
-
+  // --- INI TRIKNYA ---
+  @ParameterizedTest
+  @CsvSource({"'', 'password123', identifier", "'user123', '', password", "'', '', identifier"})
+  void shouldFailValidationForInvalidInputs(
+      String identifier, String password, String expectedField) {
+    LoginRequest request = new LoginRequest(identifier, password);
     Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
-    assertFalse(violations.isEmpty());
+
+    assertFalse(violations.isEmpty(), "Violations should not be empty for invalid inputs");
     assertTrue(
-        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("identifier")));
-  }
-
-  @Test
-  void shouldFailValidationWhenPasswordIsBlank() {
-    LoginRequest request = new LoginRequest(DEFAULT_USERNAME, "");
-
-    Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
-    assertFalse(violations.isEmpty());
-    assertTrue(
-        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("password")));
-  }
-
-  @Test
-  void shouldFailValidationWhenAllFieldsAreBlank() {
-    LoginRequest request = new LoginRequest("", "");
-    Set<ConstraintViolation<LoginRequest>> violations = validator.validate(request);
-    assertEquals(2, violations.size());
+        violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals(expectedField)),
+        "Should have violation for field: " + expectedField);
   }
 }

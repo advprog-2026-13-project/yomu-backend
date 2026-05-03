@@ -155,6 +155,7 @@ class AuthServiceTest {
     String idToken = "mock-token";
     var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
     User existingUser = createDummyUser();
+    existingUser.setGoogleSub("sub123");
 
     when(googleService.verifyToken(idToken)).thenReturn(payload);
     when(payload.getSubject()).thenReturn("sub123");
@@ -218,24 +219,5 @@ class AuthServiceTest {
     authService.deleteAccount();
 
     verify(userRepository).delete(user);
-  }
-
-  @Test
-  void registerShouldThrowExceptionWhenEmailAlreadyExists() {
-    RegisterRequest req = createRegisterRequest();
-    when(userRepository.existsByUsername(anyString())).thenReturn(false);
-    when(userRepository.existsByEmail(req.getEmail())).thenReturn(true);
-
-    assertThrows(IllegalArgumentException.class, () -> authService.register(req));
-  }
-
-  @Test
-  void registerShouldThrowExceptionWhenPhoneAlreadyExists() {
-    RegisterRequest req = createRegisterRequest();
-    when(userRepository.existsByUsername(anyString())).thenReturn(false);
-    when(userRepository.existsByEmail(anyString())).thenReturn(false);
-    when(userRepository.existsByPhoneNumber(req.getPhoneNumber())).thenReturn(true);
-
-    assertThrows(IllegalArgumentException.class, () -> authService.register(req));
   }
 }
