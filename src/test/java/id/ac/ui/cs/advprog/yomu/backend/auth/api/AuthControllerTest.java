@@ -15,6 +15,7 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.MeResponse;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.RegisterRequest;
 import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -108,5 +109,33 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.accessToken").value("google-jwt-token"));
 
     verify(authService).loginWithGoogle(mockToken);
+  }
+
+  @Test
+  void googleLoginShouldReturnBadRequestWhenTokenIsMissing() throws Exception {
+    Map<String, String> body = Map.of("other", "value");
+
+    mockMvc
+        .perform(
+            post("/api/auth/google")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)))
+        .andExpect(status().isBadRequest());
+
+    verify(authService, never()).loginWithGoogle(any());
+  }
+
+  @Test
+  void googleLoginShouldReturnBadRequestWhenTokenIsBlank() throws Exception {
+    Map<String, String> body = Map.of("token", "   ");
+
+    mockMvc
+        .perform(
+            post("/api/auth/google")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(body)))
+        .andExpect(status().isBadRequest());
+
+    verify(authService, never()).loginWithGoogle(any());
   }
 }

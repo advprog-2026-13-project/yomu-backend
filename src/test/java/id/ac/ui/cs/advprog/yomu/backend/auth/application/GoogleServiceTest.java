@@ -41,4 +41,10 @@ class GoogleServiceTest {
     when(verifier.verify(anyString())).thenThrow(new IOException());
     assertNull(googleService.verifyToken("error-token"));
   }
+
+  @Test
+  void verifyTokenShouldReturnNullWhenTokenIsInvalid() throws Exception {
+    when(verifier.verify(anyString())).thenReturn(null);
+    assertNull(googleService.verifyToken("invalid-token"));
+  }
 }
