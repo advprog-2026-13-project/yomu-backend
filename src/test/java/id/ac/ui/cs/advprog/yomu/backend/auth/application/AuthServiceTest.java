@@ -145,7 +145,8 @@ class AuthServiceTest {
 
   @Test
   void googleLoginShouldFailWhenTokenInvalid() {
-    when(googleService.verifyToken("invalid-token")).thenReturn(null);
+    when(googleService.verifyToken("invalid-token"))
+        .thenReturn(new com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload());
     assertThrows(
         IllegalArgumentException.class, () -> authService.loginWithGoogle("invalid-token"));
   }

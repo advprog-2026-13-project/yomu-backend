@@ -121,7 +121,7 @@ public class AuthService {
   @Transactional
   public AuthResponse loginWithGoogle(String idToken) {
     var payload = googleService.verifyToken(idToken);
-    if (payload == null) throw new IllegalArgumentException("Invalid Google Token");
+    if (payload.isEmpty()) throw new IllegalArgumentException("Invalid Google Token");
 
     String email = payload.getEmail();
     String googleSub = payload.getSubject();
