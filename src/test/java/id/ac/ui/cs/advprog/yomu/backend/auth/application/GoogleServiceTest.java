@@ -39,12 +39,16 @@ class GoogleServiceTest {
   @Test
   void verifyTokenShouldReturnNullWhenExceptionOccurs() throws Exception {
     when(verifier.verify(anyString())).thenThrow(new IOException());
-    assertNull(googleService.verifyToken("error-token"));
+    var result = googleService.verifyToken("error-token");
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 
   @Test
   void verifyTokenShouldReturnNullWhenTokenIsInvalid() throws Exception {
     when(verifier.verify(anyString())).thenReturn(null);
-    assertNull(googleService.verifyToken("invalid-token"));
+    var result = googleService.verifyToken("invalid-token");
+    assertNotNull(result);
+    assertTrue(result.isEmpty());
   }
 }

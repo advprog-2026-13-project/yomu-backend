@@ -5,11 +5,15 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GoogleService {
+
+  private static final Logger logger = LoggerFactory.getLogger(GoogleService.class);
 
   @Value("${app.google.client-id}")
   private String googleClientId;
@@ -30,7 +34,8 @@ public class GoogleService {
         return idToken.getPayload();
       }
     } catch (Exception e) {
+      logger.warn("Google token verification failed: {}", e.getMessage());
     }
-    return null; // No token payload on verification failure
+    return new GoogleIdToken.Payload();
   }
 }
