@@ -1,15 +1,15 @@
-package id.ac.ui.cs.advprog.yomu.backend.service;
+package id.ac.ui.cs.advprog.yomu.backend.reading.application;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import id.ac.ui.cs.advprog.yomu.backend.dto.QuestionDTO;
-import id.ac.ui.cs.advprog.yomu.backend.dto.ReadingDTO;
-import id.ac.ui.cs.advprog.yomu.backend.model.Question;
-import id.ac.ui.cs.advprog.yomu.backend.model.Reading;
-import id.ac.ui.cs.advprog.yomu.backend.repository.QuestionRepository;
-import id.ac.ui.cs.advprog.yomu.backend.repository.ReadingRepository;
+import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuestionDTO;
+import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.ReadingDTO;
+import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Question;
+import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Reading;
+import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.QuestionRepository;
+import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.ReadingRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

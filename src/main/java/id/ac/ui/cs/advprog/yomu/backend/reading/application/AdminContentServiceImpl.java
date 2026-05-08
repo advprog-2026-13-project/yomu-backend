@@ -1,11 +1,11 @@
-package id.ac.ui.cs.advprog.yomu.backend.service;
+package id.ac.ui.cs.advprog.yomu.backend.reading.application;
 
-import id.ac.ui.cs.advprog.yomu.backend.dto.QuestionDTO;
-import id.ac.ui.cs.advprog.yomu.backend.dto.ReadingDTO;
-import id.ac.ui.cs.advprog.yomu.backend.model.Question;
-import id.ac.ui.cs.advprog.yomu.backend.model.Reading;
-import id.ac.ui.cs.advprog.yomu.backend.repository.QuestionRepository;
-import id.ac.ui.cs.advprog.yomu.backend.repository.ReadingRepository;
+import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuestionDTO;
+import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.ReadingDTO;
+import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Question;
+import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Reading;
+import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.QuestionRepository;
+import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.ReadingRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +27,6 @@ public class AdminContentServiceImpl implements AdminContentService {
     Reading reading = new Reading();
     reading.setTitle(readingDto.title());
     reading.setContent(readingDto.content());
-    // Ensure this matches your Reading model fields (author/category)
-    // reading.setAuthor(readingDto.author());
-
     return readingRepository.save(reading);
   }
 
@@ -53,13 +50,9 @@ public class AdminContentServiceImpl implements AdminContentService {
   @Override
   @Transactional
   public Reading updateReading(UUID id, ReadingDTO updatedReadingDto) {
-    // Calling getReadingById here is fine because it's public and correctly proxied
     Reading existingReading = getReadingById(id);
-
     existingReading.setTitle(updatedReadingDto.title());
     existingReading.setContent(updatedReadingDto.content());
-    // existingReading.setAuthor(updatedReadingDto.author());
-
     return readingRepository.save(existingReading);
   }
 
@@ -76,13 +69,11 @@ public class AdminContentServiceImpl implements AdminContentService {
   @Transactional
   public Question addQuestionToReading(UUID readingId, QuestionDTO questionDto) {
     Reading reading = getReadingById(readingId);
-
     Question question = new Question();
     question.setQuestionText(questionDto.questionText());
     question.setOptions(questionDto.options());
     question.setCorrectAnswer(questionDto.correctAnswer());
     question.setReading(reading);
-
     return questionRepository.save(question);
   }
 
@@ -95,11 +86,9 @@ public class AdminContentServiceImpl implements AdminContentService {
             .orElseThrow(
                 () ->
                     new ResponseStatusException(HttpStatus.NOT_FOUND, "Question tidak ditemukan."));
-
     existingQuestion.setQuestionText(updatedQuestionDto.questionText());
     existingQuestion.setOptions(updatedQuestionDto.options());
     existingQuestion.setCorrectAnswer(updatedQuestionDto.correctAnswer());
-
     return questionRepository.save(existingQuestion);
   }
 

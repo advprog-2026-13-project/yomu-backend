@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.yomu.backend.model;
+package id.ac.ui.cs.advprog.yomu.backend.reading.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -19,7 +19,6 @@ public class Question {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "reading_id")
-  // Mencegah infinite recursion saat serialisasi JSON
   @JsonIgnore
   private Reading reading;
 

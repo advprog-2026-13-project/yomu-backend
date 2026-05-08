@@ -1,13 +1,13 @@
-package id.ac.ui.cs.advprog.yomu.backend.service;
+package id.ac.ui.cs.advprog.yomu.backend.reading.application;
 
-import id.ac.ui.cs.advprog.yomu.backend.dto.QuestionResponse;
-import id.ac.ui.cs.advprog.yomu.backend.dto.QuizSubmissionRequest;
-import id.ac.ui.cs.advprog.yomu.backend.model.Question;
-import id.ac.ui.cs.advprog.yomu.backend.model.QuizAttempt;
-import id.ac.ui.cs.advprog.yomu.backend.model.Reading;
-import id.ac.ui.cs.advprog.yomu.backend.repository.QuestionRepository;
-import id.ac.ui.cs.advprog.yomu.backend.repository.QuizAttemptRepository;
-import id.ac.ui.cs.advprog.yomu.backend.repository.ReadingRepository;
+import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuestionResponse;
+import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuizSubmissionRequest;
+import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Question;
+import id.ac.ui.cs.advprog.yomu.backend.reading.domain.QuizAttempt;
+import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Reading;
+import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.QuestionRepository;
+import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.QuizAttemptRepository;
+import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.ReadingRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,8 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<Reading> getAvailableReadingsForStudent(String studentId) {
+  public List<Reading> getAvailableReadingsForStudent(UUID userId) {
+    var studentId = userId.toString();
     return readingRepository.findAll().stream()
         .filter(
             reading ->
@@ -39,8 +40,8 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   @Override
   @Transactional(readOnly = true)
-  public Reading getReadingForStudent(String studentId, UUID readingId) {
-    validateNotAttempted(studentId, readingId);
+  public Reading getReadingForStudent(UUID userId, UUID readingId) {
+    validateNotAttempted(userId, readingId);
     return readingRepository
         .findById(readingId)
         .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
@@ -48,12 +49,10 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<QuestionResponse> getQuestionsForReading(String studentId, UUID readingId) {
-    validateNotAttempted(studentId, readingId);
-
+  public List<QuestionResponse> getQuestionsForReading(UUID userId, UUID readingId) {
+    validateNotAttempted(userId, readingId);
     List<Question> questions = questionRepository.findByReading_ReadingId(readingId);
     List<QuestionResponse> responses = new ArrayList<>();
-
     for (Question q : questions) {
       QuestionResponse dto = new QuestionResponse();
       dto.setQuestionId(q.getQuestionId());
@@ -66,17 +65,13 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   @Override
   @Transactional
-  public QuizAttempt submitQuiz(UUID readingId, QuizSubmissionRequest request) {
-    validateNotAttempted(request.getStudentId(), readingId);
-
+  public QuizAttempt submitQuiz(UUID userId, UUID readingId, QuizSubmissionRequest request) {
+    validateNotAttempted(userId, readingId);
     List<Question> correctQuestions = questionRepository.findByReading_ReadingId(readingId);
-
     if (correctQuestions.isEmpty()) {
       throw new RuntimeException("Kuis ini belum memiliki soal.");
     }
-
     int correctCount = 0;
-
     for (QuizSubmissionRequest.StudentAnswer studentAnswer : request.getAnswers()) {
       for (Question question : correctQuestions) {
         if (question.getQuestionId().equals(studentAnswer.getQuestionId())) {
@@ -87,24 +82,19 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         }
       }
     }
-
     int score = (int) Math.round(((double) correctCount / correctQuestions.size()) * 100);
-
     QuizAttempt attempt = new QuizAttempt();
-    attempt.setStudentId(request.getStudentId());
+    attempt.setStudentId(userId.toString());
     attempt.setReadingId(readingId);
     attempt.setScore(score);
     attempt.setCompletedAt(LocalDateTime.now());
-
     QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
-
     // TODO: Di sini nembak event/notifikasi ke Modul Achievements & Liga
-
     return savedAttempt;
   }
 
-  private void validateNotAttempted(String studentId, UUID readingId) {
-    if (quizAttemptRepository.existsByStudentIdAndReadingId(studentId, readingId)) {
+  private void validateNotAttempted(UUID userId, UUID readingId) {
+    if (quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "...");
     }
   }
