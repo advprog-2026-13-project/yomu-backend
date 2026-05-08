@@ -27,6 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +36,7 @@ class ForumServiceTest {
   @Mock private CommentRepository commentRepository;
   @Mock private ReactionRepository reactionRepository;
   @Mock private UserRepository userRepository;
+  @Mock private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks private ForumService forumService;
 
@@ -146,6 +148,7 @@ class ForumServiceTest {
     assertFalse(view.deleted());
     assertNull(view.parentId());
     verify(commentRepository).save(any(Comment.class));
+    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentCreatedEvent.class));
   }
 
   @Test
@@ -205,6 +208,7 @@ class ForumServiceTest {
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
     verify(commentRepository).save(captor.capture());
     assertEquals(commentId, captor.getValue().getParentId());
+    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentCreatedEvent.class));
   }
 
   @Test
@@ -303,6 +307,7 @@ class ForumServiceTest {
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
     verify(commentRepository).save(captor.capture());
     assertTrue(captor.getValue().isDeleted());
+    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentDeletedEvent.class));
   }
 
   @Test
@@ -316,6 +321,7 @@ class ForumServiceTest {
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
     verify(commentRepository).save(captor.capture());
     assertTrue(captor.getValue().isDeleted());
+    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentDeletedEvent.class));
   }
 
   @Test

@@ -12,6 +12,7 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.ReactionRepository;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,14 +25,17 @@ public class ForumService {
 	private final CommentRepository commentRepository;
 	private final ReactionRepository reactionRepository;
 	private final UserRepository userRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	public ForumService(
 			CommentRepository commentRepository,
 			ReactionRepository reactionRepository,
-			UserRepository userRepository) {
+			UserRepository userRepository,
+			ApplicationEventPublisher eventPublisher) {
 		this.commentRepository = commentRepository;
 		this.reactionRepository = reactionRepository;
 		this.userRepository = userRepository;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Transactional(readOnly = true)
@@ -67,6 +71,8 @@ public class ForumService {
 		comment.setCreatedAt(Instant.now());
 
 		Comment saved = commentRepository.save(comment);
+		eventPublisher.publishEvent(new id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentCreatedEvent(
+				saved.getId(), saved.getAuthorId(), saved.getReadingId()));
 		return toSingleView(saved);
 	}
 
@@ -95,6 +101,8 @@ public class ForumService {
 		reply.setCreatedAt(Instant.now());
 
 		Comment saved = commentRepository.save(reply);
+		eventPublisher.publishEvent(new id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentCreatedEvent(
+				saved.getId(), saved.getAuthorId(), saved.getReadingId()));
 		return toSingleView(saved);
 	}
 
@@ -138,6 +146,8 @@ public class ForumService {
 
 		comment.setDeleted(true);
 		commentRepository.save(comment);
+		eventPublisher.publishEvent(new id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentDeletedEvent(
+				commentId, requesterId, isAdmin));
 	}
 
 	@Transactional
