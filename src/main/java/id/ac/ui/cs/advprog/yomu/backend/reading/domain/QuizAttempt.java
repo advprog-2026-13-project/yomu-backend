@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.yomu.backend.model;
+package id.ac.ui.cs.advprog.yomu.backend.reading.domain;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -17,10 +17,7 @@ public class QuizAttempt {
   private UUID quizAttemptId;
 
   private String studentId;
-
   private UUID readingId;
-
   private Integer score;
-
   private LocalDateTime completedAt;
 }
