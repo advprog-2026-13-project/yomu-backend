@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.yomu.backend.auth.api;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.*;
 import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,5 +24,16 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest req) {
     return ResponseEntity.ok(authService.login(req));
+  }
+
+  @PostMapping("/google")
+  public ResponseEntity<AuthResponse> googleLogin(@RequestBody Map<String, String> request) {
+    String token = request.get("token");
+
+    if (token == null || token.isBlank()) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    return ResponseEntity.ok(authService.loginWithGoogle(token));
   }
 }
