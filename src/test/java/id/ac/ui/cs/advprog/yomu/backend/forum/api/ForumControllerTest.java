@@ -1,0 +1,285 @@
+package id.ac.ui.cs.advprog.yomu.backend.forum.api;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
+import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
+import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.EditCommentRequest;
+import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
+import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
+import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.ForumService;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
+import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
+
+@ExtendWith(MockitoExtension.class)
+class ForumControllerTest {
+
+  @Mock private ForumService forumService;
+
+  @InjectMocks private ForumController forumController;
+
+  private MockMvc mockMvc;
+  private ObjectMapper objectMapper;
+
+  private UUID userId;
+  private UUID readingId;
+  private UUID commentId;
+  private SecurityUser securityUser;
+
+  @BeforeEach
+  void setUp() {
+    mockMvc = MockMvcBuilders.standaloneSetup(forumController).build();
+    objectMapper = new ObjectMapper();
+
+    userId = UUID.randomUUID();
+    readingId = UUID.randomUUID();
+    commentId = UUID.randomUUID();
+
+    User user = new User("bob", "Bob", "bob@mail.com", "0812", "hashed", Role.USER);
+    user.setId(userId);
+    securityUser = new SecurityUser(user);
+  }
+
+  // ─── helper ─────────────────────────────────────────────────────
+
+  private CommentView buildView(UUID id, UUID reading, UUID parent) {
+    return new CommentView(
+        id, reading,
+        new UserSummary(userId, "Bob"),
+        parent, "Test content", false,
+        Instant.now(), null,
+        Map.of(), Collections.emptyList());
+  }
+
+  private UsernamePasswordAuthenticationToken principal() {
+    return new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
+  }
+
+  // ─── GET /api/forums/{readingId}/comments ───────────────────────
+
+  @Test
+  void getCommentsShouldReturnOkWithList() throws Exception {
+    CommentView view = buildView(commentId, readingId, null);
+    when(forumService.getComments(readingId)).thenReturn(List.of(view));
+
+    mockMvc.perform(get("/api/forums/{readingId}/comments", readingId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(commentId.toString()))
+        .andExpect(jsonPath("$[0].content").value("Test content"));
+  }
+
+  @Test
+  void getCommentsShouldReturnEmptyList() throws Exception {
+    when(forumService.getComments(readingId)).thenReturn(Collections.emptyList());
+
+    mockMvc.perform(get("/api/forums/{readingId}/comments", readingId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$").isEmpty());
+  }
+
+  // ─── POST /api/forums/{readingId}/comments ──────────────────────
+
+  @Test
+  void postCommentShouldReturn201WithCreatedView() throws Exception {
+    CommentView view = buildView(commentId, readingId, null);
+    when(forumService.postComment(eq(readingId), eq(userId), eq("Hello!")))
+        .thenReturn(view);
+
+    PostCommentRequest request = new PostCommentRequest("Hello!");
+
+    mockMvc.perform(post("/api/forums/{readingId}/comments", readingId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").value(commentId.toString()));
+  }
+
+  @Test
+  void postCommentShouldReturn400WhenContentIsBlank() throws Exception {
+    PostCommentRequest request = new PostCommentRequest("");
+
+    when(forumService.postComment(any(), any(), any()))
+        .thenThrow(new ResponseStatusException(
+            org.springframework.http.HttpStatus.BAD_REQUEST, "Content must not be empty"));
+
+    // standaloneSetup doesn't run @Valid, so we simulate service throwing
+    mockMvc.perform(post("/api/forums/{readingId}/comments", readingId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  // ─── POST /api/forums/comments/{id}/replies ─────────────────────
+
+  @Test
+  void replyToCommentShouldReturn201WithReplyView() throws Exception {
+    UUID replyId = UUID.randomUUID();
+    CommentView view = buildView(replyId, readingId, commentId);
+    when(forumService.replyToComment(eq(commentId), eq(userId), eq("I agree")))
+        .thenReturn(view);
+
+    ReplyRequest request = new ReplyRequest("I agree");
+
+    mockMvc.perform(post("/api/forums/comments/{id}/replies", commentId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.parentId").value(commentId.toString()));
+  }
+
+  @Test
+  void replyToCommentShouldReturn404WhenParentNotFound() throws Exception {
+    when(forumService.replyToComment(any(), any(), any()))
+        .thenThrow(new ResponseStatusException(
+            org.springframework.http.HttpStatus.NOT_FOUND, "Parent comment not found"));
+
+    ReplyRequest request = new ReplyRequest("reply");
+
+    mockMvc.perform(post("/api/forums/comments/{id}/replies", commentId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNotFound());
+  }
+
+  // ─── PUT /api/forums/comments/{id} ──────────────────────────────
+
+  @Test
+  void editCommentShouldReturn204() throws Exception {
+    doNothing().when(forumService).editComment(eq(commentId), eq(userId), eq("Updated"));
+
+    EditCommentRequest request = new EditCommentRequest("Updated");
+
+    mockMvc.perform(put("/api/forums/comments/{id}", commentId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNoContent());
+
+    verify(forumService).editComment(commentId, userId, "Updated");
+  }
+
+  @Test
+  void editCommentShouldReturn403WhenNotAuthor() throws Exception {
+    doThrow(new ResponseStatusException(
+        org.springframework.http.HttpStatus.FORBIDDEN, "Only the author can edit this comment"))
+        .when(forumService).editComment(any(), any(), any());
+
+    EditCommentRequest request = new EditCommentRequest("Updated");
+
+    mockMvc.perform(put("/api/forums/comments/{id}", commentId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isForbidden());
+  }
+
+  // ─── DELETE /api/forums/comments/{id} ───────────────────────────
+
+  @Test
+  void deleteCommentShouldReturn204() throws Exception {
+    doNothing().when(forumService).deleteComment(eq(commentId), eq(userId), eq(false));
+
+    mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
+            .principal(principal()))
+        .andExpect(status().isNoContent());
+
+    verify(forumService).deleteComment(commentId, userId, false);
+  }
+
+  @Test
+  void deleteCommentShouldReturn403WhenNotAuthor() throws Exception {
+    doThrow(new ResponseStatusException(
+        org.springframework.http.HttpStatus.FORBIDDEN, "You do not have permission"))
+        .when(forumService).deleteComment(any(), any(), anyBoolean());
+
+    mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
+            .principal(principal()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void deleteCommentShouldReturn404WhenNotFound() throws Exception {
+    doThrow(new ResponseStatusException(
+        org.springframework.http.HttpStatus.NOT_FOUND, "Comment not found"))
+        .when(forumService).deleteComment(any(), any(), anyBoolean());
+
+    mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
+            .principal(principal()))
+        .andExpect(status().isNotFound());
+  }
+
+  // ─── POST /api/forums/comments/{id}/reactions ───────────────────
+
+  @Test
+  void reactShouldReturn204() throws Exception {
+    doNothing().when(forumService).toggleReaction(eq(commentId), eq(userId), eq(ReactionType.UPVOTE));
+
+    ReactRequest request = new ReactRequest("UPVOTE");
+
+    mockMvc.perform(post("/api/forums/comments/{id}/reactions", commentId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNoContent());
+
+    verify(forumService).toggleReaction(commentId, userId, ReactionType.UPVOTE);
+  }
+
+  @Test
+  void reactShouldReturn400WhenReactionTypeIsInvalid() throws Exception {
+    ReactRequest request = new ReactRequest("INVALID_TYPE");
+
+    mockMvc.perform(post("/api/forums/comments/{id}/reactions", commentId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+
+    verify(forumService, never()).toggleReaction(any(), any(), any());
+  }
+
+  @Test
+  void reactShouldReturn400WhenCommentIsDeleted() throws Exception {
+    doThrow(new ResponseStatusException(
+        org.springframework.http.HttpStatus.BAD_REQUEST, "Cannot react to a deleted comment"))
+        .when(forumService).toggleReaction(any(), any(), any());
+
+    ReactRequest request = new ReactRequest("UPVOTE");
+
+    mockMvc.perform(post("/api/forums/comments/{id}/reactions", commentId)
+            .principal(principal())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+}
