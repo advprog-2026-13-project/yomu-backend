@@ -1,11 +1,42 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.api;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
@@ -17,24 +48,6 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.application.ForumService;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
-
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class ForumControllerTest {
@@ -53,7 +66,10 @@ class ForumControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(forumController).build();
+    mockMvc =
+      MockMvcBuilders.standaloneSetup(forumController)
+        .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+        .build();
     objectMapper = new ObjectMapper();
 
     userId = UUID.randomUUID();
@@ -63,6 +79,14 @@ class ForumControllerTest {
     User user = new User("bob", "Bob", "bob@mail.com", "0812", "hashed", Role.USER);
     user.setId(userId);
     securityUser = new SecurityUser(user);
+
+    // Make @AuthenticationPrincipal work in standaloneSetup by populating SecurityContextHolder.
+    SecurityContextHolder.getContext().setAuthentication(principal());
+  }
+
+  @AfterEach
+  void tearDown() {
+    SecurityContextHolder.clearContext();
   }
 
   // ─── helper ─────────────────────────────────────────────────────
@@ -125,16 +149,14 @@ class ForumControllerTest {
   void postCommentShouldReturn400WhenContentIsBlank() throws Exception {
     PostCommentRequest request = new PostCommentRequest("");
 
-    when(forumService.postComment(any(), any(), any()))
-        .thenThrow(new ResponseStatusException(
-            org.springframework.http.HttpStatus.BAD_REQUEST, "Content must not be empty"));
-
-    // standaloneSetup doesn't run @Valid, so we simulate service throwing
+    // Validation should fail before calling the service.
     mockMvc.perform(post("/api/forums/{readingId}/comments", readingId)
             .principal(principal())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
+
+    verify(forumService, never()).postComment(any(), any(), any());
   }
 
   // ─── POST /api/forums/comments/{id}/replies ─────────────────────

@@ -192,7 +192,6 @@ class ForumServiceTest {
   void replyToCommentShouldSaveReplyWithParentId() {
     Comment parent = buildComment(commentId, readingId, userId, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(parent));
-    when(userRepository.findById(userId)).thenReturn(Optional.of(dummyUser));
     when(commentRepository.save(any(Comment.class))).thenAnswer(inv -> {
       Comment c = inv.getArgument(0);
       if (c.getId() == null) c.setId(UUID.randomUUID());
@@ -200,6 +199,9 @@ class ForumServiceTest {
     });
 
     UUID replierId = UUID.randomUUID();
+    User replier = new User("replier", "Replier", "replier@mail.com", "0813", "hashed", Role.USER);
+    replier.setId(replierId);
+    when(userRepository.findById(replierId)).thenReturn(Optional.of(replier));
     CommentView view = forumService.replyToComment(commentId, replierId, "I agree!");
 
     assertNotNull(view);
@@ -232,12 +234,12 @@ class ForumServiceTest {
 
   @Test
   void replyToCommentShouldThrowWhenContentIsBlank() {
-    Comment parent = buildComment(commentId, readingId, userId, null, false);
-    when(commentRepository.findById(commentId)).thenReturn(Optional.of(parent));
-
     ResponseStatusException ex = assertThrows(ResponseStatusException.class,
         () -> forumService.replyToComment(commentId, userId, ""));
     assertEquals(400, ex.getStatusCode().value());
+
+    verify(commentRepository, never()).findById(any());
+    verify(commentRepository, never()).save(any());
   }
 
   // ─────────────────────────── editComment ────────────────────────
@@ -287,12 +289,12 @@ class ForumServiceTest {
 
   @Test
   void editCommentShouldThrowWhenNewContentIsBlank() {
-    Comment comment = buildComment(commentId, readingId, userId, null, false);
-    when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-
     ResponseStatusException ex = assertThrows(ResponseStatusException.class,
         () -> forumService.editComment(commentId, userId, ""));
     assertEquals(400, ex.getStatusCode().value());
+
+    verify(commentRepository, never()).findById(any());
+    verify(commentRepository, never()).save(any());
   }
 
   // ─────────────────────────── deleteComment ──────────────────────
