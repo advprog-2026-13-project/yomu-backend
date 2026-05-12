@@ -28,11 +28,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.server.ResponseStatusException;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.CommentRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ForumEventPublisherPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ReactionRepositoryPort;
@@ -165,24 +167,21 @@ class ForumServiceTest {
 
   @Test
   void postCommentShouldThrowWhenContentIsBlank() {
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.postComment(readingId, userId, "   "));
-    assertEquals(400, ex.getStatusCode().value());
   }
 
   @Test
   void postCommentShouldThrowWhenContentIsNull() {
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.postComment(readingId, userId, null));
-    assertEquals(400, ex.getStatusCode().value());
   }
 
   @Test
   void postCommentShouldThrowWhenContentExceedsMaxLength() {
     String tooLong = "a".repeat(2001);
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.postComment(readingId, userId, tooLong));
-    assertEquals(400, ex.getStatusCode().value());
   }
 
   @Test
@@ -229,9 +228,8 @@ class ForumServiceTest {
   void replyToCommentShouldThrowWhenParentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumNotFoundException.class,
         () -> forumService.replyToComment(commentId, userId, "reply"));
-    assertEquals(404, ex.getStatusCode().value());
   }
 
   @Test
@@ -239,16 +237,14 @@ class ForumServiceTest {
     Comment deleted = buildComment(commentId, readingId, userId, null, true);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(deleted));
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.replyToComment(commentId, userId, "reply"));
-    assertEquals(400, ex.getStatusCode().value());
   }
 
   @Test
   void replyToCommentShouldThrowWhenContentIsBlank() {
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.replyToComment(commentId, userId, ""));
-    assertEquals(400, ex.getStatusCode().value());
 
     verify(commentRepository, never()).findById(any());
     verify(commentRepository, never()).save(any());
@@ -273,9 +269,8 @@ class ForumServiceTest {
   void editCommentShouldThrowWhenCommentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumNotFoundException.class,
         () -> forumService.editComment(commentId, userId, "new"));
-    assertEquals(404, ex.getStatusCode().value());
   }
 
   @Test
@@ -283,9 +278,8 @@ class ForumServiceTest {
     Comment deleted = buildComment(commentId, readingId, userId, null, true);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(deleted));
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.editComment(commentId, userId, "new"));
-    assertEquals(400, ex.getStatusCode().value());
   }
 
   @Test
@@ -294,16 +288,14 @@ class ForumServiceTest {
     Comment comment = buildComment(commentId, readingId, anotherUser, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumForbiddenException.class,
         () -> forumService.editComment(commentId, userId, "new"));
-    assertEquals(403, ex.getStatusCode().value());
   }
 
   @Test
   void editCommentShouldThrowWhenNewContentIsBlank() {
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.editComment(commentId, userId, ""));
-    assertEquals(400, ex.getStatusCode().value());
 
     verify(commentRepository, never()).findById(any());
     verify(commentRepository, never()).save(any());
@@ -344,18 +336,16 @@ class ForumServiceTest {
     Comment comment = buildComment(commentId, readingId, anotherUser, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumForbiddenException.class,
         () -> forumService.deleteComment(commentId, userId, false));
-    assertEquals(403, ex.getStatusCode().value());
   }
 
   @Test
   void deleteCommentShouldThrowWhenCommentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumNotFoundException.class,
         () -> forumService.deleteComment(commentId, userId, false));
-    assertEquals(404, ex.getStatusCode().value());
   }
 
   @Test
@@ -440,9 +430,8 @@ class ForumServiceTest {
   void toggleReactionShouldThrowWhenCommentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumNotFoundException.class,
         () -> forumService.toggleReaction(commentId, userId, ReactionType.UPVOTE));
-    assertEquals(404, ex.getStatusCode().value());
   }
 
   @Test
@@ -450,8 +439,7 @@ class ForumServiceTest {
     Comment deleted = buildComment(commentId, readingId, userId, null, true);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(deleted));
 
-    ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+    assertThrows(ForumBadRequestException.class,
         () -> forumService.toggleReaction(commentId, userId, ReactionType.UPVOTE));
-    assertEquals(400, ex.getStatusCode().value());
   }
 }

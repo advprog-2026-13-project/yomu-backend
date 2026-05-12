@@ -11,13 +11,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.CommentRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ForumEventPublisherPort;
@@ -95,12 +96,10 @@ public class ForumService implements ForumUseCase {
 				commentRepository
 						.findById(parentCommentId)
 						.orElseThrow(
-								() ->
-										new ResponseStatusException(
-												HttpStatus.NOT_FOUND, "Parent comment not found"));
+								() -> new ForumNotFoundException("Parent comment not found"));
 
 		if (parent.isDeleted()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot reply to a deleted comment");
+			throw new ForumBadRequestException("Cannot reply to a deleted comment");
 		}
 
 		Comment reply = new Comment();
@@ -124,14 +123,14 @@ public class ForumService implements ForumUseCase {
 		Comment comment =
 				commentRepository
 						.findById(commentId)
-						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+						.orElseThrow(() -> new ForumNotFoundException("Comment not found"));
 
 		if (comment.isDeleted()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot edit a deleted comment");
+			throw new ForumBadRequestException("Cannot edit a deleted comment");
 		}
 
 		if (!Objects.equals(comment.getAuthorId(), requesterId)) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the author can edit this comment");
+			throw new ForumForbiddenException("Only the author can edit this comment");
 		}
 
 		comment.setContent(newContent);
@@ -145,11 +144,10 @@ public class ForumService implements ForumUseCase {
 		Comment comment =
 				commentRepository
 						.findById(commentId)
-						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+						.orElseThrow(() -> new ForumNotFoundException("Comment not found"));
 
 		if (!isAdmin && !Objects.equals(comment.getAuthorId(), requesterId)) {
-			throw new ResponseStatusException(
-					HttpStatus.FORBIDDEN, "You do not have permission to delete this comment");
+			throw new ForumForbiddenException("You do not have permission to delete this comment");
 		}
 
 		if (comment.isDeleted()) {
@@ -167,10 +165,10 @@ public class ForumService implements ForumUseCase {
 		Comment comment =
 				commentRepository
 						.findById(commentId)
-						.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+						.orElseThrow(() -> new ForumNotFoundException("Comment not found"));
 
 		if (comment.isDeleted()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot react to a deleted comment");
+			throw new ForumBadRequestException("Cannot react to a deleted comment");
 		}
 
 		boolean exists = reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, type);
@@ -194,11 +192,10 @@ public class ForumService implements ForumUseCase {
 
 	private void validateContent(String content) {
 		if (content == null || content.isBlank()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content must not be empty");
+			throw new ForumBadRequestException("Content must not be empty");
 		}
 		if (content.length() > MAX_CONTENT_LENGTH) {
-			throw new ResponseStatusException(
-					HttpStatus.BAD_REQUEST, "Content too long (max " + MAX_CONTENT_LENGTH + ")");
+			throw new ForumBadRequestException("Content too long (max " + MAX_CONTENT_LENGTH + ")");
 		}
 	}
 

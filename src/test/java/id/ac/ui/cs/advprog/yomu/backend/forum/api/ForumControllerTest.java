@@ -33,7 +33,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -44,6 +43,9 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.EditCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
@@ -69,6 +71,7 @@ class ForumControllerTest {
   void setUp() {
     mockMvc =
       MockMvcBuilders.standaloneSetup(forumController)
+        .setControllerAdvice(new ForumExceptionHandler())
         .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
         .build();
     objectMapper = new ObjectMapper();
@@ -183,8 +186,7 @@ class ForumControllerTest {
   @Test
   void replyToCommentShouldReturn404WhenParentNotFound() throws Exception {
     when(forumUseCase.replyToComment(any(), any(), any()))
-        .thenThrow(new ResponseStatusException(
-            org.springframework.http.HttpStatus.NOT_FOUND, "Parent comment not found"));
+        .thenThrow(new ForumNotFoundException("Parent comment not found"));
 
     ReplyRequest request = new ReplyRequest("reply");
 
@@ -214,8 +216,7 @@ class ForumControllerTest {
 
   @Test
   void editCommentShouldReturn403WhenNotAuthor() throws Exception {
-    doThrow(new ResponseStatusException(
-        org.springframework.http.HttpStatus.FORBIDDEN, "Only the author can edit this comment"))
+    doThrow(new ForumForbiddenException("Only the author can edit this comment"))
         .when(forumUseCase).editComment(any(), any(), any());
 
     EditCommentRequest request = new EditCommentRequest("Updated");
@@ -242,8 +243,7 @@ class ForumControllerTest {
 
   @Test
   void deleteCommentShouldReturn403WhenNotAuthor() throws Exception {
-    doThrow(new ResponseStatusException(
-        org.springframework.http.HttpStatus.FORBIDDEN, "You do not have permission"))
+    doThrow(new ForumForbiddenException("You do not have permission"))
         .when(forumUseCase).deleteComment(any(), any(), anyBoolean());
 
     mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
@@ -253,8 +253,7 @@ class ForumControllerTest {
 
   @Test
   void deleteCommentShouldReturn404WhenNotFound() throws Exception {
-    doThrow(new ResponseStatusException(
-        org.springframework.http.HttpStatus.NOT_FOUND, "Comment not found"))
+    doThrow(new ForumNotFoundException("Comment not found"))
         .when(forumUseCase).deleteComment(any(), any(), anyBoolean());
 
     mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
@@ -294,8 +293,7 @@ class ForumControllerTest {
 
   @Test
   void reactShouldReturn400WhenCommentIsDeleted() throws Exception {
-    doThrow(new ResponseStatusException(
-        org.springframework.http.HttpStatus.BAD_REQUEST, "Cannot react to a deleted comment"))
+    doThrow(new ForumBadRequestException("Cannot react to a deleted comment"))
         .when(forumUseCase).toggleReaction(any(), any(), any());
 
     ReactRequest request = new ReactRequest("UPVOTE");

@@ -22,11 +22,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.server.ResponseStatusException;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,6 +46,7 @@ class ForumAdminControllerTest {
   void setUp() {
     mockMvc =
       MockMvcBuilders.standaloneSetup(forumAdminController)
+        .setControllerAdvice(new ForumExceptionHandler())
         .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
         .build();
 
@@ -86,8 +87,7 @@ class ForumAdminControllerTest {
 
   @Test
   void moderateDeleteShouldReturn404WhenCommentNotFound() throws Exception {
-    doThrow(new ResponseStatusException(
-        org.springframework.http.HttpStatus.NOT_FOUND, "Comment not found"))
+    doThrow(new ForumNotFoundException("Comment not found"))
         .when(forumUseCase).deleteComment(any(), any(), eq(true));
 
     mockMvc.perform(delete("/api/admin/forums/comments/{id}", commentId)

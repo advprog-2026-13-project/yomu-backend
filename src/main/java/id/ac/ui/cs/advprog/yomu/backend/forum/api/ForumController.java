@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.EditCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
@@ -15,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/forums")
@@ -90,7 +90,7 @@ public class ForumController {
 		try {
 			type = ReactionType.fromWire(request.getType());
 		} catch (IllegalArgumentException e) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+			throw new ForumBadRequestException(e.getMessage());
 		}
 		forumUseCase.toggleReaction(id, userId, type);
 		return ResponseEntity.noContent().build();
