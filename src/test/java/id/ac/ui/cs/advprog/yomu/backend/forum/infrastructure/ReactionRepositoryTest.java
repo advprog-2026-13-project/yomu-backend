@@ -2,8 +2,8 @@ package id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
+import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.persistence.ReactionEntity;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +26,7 @@ class ReactionRepositoryTest {
 
     assertFalse(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, type));
 
-    Reaction r = new Reaction();
+    ReactionEntity r = new ReactionEntity();
     r.setCommentId(commentId);
     r.setUserId(userId);
     r.setType(type);
@@ -42,7 +42,7 @@ class ReactionRepositoryTest {
     UUID userId = UUID.randomUUID();
     ReactionType type = ReactionType.UPVOTE;
 
-    Reaction r = new Reaction();
+    ReactionEntity r = new ReactionEntity();
     r.setCommentId(commentId);
     r.setUserId(userId);
     r.setType(type);
@@ -60,14 +60,14 @@ class ReactionRepositoryTest {
     UUID commentId = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    Reaction r1 = new Reaction();
+    ReactionEntity r1 = new ReactionEntity();
     r1.setCommentId(commentId);
     r1.setUserId(userId);
     r1.setType(ReactionType.UPVOTE);
     r1.setCreatedAt(Instant.now());
     reactionRepository.save(r1);
 
-    Reaction r2 = new Reaction();
+    ReactionEntity r2 = new ReactionEntity();
     r2.setCommentId(commentId);
     r2.setUserId(userId);
     r2.setType(ReactionType.DOWNVOTE);
@@ -88,21 +88,21 @@ class ReactionRepositoryTest {
     UUID cid2 = UUID.randomUUID();
     UUID userId = UUID.randomUUID();
 
-    Reaction r1 = new Reaction();
+    ReactionEntity r1 = new ReactionEntity();
     r1.setCommentId(cid1);
     r1.setUserId(userId);
     r1.setType(ReactionType.EMOJI_LIKE);
     r1.setCreatedAt(Instant.now());
     reactionRepository.save(r1);
 
-    Reaction r2 = new Reaction();
+    ReactionEntity r2 = new ReactionEntity();
     r2.setCommentId(cid2);
     r2.setUserId(userId);
     r2.setType(ReactionType.EMOJI_WOW);
     r2.setCreatedAt(Instant.now());
     reactionRepository.save(r2);
 
-    List<Reaction> results = reactionRepository.findByCommentIdIn(List.of(cid1, cid2));
+    List<ReactionEntity> results = reactionRepository.findByCommentIdIn(List.of(cid1, cid2));
 
     assertEquals(2, results.size());
   }

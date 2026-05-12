@@ -6,9 +6,9 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
+import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.persistence.CommentEntity;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, UUID> {
-	List<Comment> findByReadingIdOrderByCreatedAtAsc(UUID readingId);
+public interface CommentRepository extends JpaRepository<CommentEntity, UUID> {
+	List<CommentEntity> findByReadingIdOrderByCreatedAtAsc(UUID readingId);
 }

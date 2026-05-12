@@ -41,27 +41,6 @@ class ReactionTest {
   }
 
   @Test
-  void onCreateShouldSetCreatedAtWhenNull() {
-    Reaction r = new Reaction();
-    assertNull(r.getCreatedAt());
-
-    r.onCreate();
-
-    assertNotNull(r.getCreatedAt());
-  }
-
-  @Test
-  void onCreateShouldNotOverwriteExistingCreatedAt() {
-    Reaction r = new Reaction();
-    Instant original = Instant.parse("2024-06-01T00:00:00Z");
-    r.setCreatedAt(original);
-
-    r.onCreate();
-
-    assertEquals(original, r.getCreatedAt());
-  }
-
-  @Test
   void allArgsConstructorShouldSetAllFields() {
     UUID id = UUID.randomUUID();
     UUID commentId = UUID.randomUUID();

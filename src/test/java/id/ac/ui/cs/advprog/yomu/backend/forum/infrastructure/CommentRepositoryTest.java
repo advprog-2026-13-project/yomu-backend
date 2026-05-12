@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
+import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.persistence.CommentEntity;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -22,14 +22,14 @@ class CommentRepositoryTest {
     UUID readingId = UUID.randomUUID();
     UUID authorId = UUID.randomUUID();
 
-    Comment c1 = new Comment();
+    CommentEntity c1 = new CommentEntity();
     c1.setReadingId(readingId);
     c1.setAuthorId(authorId);
     c1.setContent("First");
     c1.setCreatedAt(Instant.now().minusSeconds(100));
     commentRepository.save(c1);
 
-    Comment c2 = new Comment();
+    CommentEntity c2 = new CommentEntity();
     c2.setReadingId(readingId);
     c2.setAuthorId(authorId);
     c2.setContent("Second");
@@ -37,13 +37,13 @@ class CommentRepositoryTest {
     commentRepository.save(c2);
 
     // Another readingId
-    Comment c3 = new Comment();
+    CommentEntity c3 = new CommentEntity();
     c3.setReadingId(UUID.randomUUID());
     c3.setAuthorId(authorId);
     c3.setContent("Other");
     commentRepository.save(c3);
 
-    List<Comment> results = commentRepository.findByReadingIdOrderByCreatedAtAsc(readingId);
+    List<CommentEntity> results = commentRepository.findByReadingIdOrderByCreatedAtAsc(readingId);
 
     assertEquals(2, results.size());
     assertEquals("First", results.get(0).getContent());
@@ -52,13 +52,13 @@ class CommentRepositoryTest {
 
   @Test
   void saveShouldWorkWithUUIDGeneration() {
-    Comment c = new Comment();
+    CommentEntity c = new CommentEntity();
     c.setReadingId(UUID.randomUUID());
     c.setAuthorId(UUID.randomUUID());
     c.setContent("Test");
     c.setCreatedAt(Instant.now());
 
-    Comment saved = commentRepository.save(c);
+    CommentEntity saved = commentRepository.save(c);
 
     assertNotNull(saved.getId());
     assertEquals("Test", saved.getContent());

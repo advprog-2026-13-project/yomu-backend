@@ -56,28 +56,6 @@ class CommentTest {
   }
 
   @Test
-  void onCreateShouldSetCreatedAtWhenNull() {
-    Comment c = new Comment();
-    assertNull(c.getCreatedAt());
-
-    // Simulate @PrePersist
-    c.onCreate();
-
-    assertNotNull(c.getCreatedAt());
-  }
-
-  @Test
-  void onCreateShouldNotOverwriteExistingCreatedAt() {
-    Comment c = new Comment();
-    Instant original = Instant.parse("2024-01-01T00:00:00Z");
-    c.setCreatedAt(original);
-
-    c.onCreate();
-
-    assertEquals(original, c.getCreatedAt());
-  }
-
-  @Test
   void allArgsConstructorShouldSetAllFields() {
     UUID id = UUID.randomUUID();
     UUID readingId = UUID.randomUUID();

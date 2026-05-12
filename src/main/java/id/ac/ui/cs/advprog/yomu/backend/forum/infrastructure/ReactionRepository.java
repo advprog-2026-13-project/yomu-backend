@@ -7,11 +7,11 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
+import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.persistence.ReactionEntity;
 
 @Repository
-public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
+public interface ReactionRepository extends JpaRepository<ReactionEntity, UUID> {
   boolean existsByCommentIdAndUserIdAndType(UUID commentId, UUID userId, ReactionType type);
 
   void deleteByCommentIdAndUserIdAndType(UUID commentId, UUID userId, ReactionType type);
@@ -19,5 +19,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
   void deleteByCommentIdAndUserIdAndTypeIn(
       UUID commentId, UUID userId, Collection<ReactionType> types);
 
-  List<Reaction> findByCommentIdIn(Collection<UUID> commentIds);
+  List<ReactionEntity> findByCommentIdIn(Collection<UUID> commentIds);
 }
