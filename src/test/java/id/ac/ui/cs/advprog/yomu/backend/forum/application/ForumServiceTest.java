@@ -1,42 +1,53 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.application;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
-import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
-import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.CommentRepository;
-import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.ReactionRepository;
-
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.server.ResponseStatusException;
+
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.CommentRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ForumEventPublisherPort;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ReactionRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.UserPort;
+import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
+import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
+import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 
 @ExtendWith(MockitoExtension.class)
 class ForumServiceTest {
 
-  @Mock private CommentRepository commentRepository;
-  @Mock private ReactionRepository reactionRepository;
-  @Mock private UserRepository userRepository;
-  @Mock private ApplicationEventPublisher eventPublisher;
+  @Mock private CommentRepositoryPort commentRepository;
+  @Mock private ReactionRepositoryPort reactionRepository;
+  @Mock private UserPort userRepository;
+  @Mock private ForumEventPublisherPort eventPublisher;
 
   @InjectMocks private ForumService forumService;
 
@@ -46,6 +57,7 @@ class ForumServiceTest {
   private User dummyUser;
 
   @BeforeEach
+  @SuppressWarnings("unused")
   void setUp() {
     readingId = UUID.randomUUID();
     userId = UUID.randomUUID();
@@ -148,7 +160,7 @@ class ForumServiceTest {
     assertFalse(view.deleted());
     assertNull(view.parentId());
     verify(commentRepository).save(any(Comment.class));
-    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentCreatedEvent.class));
+    verify(eventPublisher).publishCommentCreated(any(), any(), any());
   }
 
   @Test
@@ -210,7 +222,7 @@ class ForumServiceTest {
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
     verify(commentRepository).save(captor.capture());
     assertEquals(commentId, captor.getValue().getParentId());
-    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentCreatedEvent.class));
+    verify(eventPublisher).publishCommentCreated(any(), any(), any());
   }
 
   @Test
@@ -309,7 +321,7 @@ class ForumServiceTest {
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
     verify(commentRepository).save(captor.capture());
     assertTrue(captor.getValue().isDeleted());
-    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentDeletedEvent.class));
+    verify(eventPublisher).publishCommentDeleted(any(), any(), anyBoolean());
   }
 
   @Test
@@ -323,7 +335,7 @@ class ForumServiceTest {
     ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
     verify(commentRepository).save(captor.capture());
     assertTrue(captor.getValue().isDeleted());
-    verify(eventPublisher).publishEvent(any(id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentDeletedEvent.class));
+    verify(eventPublisher).publishCommentDeleted(any(), any(), anyBoolean());
   }
 
   @Test
