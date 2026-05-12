@@ -44,7 +44,7 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.EditCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.ForumService;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
@@ -52,7 +52,7 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 @ExtendWith(MockitoExtension.class)
 class ForumControllerTest {
 
-  @Mock private ForumService forumService;
+  @Mock private ForumUseCase forumUseCase;
 
   @InjectMocks private ForumController forumController;
 
@@ -65,6 +65,7 @@ class ForumControllerTest {
   private SecurityUser securityUser;
 
   @BeforeEach
+  @SuppressWarnings("unused")
   void setUp() {
     mockMvc =
       MockMvcBuilders.standaloneSetup(forumController)
@@ -85,6 +86,7 @@ class ForumControllerTest {
   }
 
   @AfterEach
+  @SuppressWarnings("unused")
   void tearDown() {
     SecurityContextHolder.clearContext();
   }
@@ -109,7 +111,7 @@ class ForumControllerTest {
   @Test
   void getCommentsShouldReturnOkWithList() throws Exception {
     CommentView view = buildView(commentId, readingId, null);
-    when(forumService.getComments(readingId)).thenReturn(List.of(view));
+    when(forumUseCase.getComments(readingId)).thenReturn(List.of(view));
 
     mockMvc.perform(get("/api/forums/{readingId}/comments", readingId))
         .andExpect(status().isOk())
@@ -119,7 +121,7 @@ class ForumControllerTest {
 
   @Test
   void getCommentsShouldReturnEmptyList() throws Exception {
-    when(forumService.getComments(readingId)).thenReturn(Collections.emptyList());
+    when(forumUseCase.getComments(readingId)).thenReturn(Collections.emptyList());
 
     mockMvc.perform(get("/api/forums/{readingId}/comments", readingId))
         .andExpect(status().isOk())
@@ -132,7 +134,7 @@ class ForumControllerTest {
   @Test
   void postCommentShouldReturn201WithCreatedView() throws Exception {
     CommentView view = buildView(commentId, readingId, null);
-    when(forumService.postComment(eq(readingId), eq(userId), eq("Hello!")))
+    when(forumUseCase.postComment(eq(readingId), eq(userId), eq("Hello!")))
         .thenReturn(view);
 
     PostCommentRequest request = new PostCommentRequest("Hello!");
@@ -156,7 +158,7 @@ class ForumControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
 
-    verify(forumService, never()).postComment(any(), any(), any());
+    verify(forumUseCase, never()).postComment(any(), any(), any());
   }
 
   // ─── POST /api/forums/comments/{id}/replies ─────────────────────
@@ -165,7 +167,7 @@ class ForumControllerTest {
   void replyToCommentShouldReturn201WithReplyView() throws Exception {
     UUID replyId = UUID.randomUUID();
     CommentView view = buildView(replyId, readingId, commentId);
-    when(forumService.replyToComment(eq(commentId), eq(userId), eq("I agree")))
+    when(forumUseCase.replyToComment(eq(commentId), eq(userId), eq("I agree")))
         .thenReturn(view);
 
     ReplyRequest request = new ReplyRequest("I agree");
@@ -180,7 +182,7 @@ class ForumControllerTest {
 
   @Test
   void replyToCommentShouldReturn404WhenParentNotFound() throws Exception {
-    when(forumService.replyToComment(any(), any(), any()))
+    when(forumUseCase.replyToComment(any(), any(), any()))
         .thenThrow(new ResponseStatusException(
             org.springframework.http.HttpStatus.NOT_FOUND, "Parent comment not found"));
 
@@ -197,7 +199,7 @@ class ForumControllerTest {
 
   @Test
   void editCommentShouldReturn204() throws Exception {
-    doNothing().when(forumService).editComment(eq(commentId), eq(userId), eq("Updated"));
+    doNothing().when(forumUseCase).editComment(eq(commentId), eq(userId), eq("Updated"));
 
     EditCommentRequest request = new EditCommentRequest("Updated");
 
@@ -207,14 +209,14 @@ class ForumControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNoContent());
 
-    verify(forumService).editComment(commentId, userId, "Updated");
+    verify(forumUseCase).editComment(commentId, userId, "Updated");
   }
 
   @Test
   void editCommentShouldReturn403WhenNotAuthor() throws Exception {
     doThrow(new ResponseStatusException(
         org.springframework.http.HttpStatus.FORBIDDEN, "Only the author can edit this comment"))
-        .when(forumService).editComment(any(), any(), any());
+        .when(forumUseCase).editComment(any(), any(), any());
 
     EditCommentRequest request = new EditCommentRequest("Updated");
 
@@ -229,20 +231,20 @@ class ForumControllerTest {
 
   @Test
   void deleteCommentShouldReturn204() throws Exception {
-    doNothing().when(forumService).deleteComment(eq(commentId), eq(userId), eq(false));
+    doNothing().when(forumUseCase).deleteComment(eq(commentId), eq(userId), eq(false));
 
     mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
             .principal(principal()))
         .andExpect(status().isNoContent());
 
-    verify(forumService).deleteComment(commentId, userId, false);
+    verify(forumUseCase).deleteComment(commentId, userId, false);
   }
 
   @Test
   void deleteCommentShouldReturn403WhenNotAuthor() throws Exception {
     doThrow(new ResponseStatusException(
         org.springframework.http.HttpStatus.FORBIDDEN, "You do not have permission"))
-        .when(forumService).deleteComment(any(), any(), anyBoolean());
+        .when(forumUseCase).deleteComment(any(), any(), anyBoolean());
 
     mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
             .principal(principal()))
@@ -253,7 +255,7 @@ class ForumControllerTest {
   void deleteCommentShouldReturn404WhenNotFound() throws Exception {
     doThrow(new ResponseStatusException(
         org.springframework.http.HttpStatus.NOT_FOUND, "Comment not found"))
-        .when(forumService).deleteComment(any(), any(), anyBoolean());
+        .when(forumUseCase).deleteComment(any(), any(), anyBoolean());
 
     mockMvc.perform(delete("/api/forums/comments/{id}", commentId)
             .principal(principal()))
@@ -264,7 +266,7 @@ class ForumControllerTest {
 
   @Test
   void reactShouldReturn204() throws Exception {
-    doNothing().when(forumService).toggleReaction(eq(commentId), eq(userId), eq(ReactionType.UPVOTE));
+    doNothing().when(forumUseCase).toggleReaction(eq(commentId), eq(userId), eq(ReactionType.UPVOTE));
 
     ReactRequest request = new ReactRequest("UPVOTE");
 
@@ -274,7 +276,7 @@ class ForumControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNoContent());
 
-    verify(forumService).toggleReaction(commentId, userId, ReactionType.UPVOTE);
+    verify(forumUseCase).toggleReaction(commentId, userId, ReactionType.UPVOTE);
   }
 
   @Test
@@ -287,14 +289,14 @@ class ForumControllerTest {
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
 
-    verify(forumService, never()).toggleReaction(any(), any(), any());
+    verify(forumUseCase, never()).toggleReaction(any(), any(), any());
   }
 
   @Test
   void reactShouldReturn400WhenCommentIsDeleted() throws Exception {
     doThrow(new ResponseStatusException(
         org.springframework.http.HttpStatus.BAD_REQUEST, "Cannot react to a deleted comment"))
-        .when(forumService).toggleReaction(any(), any(), any());
+        .when(forumUseCase).toggleReaction(any(), any(), any());
 
     ReactRequest request = new ReactRequest("UPVOTE");
 

@@ -5,7 +5,7 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.EditCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.ForumService;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 import jakarta.validation.Valid;
@@ -21,16 +21,16 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/forums")
 public class ForumController {
 
-	private final ForumService forumService;
+	private final ForumUseCase forumUseCase;
 
-	public ForumController(ForumService forumService) {
-		this.forumService = forumService;
+	public ForumController(ForumUseCase forumUseCase) {
+		this.forumUseCase = forumUseCase;
 	}
 
 	// GET /api/forums/{readingId}/comments
 	@GetMapping("/{readingId}/comments")
 	public ResponseEntity<List<CommentView>> getComments(@PathVariable UUID readingId) {
-		return ResponseEntity.ok(forumService.getComments(readingId));
+		return ResponseEntity.ok(forumUseCase.getComments(readingId));
 	}
 
 	// POST /api/forums/{readingId}/comments
@@ -41,7 +41,7 @@ public class ForumController {
 			@AuthenticationPrincipal SecurityUser principal) {
 
 		UUID userId = principal.getUser().getId();
-		CommentView created = forumService.postComment(readingId, userId, request.getContent());
+		CommentView created = forumUseCase.postComment(readingId, userId, request.getContent());
 		return ResponseEntity.status(HttpStatus.CREATED).body(created);
 	}
 
@@ -53,7 +53,7 @@ public class ForumController {
 			@AuthenticationPrincipal SecurityUser principal) {
 
 		UUID userId = principal.getUser().getId();
-		CommentView created = forumService.replyToComment(id, userId, request.getContent());
+		CommentView created = forumUseCase.replyToComment(id, userId, request.getContent());
 		return ResponseEntity.status(HttpStatus.CREATED).body(created);
 	}
 
@@ -65,7 +65,7 @@ public class ForumController {
 			@AuthenticationPrincipal SecurityUser principal) {
 
 		UUID userId = principal.getUser().getId();
-		forumService.editComment(id, userId, request.getNewContent());
+		forumUseCase.editComment(id, userId, request.getNewContent());
 		return ResponseEntity.noContent().build();
 	}
 
@@ -74,7 +74,7 @@ public class ForumController {
 	public ResponseEntity<Void> deleteComment(
 			@PathVariable UUID id, @AuthenticationPrincipal SecurityUser principal) {
 		UUID userId = principal.getUser().getId();
-		forumService.deleteComment(id, userId, false);
+		forumUseCase.deleteComment(id, userId, false);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -92,7 +92,7 @@ public class ForumController {
 		} catch (IllegalArgumentException e) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
 		}
-		forumService.toggleReaction(id, userId, type);
+		forumUseCase.toggleReaction(id, userId, type);
 		return ResponseEntity.noContent().build();
 	}
 }

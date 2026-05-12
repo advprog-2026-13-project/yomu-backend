@@ -11,17 +11,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.ForumService;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 
 @RestController
 @RequestMapping("/api/admin/forums")
 @PreAuthorize("hasRole('ADMIN')")
 public class ForumAdminController {
 
-  private final ForumService forumService;
+  private final ForumUseCase forumUseCase;
 
-  public ForumAdminController(ForumService forumService) {
-    this.forumService = forumService;
+  public ForumAdminController(ForumUseCase forumUseCase) {
+    this.forumUseCase = forumUseCase;
   }
 
   // DELETE /api/admin/forums/comments/{id}
@@ -29,7 +29,7 @@ public class ForumAdminController {
   public ResponseEntity<Void> moderateDelete(
       @PathVariable UUID id, @AuthenticationPrincipal SecurityUser principal) {
     UUID adminId = principal.getUser().getId();
-    forumService.deleteComment(id, adminId, true);
+    forumUseCase.deleteComment(id, adminId, true);
     return ResponseEntity.noContent().build();
   }
 }

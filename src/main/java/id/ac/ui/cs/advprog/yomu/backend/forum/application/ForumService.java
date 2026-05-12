@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.CommentRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ForumEventPublisherPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ReactionRepositoryPort;
@@ -27,7 +28,7 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 
 @Service
-public class ForumService {
+public class ForumService implements ForumUseCase {
 	private static final int MAX_CONTENT_LENGTH = 2000;
 
 	private final CommentRepositoryPort commentRepository;
@@ -47,6 +48,7 @@ public class ForumService {
 	}
 
 	@Transactional(readOnly = true)
+	@Override
 	public List<CommentView> getComments(UUID readingId) {
 		List<Comment> comments = commentRepository.findByReadingIdOrderByCreatedAtAsc(readingId);
 		if (comments.isEmpty()) {
@@ -67,6 +69,7 @@ public class ForumService {
 	}
 
 	@Transactional
+	@Override
 	public CommentView postComment(UUID readingId, UUID userId, String content) {
 		validateContent(content);
 
@@ -84,6 +87,7 @@ public class ForumService {
 	}
 
 	@Transactional
+	@Override
 	public CommentView replyToComment(UUID parentCommentId, UUID userId, String content) {
 		validateContent(content);
 
@@ -113,6 +117,7 @@ public class ForumService {
 	}
 
 	@Transactional
+	@Override
 	public void editComment(UUID commentId, UUID requesterId, String newContent) {
 		validateContent(newContent);
 
@@ -135,6 +140,7 @@ public class ForumService {
 	}
 
 	@Transactional
+	@Override
 	public void deleteComment(UUID commentId, UUID requesterId, boolean isAdmin) {
 		Comment comment =
 				commentRepository
@@ -156,6 +162,7 @@ public class ForumService {
 	}
 
 	@Transactional
+	@Override
 	public void toggleReaction(UUID commentId, UUID userId, ReactionType type) {
 		Comment comment =
 				commentRepository

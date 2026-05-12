@@ -27,12 +27,12 @@ import org.springframework.web.server.ResponseStatusException;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.ForumService;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 
 @ExtendWith(MockitoExtension.class)
 class ForumAdminControllerTest {
 
-  @Mock private ForumService forumService;
+  @Mock private ForumUseCase forumUseCase;
 
   @InjectMocks private ForumAdminController forumAdminController;
 
@@ -42,6 +42,7 @@ class ForumAdminControllerTest {
   private SecurityUser adminSecurityUser;
 
   @BeforeEach
+  @SuppressWarnings("unused")
   void setUp() {
     mockMvc =
       MockMvcBuilders.standaloneSetup(forumAdminController)
@@ -60,6 +61,7 @@ class ForumAdminControllerTest {
   }
 
   @AfterEach
+  @SuppressWarnings("unused")
   void tearDown() {
     SecurityContextHolder.clearContext();
   }
@@ -73,20 +75,20 @@ class ForumAdminControllerTest {
 
   @Test
   void moderateDeleteShouldReturn204() throws Exception {
-    doNothing().when(forumService).deleteComment(eq(commentId), eq(adminId), eq(true));
+    doNothing().when(forumUseCase).deleteComment(eq(commentId), eq(adminId), eq(true));
 
     mockMvc.perform(delete("/api/admin/forums/comments/{id}", commentId)
             .principal(adminPrincipal()))
         .andExpect(status().isNoContent());
 
-    verify(forumService).deleteComment(commentId, adminId, true);
+    verify(forumUseCase).deleteComment(commentId, adminId, true);
   }
 
   @Test
   void moderateDeleteShouldReturn404WhenCommentNotFound() throws Exception {
     doThrow(new ResponseStatusException(
         org.springframework.http.HttpStatus.NOT_FOUND, "Comment not found"))
-        .when(forumService).deleteComment(any(), any(), eq(true));
+        .when(forumUseCase).deleteComment(any(), any(), eq(true));
 
     mockMvc.perform(delete("/api/admin/forums/comments/{id}", commentId)
             .principal(adminPrincipal()))
@@ -95,12 +97,12 @@ class ForumAdminControllerTest {
 
   @Test
   void moderateDeleteShouldPassIsAdminTrueToService() throws Exception {
-    doNothing().when(forumService).deleteComment(any(), any(), anyBoolean());
+    doNothing().when(forumUseCase).deleteComment(any(), any(), anyBoolean());
 
     mockMvc.perform(delete("/api/admin/forums/comments/{id}", commentId)
             .principal(adminPrincipal()))
         .andExpect(status().isNoContent());
 
-    verify(forumService).deleteComment(eq(commentId), eq(adminId), eq(true));
+    verify(forumUseCase).deleteComment(eq(commentId), eq(adminId), eq(true));
   }
 }
