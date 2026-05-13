@@ -23,11 +23,11 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ForumEventPub
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ReactionRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.UserPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
+import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ForumConstraints;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 
 public class ForumService implements ForumUseCase {
-	private static final int MAX_CONTENT_LENGTH = 2000;
 
 	private final CommentRepositoryPort commentRepository;
 	private final ReactionRepositoryPort reactionRepository;
@@ -185,8 +185,9 @@ public class ForumService implements ForumUseCase {
 		if (content == null || content.isBlank()) {
 			throw new ForumBadRequestException("Content must not be empty");
 		}
-		if (content.length() > MAX_CONTENT_LENGTH) {
-			throw new ForumBadRequestException("Content too long (max " + MAX_CONTENT_LENGTH + ")");
+		if (content.length() > ForumConstraints.MAX_CONTENT_LENGTH) {
+			throw new ForumBadRequestException(
+					"Content too long (max " + ForumConstraints.MAX_CONTENT_LENGTH + ")");
 		}
 	}
 

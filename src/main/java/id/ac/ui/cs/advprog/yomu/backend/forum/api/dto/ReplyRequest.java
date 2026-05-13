@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.api.dto;
 
+import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ForumConstraints;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,6 @@ import lombok.Setter;
 public class ReplyRequest {
 
   @NotBlank
-  @Size(max = 2000)
+  @Size(max = ForumConstraints.MAX_CONTENT_LENGTH)
   private String content;
 }
