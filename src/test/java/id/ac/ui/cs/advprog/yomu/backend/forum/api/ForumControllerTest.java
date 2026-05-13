@@ -267,7 +267,7 @@ class ForumControllerTest {
   void reactShouldReturn204() throws Exception {
     doNothing().when(forumUseCase).toggleReaction(eq(commentId), eq(userId), eq(ReactionType.UPVOTE));
 
-    ReactRequest request = new ReactRequest("UPVOTE");
+    ReactRequest request = new ReactRequest(ReactionType.UPVOTE);
 
     mockMvc.perform(post("/api/forums/comments/{id}/reactions", commentId)
             .principal(principal())
@@ -280,12 +280,12 @@ class ForumControllerTest {
 
   @Test
   void reactShouldReturn400WhenReactionTypeIsInvalid() throws Exception {
-    ReactRequest request = new ReactRequest("INVALID_TYPE");
+    String requestJson = objectMapper.writeValueAsString(Map.of("type", "INVALID_TYPE"));
 
     mockMvc.perform(post("/api/forums/comments/{id}/reactions", commentId)
             .principal(principal())
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+            .content(requestJson))
         .andExpect(status().isBadRequest());
 
     verify(forumUseCase, never()).toggleReaction(any(), any(), any());
@@ -296,7 +296,7 @@ class ForumControllerTest {
     doThrow(new ForumBadRequestException("Cannot react to a deleted comment"))
         .when(forumUseCase).toggleReaction(any(), any(), any());
 
-    ReactRequest request = new ReactRequest("UPVOTE");
+    ReactRequest request = new ReactRequest(ReactionType.UPVOTE);
 
     mockMvc.perform(post("/api/forums/comments/{id}/reactions", commentId)
             .principal(principal())

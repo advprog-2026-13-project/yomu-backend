@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.api.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -8,5 +9,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReactRequest {
-  @NotBlank private String type;
+  @NotNull private ReactionType type;
 }

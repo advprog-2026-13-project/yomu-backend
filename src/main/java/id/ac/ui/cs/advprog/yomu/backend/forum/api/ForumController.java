@@ -5,10 +5,8 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.EditCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
-import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -29,14 +27,15 @@ public class ForumController {
 
 	// GET /api/forums/{readingId}/comments
 	@GetMapping("/{readingId}/comments")
-	public ResponseEntity<List<CommentView>> getComments(@PathVariable UUID readingId) {
+	public ResponseEntity<List<CommentView>> getComments(
+			@PathVariable("readingId") UUID readingId) {
 		return ResponseEntity.ok(forumUseCase.getComments(readingId));
 	}
 
 	// POST /api/forums/{readingId}/comments
 	@PostMapping("/{readingId}/comments")
 	public ResponseEntity<CommentView> postComment(
-			@PathVariable UUID readingId,
+			@PathVariable("readingId") UUID readingId,
 			@Valid @RequestBody PostCommentRequest request,
 			@AuthenticationPrincipal SecurityUser principal) {
 
@@ -48,7 +47,7 @@ public class ForumController {
 	// POST /api/forums/comments/{id}/replies
 	@PostMapping("/comments/{id}/replies")
 	public ResponseEntity<CommentView> replyToComment(
-			@PathVariable UUID id,
+			@PathVariable("id") UUID id,
 			@Valid @RequestBody ReplyRequest request,
 			@AuthenticationPrincipal SecurityUser principal) {
 
@@ -60,7 +59,7 @@ public class ForumController {
 	// PUT /api/forums/comments/{id}
 	@PutMapping("/comments/{id}")
 	public ResponseEntity<Void> editComment(
-			@PathVariable UUID id,
+			@PathVariable("id") UUID id,
 			@Valid @RequestBody EditCommentRequest request,
 			@AuthenticationPrincipal SecurityUser principal) {
 
@@ -72,7 +71,7 @@ public class ForumController {
 	// DELETE /api/forums/comments/{id}
 	@DeleteMapping("/comments/{id}")
 	public ResponseEntity<Void> deleteComment(
-			@PathVariable UUID id, @AuthenticationPrincipal SecurityUser principal) {
+			@PathVariable("id") UUID id, @AuthenticationPrincipal SecurityUser principal) {
 		UUID userId = principal.getUser().getId();
 		forumUseCase.deleteComment(id, userId, false);
 		return ResponseEntity.noContent().build();
@@ -81,18 +80,12 @@ public class ForumController {
 	// POST /api/forums/comments/{id}/reactions
 	@PostMapping("/comments/{id}/reactions")
 	public ResponseEntity<Void> react(
-			@PathVariable UUID id,
+			@PathVariable("id") UUID id,
 			@Valid @RequestBody ReactRequest request,
 			@AuthenticationPrincipal SecurityUser principal) {
 
 		UUID userId = principal.getUser().getId();
-		ReactionType type;
-		try {
-			type = ReactionType.fromWire(request.getType());
-		} catch (IllegalArgumentException e) {
-			throw new ForumBadRequestException(e.getMessage());
-		}
-		forumUseCase.toggleReaction(id, userId, type);
+		forumUseCase.toggleReaction(id, userId, request.getType());
 		return ResponseEntity.noContent().build();
 	}
 }

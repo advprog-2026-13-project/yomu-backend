@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Locale;
 
 public enum ReactionType {
@@ -15,6 +16,7 @@ public enum ReactionType {
     return this == UPVOTE || this == DOWNVOTE;
   }
 
+  @JsonCreator
   public static ReactionType fromWire(String value) {
     if (value == null || value.isBlank()) {
       throw new IllegalArgumentException("Reaction type must not be empty");

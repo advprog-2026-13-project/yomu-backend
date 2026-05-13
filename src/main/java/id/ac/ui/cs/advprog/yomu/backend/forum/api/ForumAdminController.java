@@ -27,7 +27,7 @@ public class ForumAdminController {
   // DELETE /api/admin/forums/comments/{id}
   @DeleteMapping("/comments/{id}")
   public ResponseEntity<Void> moderateDelete(
-      @PathVariable UUID id, @AuthenticationPrincipal SecurityUser principal) {
+      @PathVariable("id") UUID id, @AuthenticationPrincipal SecurityUser principal) {
     UUID adminId = principal.getUser().getId();
     forumUseCase.deleteComment(id, adminId, true);
     return ResponseEntity.noContent().build();

@@ -54,7 +54,7 @@ class ForumDtoTest {
     EditCommentRequest edit = new EditCommentRequest("Edit");
     assertEquals("Edit", edit.getNewContent());
 
-    ReactRequest react = new ReactRequest("UPVOTE");
-    assertEquals("UPVOTE", react.getType());
+    ReactRequest react = new ReactRequest(ReactionType.UPVOTE);
+    assertEquals(ReactionType.UPVOTE, react.getType());
   }
 }
