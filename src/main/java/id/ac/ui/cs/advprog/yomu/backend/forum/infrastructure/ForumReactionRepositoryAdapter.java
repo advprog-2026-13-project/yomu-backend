@@ -3,7 +3,7 @@ package id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ReactionRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
-import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.persistence.ReactionEntity;
+import id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure.mapper.ReactionMapper;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -37,33 +37,12 @@ public class ForumReactionRepositoryAdapter implements ReactionRepositoryPort {
   @Override
   public List<Reaction> findByCommentIdIn(Collection<UUID> commentIds) {
     return reactionRepository.findByCommentIdIn(commentIds).stream()
-        .map(this::toDomain)
+      .map(ReactionMapper::toDomain)
         .toList();
   }
 
   @Override
   public Reaction save(Reaction reaction) {
-    ReactionEntity saved = reactionRepository.save(toEntity(reaction));
-    return toDomain(saved);
-  }
-
-  private Reaction toDomain(ReactionEntity entity) {
-    Reaction reaction = new Reaction();
-    reaction.setId(entity.getId());
-    reaction.setCommentId(entity.getCommentId());
-    reaction.setUserId(entity.getUserId());
-    reaction.setType(entity.getType());
-    reaction.setCreatedAt(entity.getCreatedAt());
-    return reaction;
-  }
-
-  private ReactionEntity toEntity(Reaction reaction) {
-    ReactionEntity entity = new ReactionEntity();
-    entity.setId(reaction.getId());
-    entity.setCommentId(reaction.getCommentId());
-    entity.setUserId(reaction.getUserId());
-    entity.setType(reaction.getType());
-    entity.setCreatedAt(reaction.getCreatedAt());
-    return entity;
+    return ReactionMapper.toDomain(reactionRepository.save(ReactionMapper.toEntity(reaction)));
   }
 }
