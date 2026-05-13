@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 
 public interface UserPort {
-  Optional<User> findById(UUID id);
+  Optional<UserSummary> findById(UUID id);
 
-  List<User> findAllById(Collection<UUID> ids);
+  List<UserSummary> findAllById(Collection<UUID> ids);
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.UserPort;
 
 @Component
@@ -21,12 +22,16 @@ public class ForumUserAdapter implements UserPort {
   }
 
   @Override
-  public Optional<User> findById(UUID id) {
-    return userRepository.findById(id);
+  public Optional<UserSummary> findById(UUID id) {
+    return userRepository.findById(id).map(this::toSummary);
   }
 
   @Override
-  public List<User> findAllById(Collection<UUID> ids) {
-    return userRepository.findAllById(ids);
+  public List<UserSummary> findAllById(Collection<UUID> ids) {
+    return userRepository.findAllById(ids).stream().map(this::toSummary).toList();
+  }
+
+  private UserSummary toSummary(User user) {
+    return new UserSummary(user.getId(), user.getDisplayName());
   }
 }

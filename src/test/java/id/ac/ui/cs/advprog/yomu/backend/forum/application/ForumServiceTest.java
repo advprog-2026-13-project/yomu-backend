@@ -29,9 +29,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
@@ -56,7 +55,7 @@ class ForumServiceTest {
   private UUID readingId;
   private UUID userId;
   private UUID commentId;
-  private User dummyUser;
+  private UserSummary dummyUser;
 
   @BeforeEach
   @SuppressWarnings("unused")
@@ -65,8 +64,7 @@ class ForumServiceTest {
     userId = UUID.randomUUID();
     commentId = UUID.randomUUID();
 
-    dummyUser = new User("alice", "Alice", "alice@mail.com", "0811", "hashed", Role.USER);
-    dummyUser.setId(userId);
+    dummyUser = new UserSummary(userId, "Alice");
   }
 
   // ─────────────────────────── helpers ────────────────────────────
@@ -210,8 +208,7 @@ class ForumServiceTest {
     });
 
     UUID replierId = UUID.randomUUID();
-    User replier = new User("replier", "Replier", "replier@mail.com", "0813", "hashed", Role.USER);
-    replier.setId(replierId);
+    UserSummary replier = new UserSummary(replierId, "Replier");
     when(userRepository.findById(replierId)).thenReturn(Optional.of(replier));
     CommentView view = forumService.replyToComment(commentId, replierId, "I agree!");
 

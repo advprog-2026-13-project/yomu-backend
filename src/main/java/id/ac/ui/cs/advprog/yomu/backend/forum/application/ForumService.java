@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
@@ -28,7 +26,6 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 
-@Service
 public class ForumService implements ForumUseCase {
 	private static final int MAX_CONTENT_LENGTH = 2000;
 
@@ -48,7 +45,6 @@ public class ForumService implements ForumUseCase {
 		this.eventPublisher = eventPublisher;
 	}
 
-	@Transactional(readOnly = true)
 	@Override
 	public List<CommentView> getComments(UUID readingId) {
 		List<Comment> comments = commentRepository.findByReadingIdOrderByCreatedAtAsc(readingId);
@@ -69,7 +65,6 @@ public class ForumService implements ForumUseCase {
 				.toList();
 	}
 
-	@Transactional
 	@Override
 	public CommentView postComment(UUID readingId, UUID userId, String content) {
 		validateContent(content);
@@ -87,7 +82,6 @@ public class ForumService implements ForumUseCase {
 		return toSingleView(saved);
 	}
 
-	@Transactional
 	@Override
 	public CommentView replyToComment(UUID parentCommentId, UUID userId, String content) {
 		validateContent(content);
@@ -115,7 +109,6 @@ public class ForumService implements ForumUseCase {
 		return toSingleView(saved);
 	}
 
-	@Transactional
 	@Override
 	public void editComment(UUID commentId, UUID requesterId, String newContent) {
 		validateContent(newContent);
@@ -138,7 +131,6 @@ public class ForumService implements ForumUseCase {
 		commentRepository.save(comment);
 	}
 
-	@Transactional
 	@Override
 	public void deleteComment(UUID commentId, UUID requesterId, boolean isAdmin) {
 		Comment comment =
@@ -159,7 +151,6 @@ public class ForumService implements ForumUseCase {
 		eventPublisher.publishCommentDeleted(commentId, requesterId, isAdmin);
 	}
 
-	@Transactional
 	@Override
 	public void toggleReaction(UUID commentId, UUID userId, ReactionType type) {
 		Comment comment =
@@ -250,15 +241,12 @@ public class ForumService implements ForumUseCase {
 		}
 
 		return userRepository.findAllById(authorIds).stream()
-				.collect(
-						Collectors.toMap(
-								u -> u.getId(), u -> new UserSummary(u.getId(), u.getDisplayName())));
+				.collect(Collectors.toMap(UserSummary::id, u -> u));
 	}
 
 	private UserSummary resolveAuthor(UUID authorId) {
 		return userRepository
 				.findById(authorId)
-				.map(u -> new UserSummary(u.getId(), u.getDisplayName()))
 				.orElseGet(() -> new UserSummary(authorId, null));
 	}
 
