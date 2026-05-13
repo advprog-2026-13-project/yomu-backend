@@ -69,16 +69,7 @@ public class ForumService implements ForumUseCase {
 	public CommentView postComment(UUID readingId, UUID userId, String content) {
 		validateContent(content);
 
-		Comment comment = new Comment();
-		comment.setReadingId(readingId);
-		comment.setAuthorId(userId);
-		comment.setParentId(null);
-		comment.setContent(content);
-		comment.setDeleted(false);
-		comment.setCreatedAt(Instant.now());
-
-		Comment saved = commentRepository.save(comment);
-		eventPublisher.publishCommentCreated(saved.getId(), saved.getAuthorId(), saved.getReadingId());
+		Comment saved = createAndPublishComment(readingId, userId, null, content);
 		return toSingleView(saved);
 	}
 
@@ -96,17 +87,25 @@ public class ForumService implements ForumUseCase {
 			throw new ForumBadRequestException("Cannot reply to a deleted comment");
 		}
 
-		Comment reply = new Comment();
-		reply.setReadingId(parent.getReadingId());
-		reply.setAuthorId(userId);
-		reply.setParentId(parent.getId());
-		reply.setContent(content);
-		reply.setDeleted(false);
-		reply.setCreatedAt(Instant.now());
 
-		Comment saved = commentRepository.save(reply);
-		eventPublisher.publishCommentCreated(saved.getId(), saved.getAuthorId(), saved.getReadingId());
+		Comment saved = createAndPublishComment(parent.getReadingId(), userId, parent.getId(), content);
 		return toSingleView(saved);
+	}
+
+	private Comment createAndPublishComment(
+			UUID readingId, UUID authorId, UUID parentId, String content) {
+
+		Comment comment = new Comment();
+		comment.setReadingId(readingId);
+		comment.setAuthorId(authorId);
+		comment.setParentId(parentId);
+		comment.setContent(content);
+		comment.setDeleted(false);
+		comment.setCreatedAt(Instant.now());
+
+		Comment saved = commentRepository.save(comment);
+		eventPublisher.publishCommentCreated(saved.getId(), saved.getAuthorId(), saved.getReadingId());
+		return saved;
 	}
 
 	@Override
