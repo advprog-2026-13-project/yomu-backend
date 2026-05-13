@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
@@ -27,6 +30,7 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ForumConstraints;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 
+@Service
 public class ForumService implements ForumUseCase {
 
 	private final CommentRepositoryPort commentRepository;
@@ -46,6 +50,7 @@ public class ForumService implements ForumUseCase {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<CommentView> getComments(UUID readingId) {
 		List<Comment> comments = commentRepository.findByReadingIdOrderByCreatedAtAsc(readingId);
 		if (comments.isEmpty()) {
@@ -66,6 +71,7 @@ public class ForumService implements ForumUseCase {
 	}
 
 	@Override
+	@Transactional
 	public CommentView postComment(UUID readingId, UUID userId, String content) {
 		validateContent(content);
 
@@ -74,6 +80,7 @@ public class ForumService implements ForumUseCase {
 	}
 
 	@Override
+	@Transactional
 	public CommentView replyToComment(UUID parentCommentId, UUID userId, String content) {
 		validateContent(content);
 
@@ -109,6 +116,7 @@ public class ForumService implements ForumUseCase {
 	}
 
 	@Override
+	@Transactional
 	public void editComment(UUID commentId, UUID requesterId, String newContent) {
 		validateContent(newContent);
 
@@ -131,6 +139,7 @@ public class ForumService implements ForumUseCase {
 	}
 
 	@Override
+	@Transactional
 	public void deleteComment(UUID commentId, UUID requesterId, boolean isAdmin) {
 		Comment comment =
 				commentRepository
@@ -151,6 +160,7 @@ public class ForumService implements ForumUseCase {
 	}
 
 	@Override
+	@Transactional
 	public void toggleReaction(UUID commentId, UUID userId, ReactionType type) {
 		Comment comment =
 				commentRepository
