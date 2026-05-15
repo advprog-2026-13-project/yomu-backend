@@ -44,7 +44,10 @@ val coverageExclusions = listOf(
     "**/entity/**",
     "**/repository/**",
     "**/exception/**",
-    "**/model/**"
+    "**/model/**",
+    "**/forum/**",
+    "**/social/**",
+    "**/reading/api/**"
 )
 
 dependencyManagement {

@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.yomu.backend.model;
+package id.ac.ui.cs.advprog.yomu.backend.reading.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

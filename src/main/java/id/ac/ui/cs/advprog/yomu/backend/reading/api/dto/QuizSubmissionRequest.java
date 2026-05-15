@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.yomu.backend.dto;
+package id.ac.ui.cs.advprog.yomu.backend.reading.api.dto;
 
 import java.util.List;
 import java.util.UUID;
@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 public class QuizSubmissionRequest {
-  private String studentId;
   private List<StudentAnswer> answers;
 
   @Data
