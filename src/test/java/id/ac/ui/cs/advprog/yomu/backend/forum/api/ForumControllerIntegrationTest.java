@@ -1,8 +1,19 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.api;
 
-import java.util.UUID;
-
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
+import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
+import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,20 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
-import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -188,8 +186,8 @@ class ForumControllerIntegrationTest {
         .andExpect(status().isNoContent());
   }
 
-  private String registerAndLogin(String username, String displayName, String email, String password)
-      throws Exception {
+  private String registerAndLogin(
+      String username, String displayName, String email, String password) throws Exception {
     String registerBody =
         "{"
             + "\"username\":"
@@ -229,9 +227,7 @@ class ForumControllerIntegrationTest {
     MvcResult result =
         mockMvc
             .perform(
-                post("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(loginBody))
+                post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginBody))
             .andExpect(status().isOk())
             .andReturn();
 

@@ -78,8 +78,12 @@ class ReactionRepositoryTest {
         commentId, userId, List.of(ReactionType.UPVOTE, ReactionType.DOWNVOTE));
     reactionRepository.flush();
 
-    assertFalse(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, ReactionType.UPVOTE));
-    assertFalse(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, ReactionType.DOWNVOTE));
+    assertFalse(
+        reactionRepository.existsByCommentIdAndUserIdAndType(
+            commentId, userId, ReactionType.UPVOTE));
+    assertFalse(
+        reactionRepository.existsByCommentIdAndUserIdAndType(
+            commentId, userId, ReactionType.DOWNVOTE));
   }
 
   @Test

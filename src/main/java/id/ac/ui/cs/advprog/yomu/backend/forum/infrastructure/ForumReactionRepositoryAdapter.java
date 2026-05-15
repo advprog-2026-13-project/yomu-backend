@@ -37,7 +37,7 @@ public class ForumReactionRepositoryAdapter implements ReactionRepositoryPort {
   @Override
   public List<Reaction> findByCommentIdIn(Collection<UUID> commentIds) {
     return reactionRepository.findByCommentIdIn(commentIds).stream()
-      .map(ReactionMapper::toDomain)
+        .map(ReactionMapper::toDomain)
         .toList();
   }
 

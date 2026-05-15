@@ -86,6 +86,7 @@ class StudentQuizServiceImplTest {
     assertThrows(
         RuntimeException.class, () -> studentQuizService.getReadingForStudent(userId, readingId));
   }
+
   // --- 3. Tests for getQuestionsForReading ---
 
   @Test

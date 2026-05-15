@@ -1,33 +1,32 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.api;
 
-import java.util.UUID;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
-import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
+import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class ForumAdminControllerTest {
@@ -45,10 +44,10 @@ class ForumAdminControllerTest {
   @SuppressWarnings("unused")
   void setUp() {
     mockMvc =
-      MockMvcBuilders.standaloneSetup(forumAdminController)
-        .setControllerAdvice(new ForumExceptionHandler())
-        .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
-        .build();
+        MockMvcBuilders.standaloneSetup(forumAdminController)
+            .setControllerAdvice(new ForumExceptionHandler())
+            .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+            .build();
 
     adminId = UUID.randomUUID();
     commentId = UUID.randomUUID();
@@ -78,8 +77,8 @@ class ForumAdminControllerTest {
   void moderateDeleteShouldReturn204() throws Exception {
     doNothing().when(forumUseCase).deleteComment(eq(commentId), eq(adminId), eq(true));
 
-    mockMvc.perform(delete("/api/admin/forums/comments/{id}", commentId)
-            .principal(adminPrincipal()))
+    mockMvc
+        .perform(delete("/api/admin/forums/comments/{id}", commentId).principal(adminPrincipal()))
         .andExpect(status().isNoContent());
 
     verify(forumUseCase).deleteComment(commentId, adminId, true);
@@ -88,10 +87,11 @@ class ForumAdminControllerTest {
   @Test
   void moderateDeleteShouldReturn404WhenCommentNotFound() throws Exception {
     doThrow(new ForumNotFoundException("Comment not found"))
-        .when(forumUseCase).deleteComment(any(), any(), eq(true));
+        .when(forumUseCase)
+        .deleteComment(any(), any(), eq(true));
 
-    mockMvc.perform(delete("/api/admin/forums/comments/{id}", commentId)
-            .principal(adminPrincipal()))
+    mockMvc
+        .perform(delete("/api/admin/forums/comments/{id}", commentId).principal(adminPrincipal()))
         .andExpect(status().isNotFound());
   }
 
@@ -99,8 +99,8 @@ class ForumAdminControllerTest {
   void moderateDeleteShouldPassIsAdminTrueToService() throws Exception {
     doNothing().when(forumUseCase).deleteComment(any(), any(), anyBoolean());
 
-    mockMvc.perform(delete("/api/admin/forums/comments/{id}", commentId)
-            .principal(adminPrincipal()))
+    mockMvc
+        .perform(delete("/api/admin/forums/comments/{id}", commentId).principal(adminPrincipal()))
         .andExpect(status().isNoContent());
 
     verify(forumUseCase).deleteComment(eq(commentId), eq(adminId), eq(true));

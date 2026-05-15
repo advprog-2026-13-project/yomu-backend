@@ -1,13 +1,11 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.infrastructure;
 
-import java.util.UUID;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Component;
-
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ForumEventPublisherPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentCreatedEvent;
 import id.ac.ui.cs.advprog.yomu.backend.forum.events.CommentDeletedEvent;
+import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ForumEventPublisherAdapter implements ForumEventPublisherPort {

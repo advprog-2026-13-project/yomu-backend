@@ -1,14 +1,13 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.api;
 
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
+import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
 
 @RestControllerAdvice(basePackages = "id.ac.ui.cs.advprog.yomu.backend.forum.api")
 public class ForumExceptionHandler {

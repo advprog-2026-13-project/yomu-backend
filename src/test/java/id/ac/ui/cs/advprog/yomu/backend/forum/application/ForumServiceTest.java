@@ -1,11 +1,5 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.application;
 
-import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,21 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
@@ -41,6 +28,18 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.UserPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ForumServiceTest {
@@ -130,8 +129,18 @@ class ForumServiceTest {
     UUID cid = UUID.randomUUID();
     Comment root = buildComment(cid, readingId, userId, null, false);
 
-    Reaction r1 = new Reaction(); r1.setId(UUID.randomUUID()); r1.setCommentId(cid); r1.setUserId(UUID.randomUUID()); r1.setType(ReactionType.UPVOTE); r1.setCreatedAt(Instant.now());
-    Reaction r2 = new Reaction(); r2.setId(UUID.randomUUID()); r2.setCommentId(cid); r2.setUserId(UUID.randomUUID()); r2.setType(ReactionType.UPVOTE); r2.setCreatedAt(Instant.now());
+    Reaction r1 = new Reaction();
+    r1.setId(UUID.randomUUID());
+    r1.setCommentId(cid);
+    r1.setUserId(UUID.randomUUID());
+    r1.setType(ReactionType.UPVOTE);
+    r1.setCreatedAt(Instant.now());
+    Reaction r2 = new Reaction();
+    r2.setId(UUID.randomUUID());
+    r2.setCommentId(cid);
+    r2.setUserId(UUID.randomUUID());
+    r2.setType(ReactionType.UPVOTE);
+    r2.setCreatedAt(Instant.now());
 
     when(commentRepository.findByReadingIdOrderByCreatedAtAsc(readingId)).thenReturn(List.of(root));
     when(userRepository.findAllById(anySet())).thenReturn(List.of(dummyUser));
@@ -147,11 +156,13 @@ class ForumServiceTest {
   @Test
   void postCommentShouldSaveAndReturnView() {
     when(userRepository.findById(userId)).thenReturn(Optional.of(dummyUser));
-    when(commentRepository.save(any(Comment.class))).thenAnswer(inv -> {
-      Comment c = inv.getArgument(0);
-      if (c.getId() == null) c.setId(UUID.randomUUID());
-      return c;
-    });
+    when(commentRepository.save(any(Comment.class)))
+        .thenAnswer(
+            inv -> {
+              Comment c = inv.getArgument(0);
+              if (c.getId() == null) c.setId(UUID.randomUUID());
+              return c;
+            });
 
     CommentView view = forumService.postComment(readingId, userId, "Great article!");
 
@@ -165,32 +176,34 @@ class ForumServiceTest {
 
   @Test
   void postCommentShouldThrowWhenContentIsBlank() {
-    assertThrows(ForumBadRequestException.class,
-        () -> forumService.postComment(readingId, userId, "   "));
+    assertThrows(
+        ForumBadRequestException.class, () -> forumService.postComment(readingId, userId, "   "));
   }
 
   @Test
   void postCommentShouldThrowWhenContentIsNull() {
-    assertThrows(ForumBadRequestException.class,
-        () -> forumService.postComment(readingId, userId, null));
+    assertThrows(
+        ForumBadRequestException.class, () -> forumService.postComment(readingId, userId, null));
   }
 
   @Test
   void postCommentShouldThrowWhenContentExceedsMaxLength() {
     String tooLong = "a".repeat(2001);
-    assertThrows(ForumBadRequestException.class,
-        () -> forumService.postComment(readingId, userId, tooLong));
+    assertThrows(
+        ForumBadRequestException.class, () -> forumService.postComment(readingId, userId, tooLong));
   }
 
   @Test
   void postCommentShouldAcceptContentAtMaxLength() {
     String maxContent = "a".repeat(2000);
     when(userRepository.findById(userId)).thenReturn(Optional.of(dummyUser));
-    when(commentRepository.save(any(Comment.class))).thenAnswer(inv -> {
-      Comment c = inv.getArgument(0);
-      if (c.getId() == null) c.setId(UUID.randomUUID());
-      return c;
-    });
+    when(commentRepository.save(any(Comment.class)))
+        .thenAnswer(
+            inv -> {
+              Comment c = inv.getArgument(0);
+              if (c.getId() == null) c.setId(UUID.randomUUID());
+              return c;
+            });
 
     assertDoesNotThrow(() -> forumService.postComment(readingId, userId, maxContent));
   }
@@ -201,11 +214,13 @@ class ForumServiceTest {
   void replyToCommentShouldSaveReplyWithParentId() {
     Comment parent = buildComment(commentId, readingId, userId, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(parent));
-    when(commentRepository.save(any(Comment.class))).thenAnswer(inv -> {
-      Comment c = inv.getArgument(0);
-      if (c.getId() == null) c.setId(UUID.randomUUID());
-      return c;
-    });
+    when(commentRepository.save(any(Comment.class)))
+        .thenAnswer(
+            inv -> {
+              Comment c = inv.getArgument(0);
+              if (c.getId() == null) c.setId(UUID.randomUUID());
+              return c;
+            });
 
     UUID replierId = UUID.randomUUID();
     UserSummary replier = new UserSummary(replierId, "Replier");
@@ -225,7 +240,8 @@ class ForumServiceTest {
   void replyToCommentShouldThrowWhenParentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    assertThrows(ForumNotFoundException.class,
+    assertThrows(
+        ForumNotFoundException.class,
         () -> forumService.replyToComment(commentId, userId, "reply"));
   }
 
@@ -234,14 +250,15 @@ class ForumServiceTest {
     Comment deleted = buildComment(commentId, readingId, userId, null, true);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(deleted));
 
-    assertThrows(ForumBadRequestException.class,
+    assertThrows(
+        ForumBadRequestException.class,
         () -> forumService.replyToComment(commentId, userId, "reply"));
   }
 
   @Test
   void replyToCommentShouldThrowWhenContentIsBlank() {
-    assertThrows(ForumBadRequestException.class,
-        () -> forumService.replyToComment(commentId, userId, ""));
+    assertThrows(
+        ForumBadRequestException.class, () -> forumService.replyToComment(commentId, userId, ""));
 
     verify(commentRepository, never()).findById(any());
     verify(commentRepository, never()).save(any());
@@ -266,8 +283,8 @@ class ForumServiceTest {
   void editCommentShouldThrowWhenCommentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    assertThrows(ForumNotFoundException.class,
-        () -> forumService.editComment(commentId, userId, "new"));
+    assertThrows(
+        ForumNotFoundException.class, () -> forumService.editComment(commentId, userId, "new"));
   }
 
   @Test
@@ -275,8 +292,8 @@ class ForumServiceTest {
     Comment deleted = buildComment(commentId, readingId, userId, null, true);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(deleted));
 
-    assertThrows(ForumBadRequestException.class,
-        () -> forumService.editComment(commentId, userId, "new"));
+    assertThrows(
+        ForumBadRequestException.class, () -> forumService.editComment(commentId, userId, "new"));
   }
 
   @Test
@@ -285,14 +302,14 @@ class ForumServiceTest {
     Comment comment = buildComment(commentId, readingId, anotherUser, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-    assertThrows(ForumForbiddenException.class,
-        () -> forumService.editComment(commentId, userId, "new"));
+    assertThrows(
+        ForumForbiddenException.class, () -> forumService.editComment(commentId, userId, "new"));
   }
 
   @Test
   void editCommentShouldThrowWhenNewContentIsBlank() {
-    assertThrows(ForumBadRequestException.class,
-        () -> forumService.editComment(commentId, userId, ""));
+    assertThrows(
+        ForumBadRequestException.class, () -> forumService.editComment(commentId, userId, ""));
 
     verify(commentRepository, never()).findById(any());
     verify(commentRepository, never()).save(any());
@@ -333,16 +350,16 @@ class ForumServiceTest {
     Comment comment = buildComment(commentId, readingId, anotherUser, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-    assertThrows(ForumForbiddenException.class,
-        () -> forumService.deleteComment(commentId, userId, false));
+    assertThrows(
+        ForumForbiddenException.class, () -> forumService.deleteComment(commentId, userId, false));
   }
 
   @Test
   void deleteCommentShouldThrowWhenCommentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    assertThrows(ForumNotFoundException.class,
-        () -> forumService.deleteComment(commentId, userId, false));
+    assertThrows(
+        ForumNotFoundException.class, () -> forumService.deleteComment(commentId, userId, false));
   }
 
   @Test
@@ -361,7 +378,8 @@ class ForumServiceTest {
   void toggleReactionShouldAddReactionWhenNotExists() {
     Comment comment = buildComment(commentId, readingId, userId, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-    when(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, ReactionType.UPVOTE))
+    when(reactionRepository.existsByCommentIdAndUserIdAndType(
+            commentId, userId, ReactionType.UPVOTE))
         .thenReturn(false);
 
     forumService.toggleReaction(commentId, userId, ReactionType.UPVOTE);
@@ -373,12 +391,14 @@ class ForumServiceTest {
   void toggleReactionShouldRemoveReactionWhenAlreadyExists() {
     Comment comment = buildComment(commentId, readingId, userId, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-    when(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, ReactionType.UPVOTE))
+    when(reactionRepository.existsByCommentIdAndUserIdAndType(
+            commentId, userId, ReactionType.UPVOTE))
         .thenReturn(true);
 
     forumService.toggleReaction(commentId, userId, ReactionType.UPVOTE);
 
-    verify(reactionRepository).deleteByCommentIdAndUserIdAndType(commentId, userId, ReactionType.UPVOTE);
+    verify(reactionRepository)
+        .deleteByCommentIdAndUserIdAndType(commentId, userId, ReactionType.UPVOTE);
     verify(reactionRepository, never()).save(any());
   }
 
@@ -386,13 +406,15 @@ class ForumServiceTest {
   void toggleReactionShouldRemoveOppositeVoteBeforeAddingUpvote() {
     Comment comment = buildComment(commentId, readingId, userId, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-    when(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, ReactionType.UPVOTE))
+    when(reactionRepository.existsByCommentIdAndUserIdAndType(
+            commentId, userId, ReactionType.UPVOTE))
         .thenReturn(false);
 
     forumService.toggleReaction(commentId, userId, ReactionType.UPVOTE);
 
-    verify(reactionRepository).deleteByCommentIdAndUserIdAndTypeIn(
-        eq(commentId), eq(userId), argThat(types -> types.contains(ReactionType.DOWNVOTE)));
+    verify(reactionRepository)
+        .deleteByCommentIdAndUserIdAndTypeIn(
+            eq(commentId), eq(userId), argThat(types -> types.contains(ReactionType.DOWNVOTE)));
     verify(reactionRepository).save(any(Reaction.class));
   }
 
@@ -400,13 +422,15 @@ class ForumServiceTest {
   void toggleReactionShouldRemoveOppositeVoteBeforeAddingDownvote() {
     Comment comment = buildComment(commentId, readingId, userId, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-    when(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, ReactionType.DOWNVOTE))
+    when(reactionRepository.existsByCommentIdAndUserIdAndType(
+            commentId, userId, ReactionType.DOWNVOTE))
         .thenReturn(false);
 
     forumService.toggleReaction(commentId, userId, ReactionType.DOWNVOTE);
 
-    verify(reactionRepository).deleteByCommentIdAndUserIdAndTypeIn(
-        eq(commentId), eq(userId), argThat(types -> types.contains(ReactionType.UPVOTE)));
+    verify(reactionRepository)
+        .deleteByCommentIdAndUserIdAndTypeIn(
+            eq(commentId), eq(userId), argThat(types -> types.contains(ReactionType.UPVOTE)));
     verify(reactionRepository).save(any(Reaction.class));
   }
 
@@ -414,7 +438,8 @@ class ForumServiceTest {
   void toggleReactionShouldNotRemoveOppositeForEmojiReaction() {
     Comment comment = buildComment(commentId, readingId, userId, null, false);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-    when(reactionRepository.existsByCommentIdAndUserIdAndType(commentId, userId, ReactionType.EMOJI_LIKE))
+    when(reactionRepository.existsByCommentIdAndUserIdAndType(
+            commentId, userId, ReactionType.EMOJI_LIKE))
         .thenReturn(false);
 
     forumService.toggleReaction(commentId, userId, ReactionType.EMOJI_LIKE);
@@ -427,7 +452,8 @@ class ForumServiceTest {
   void toggleReactionShouldThrowWhenCommentNotFound() {
     when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-    assertThrows(ForumNotFoundException.class,
+    assertThrows(
+        ForumNotFoundException.class,
         () -> forumService.toggleReaction(commentId, userId, ReactionType.UPVOTE));
   }
 
@@ -436,7 +462,8 @@ class ForumServiceTest {
     Comment deleted = buildComment(commentId, readingId, userId, null, true);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(deleted));
 
-    assertThrows(ForumBadRequestException.class,
+    assertThrows(
+        ForumBadRequestException.class,
         () -> forumService.toggleReaction(commentId, userId, ReactionType.UPVOTE));
   }
 }

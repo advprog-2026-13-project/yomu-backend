@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.yomu.backend.forum.domain;
 
 import java.time.Instant;
 import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

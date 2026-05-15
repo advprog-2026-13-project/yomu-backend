@@ -32,10 +32,18 @@ class ForumDtoTest {
     UserSummary author = new UserSummary(UUID.randomUUID(), "Alice");
     Instant now = Instant.now();
 
-    CommentView view = new CommentView(
-        id, rid, author, null, "Hello", false, now, null,
-        Map.of(ReactionType.UPVOTE, 5L), Collections.emptyList()
-    );
+    CommentView view =
+        new CommentView(
+            id,
+            rid,
+            author,
+            null,
+            "Hello",
+            false,
+            now,
+            null,
+            Map.of(ReactionType.UPVOTE, 5L),
+            Collections.emptyList());
 
     assertEquals(id, view.id());
     assertEquals("Hello", view.content());

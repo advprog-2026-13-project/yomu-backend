@@ -20,7 +20,7 @@ public class ForumCommentRepositoryAdapter implements CommentRepositoryPort {
   @Override
   public List<Comment> findByReadingIdOrderByCreatedAtAsc(UUID readingId) {
     return commentRepository.findByReadingIdOrderByCreatedAtAsc(readingId).stream()
-      .map(CommentMapper::toDomain)
+        .map(CommentMapper::toDomain)
         .toList();
   }
 

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Instant;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 
 class CommentTest {
