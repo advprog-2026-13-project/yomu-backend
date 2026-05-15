@@ -138,6 +138,7 @@ public class ForumService implements ForumUseCase {
 		commentRepository.save(comment);
 	}
 
+	// Moderation Feature
 	@Override
 	@Transactional
 	public void deleteComment(UUID commentId, UUID requesterId, boolean isAdmin) {
