@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.service.AchievementProgressService;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementEnvelope;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
+import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementActivityPayload;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementQuizCompletedPayload;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementReadingCompletedPayload;
 import java.util.UUID;
@@ -62,5 +63,21 @@ class AchievementActivityEventListenerTest {
     listener.handleAchievementEvent(envelope);
 
     verify(achievementProgressService, never()).incrementProgress(any(), any(), anyInt());
+  }
+
+  @Test
+  void testHandleAnyPayloadImplementingInterface() {
+    // Simulates a future payload type — the listener should handle it
+    // without any code changes, proving OCP compliance.
+    UUID userId = UUID.randomUUID();
+    AchievementActivityPayload futurePayload = () -> userId;
+
+    AchievementEnvelope<AchievementActivityPayload> envelope =
+        AchievementEnvelope.of(AchievementType.READING_COMPLETED, 1, futurePayload);
+
+    listener.handleAchievementEvent(envelope);
+
+    verify(achievementProgressService, times(1))
+        .incrementProgress(userId, AchievementType.READING_COMPLETED, 1);
   }
 }

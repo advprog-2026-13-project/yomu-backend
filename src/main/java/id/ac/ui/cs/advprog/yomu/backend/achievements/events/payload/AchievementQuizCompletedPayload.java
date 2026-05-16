@@ -4,7 +4,7 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class AchievementQuizCompletedPayload {
+public class AchievementQuizCompletedPayload implements AchievementActivityPayload {
   private final UUID userId;
   private final UUID quizId;
   private final int score;
