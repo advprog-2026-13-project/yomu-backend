@@ -29,4 +29,69 @@ class DailyMissionTest {
           new DailyMission(UUID.randomUUID(), "Test", "Test", AchievementType.READING_COMPLETED, 0);
         });
   }
+
+  @Test
+  void testUpdateAllFields() {
+    UUID id = UUID.randomUUID();
+    DailyMission original =
+        new DailyMission(id, "Old Mission", "Old Desc", AchievementType.QUIZ_COMPLETED, 3);
+
+    DailyMission updated = original.update("New Mission", "New Desc", 10);
+
+    assertEquals(id, updated.getId());
+    assertEquals("New Mission", updated.getName());
+    assertEquals("New Desc", updated.getDescription());
+    assertEquals(AchievementType.QUIZ_COMPLETED, updated.getTargetType());
+    assertEquals(10, updated.getMilestone());
+  }
+
+  @Test
+  void testUpdatePartialFieldsNullKeepsCurrent() {
+    UUID id = UUID.randomUUID();
+    DailyMission original =
+        new DailyMission(id, "Keep Name", "Keep Desc", AchievementType.READING_COMPLETED, 5);
+
+    DailyMission updated = original.update(null, null, null);
+
+    assertEquals(id, updated.getId());
+    assertEquals("Keep Name", updated.getName());
+    assertEquals("Keep Desc", updated.getDescription());
+    assertEquals(5, updated.getMilestone());
+  }
+
+  @Test
+  void testUpdateOnlyMilestone() {
+    UUID id = UUID.randomUUID();
+    DailyMission original =
+        new DailyMission(id, "Mission", "Desc", AchievementType.QUIZ_COMPLETED, 5);
+
+    DailyMission updated = original.update(null, null, 15);
+
+    assertEquals("Mission", updated.getName());
+    assertEquals("Desc", updated.getDescription());
+    assertEquals(15, updated.getMilestone());
+  }
+
+  @Test
+  void testUpdateWithInvalidMilestoneThrows() {
+    DailyMission original =
+        new DailyMission(UUID.randomUUID(), "Test", "Desc", AchievementType.QUIZ_COMPLETED, 5);
+
+    assertThrows(IllegalArgumentException.class, () -> original.update(null, null, 0));
+    assertThrows(IllegalArgumentException.class, () -> original.update(null, null, -1));
+  }
+
+  @Test
+  void testUpdatePreservesImmutability() {
+    UUID id = UUID.randomUUID();
+    DailyMission original =
+        new DailyMission(id, "Original", "Desc", AchievementType.QUIZ_COMPLETED, 3);
+
+    DailyMission updated = original.update("Updated", null, null);
+
+    assertNotSame(original, updated);
+    assertEquals("Original", original.getName());
+    assertEquals("Updated", updated.getName());
+  }
 }
+

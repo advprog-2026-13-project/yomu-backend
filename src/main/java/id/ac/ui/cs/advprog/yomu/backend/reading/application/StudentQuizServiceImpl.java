@@ -1,5 +1,9 @@
 package id.ac.ui.cs.advprog.yomu.backend.reading.application;
 
+import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementEnvelope;
+import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
+import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementQuizCompletedPayload;
+import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementReadingCompletedPayload;
 import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuestionResponse;
 import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuizSubmissionRequest;
 import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Question;
@@ -13,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +30,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
   private final ReadingRepository readingRepository;
   private final QuestionRepository questionRepository;
   private final QuizAttemptRepository quizAttemptRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   @Transactional(readOnly = true)
@@ -89,8 +95,25 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     attempt.setScore(score);
     attempt.setCompletedAt(LocalDateTime.now());
     QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
-    // TODO: Di sini nembak event/notifikasi ke Modul Achievements & Liga
+
+    // Publish Achievement Events
+    publishAchievementEvents(userId, readingId, score);
+
     return savedAttempt;
+  }
+
+  private void publishAchievementEvents(UUID userId, UUID readingId, int score) {
+    // 1. Publish Reading Completed Event
+    AchievementReadingCompletedPayload readingPayload =
+        new AchievementReadingCompletedPayload(userId, readingId, 0); // Duration not tracked yet
+    eventPublisher.publishEvent(
+        AchievementEnvelope.of(AchievementType.READING_COMPLETED, 1, readingPayload));
+
+    // 2. Publish Quiz Completed Event
+    AchievementQuizCompletedPayload quizPayload =
+        new AchievementQuizCompletedPayload(userId, readingId, score, true);
+    eventPublisher.publishEvent(
+        AchievementEnvelope.of(AchievementType.QUIZ_COMPLETED, 1, quizPayload));
   }
 
   private void validateNotAttempted(UUID userId, UUID readingId) {
@@ -99,3 +122,4 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     }
   }
 }
+
