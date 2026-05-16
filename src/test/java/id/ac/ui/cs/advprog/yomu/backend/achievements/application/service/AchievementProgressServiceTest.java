@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IAchievementNotifier;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IAchievementRepository;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IDailyMissionRepository;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IUserAchievementProgressRepository;
@@ -35,6 +36,8 @@ class AchievementProgressServiceTest {
   @Mock private IDailyMissionRepository dailyMissionRepository;
 
   @Mock private IUserDailyMissionProgressRepository userDailyMissionProgressRepository;
+
+  @Mock private IAchievementNotifier achievementNotifier;
 
   @InjectMocks private AchievementProgressService service;
 
@@ -78,6 +81,9 @@ class AchievementProgressServiceTest {
     assertEquals(achievement.getId(), savedProgress.getAchievementId());
     assertEquals(1, savedProgress.getCurrentProgress());
     assertFalse(savedProgress.isCompleted());
+
+    // Not completed yet — no notification
+    verify(achievementNotifier, never()).notifyAchievementUnlocked(any(), any());
   }
 
   @Test
@@ -109,6 +115,9 @@ class AchievementProgressServiceTest {
 
     assertEquals(4, captor.getValue().getCurrentProgress());
     assertFalse(captor.getValue().isCompleted());
+
+    // Not completed yet — no notification
+    verify(achievementNotifier, never()).notifyAchievementUnlocked(any(), any());
   }
 
   @Test
@@ -141,6 +150,9 @@ class AchievementProgressServiceTest {
     assertEquals(5, captor.getValue().getCurrentProgress());
     assertTrue(captor.getValue().isCompleted());
     assertNotNull(captor.getValue().getCompletedAt());
+
+    // Just completed — notification should fire
+    verify(achievementNotifier, times(1)).notifyAchievementUnlocked(userId, achievement);
   }
 
   @Test
@@ -196,6 +208,8 @@ class AchievementProgressServiceTest {
 
     // addProgress returns false for completed -> should NOT save
     verify(userAchievementProgressRepository, never()).save(any());
+    // Already completed previously — no notification
+    verify(achievementNotifier, never()).notifyAchievementUnlocked(any(), any());
   }
 
   @Test
@@ -206,6 +220,7 @@ class AchievementProgressServiceTest {
     service.incrementProgress(userId, AchievementType.QUIZ_COMPLETED, 1);
 
     verify(userAchievementProgressRepository, never()).save(any());
+    verify(achievementNotifier, never()).notifyAchievementUnlocked(any(), any());
   }
 
   // ==========================================
@@ -241,6 +256,9 @@ class AchievementProgressServiceTest {
     assertEquals(mission.getId(), savedProgress.getMissionId());
     assertEquals(1, savedProgress.getCurrentProgress());
     assertFalse(savedProgress.isCompleted());
+
+    // Not completed yet — no notification
+    verify(achievementNotifier, never()).notifyDailyMissionCompleted(any(), any());
   }
 
   @Test
@@ -272,6 +290,9 @@ class AchievementProgressServiceTest {
 
     assertEquals(2, captor.getValue().getCurrentProgress());
     assertFalse(captor.getValue().isCompleted());
+
+    // Not completed yet — no notification
+    verify(achievementNotifier, never()).notifyDailyMissionCompleted(any(), any());
   }
 
   @Test
@@ -304,6 +325,9 @@ class AchievementProgressServiceTest {
     assertEquals(3, captor.getValue().getCurrentProgress());
     assertTrue(captor.getValue().isCompleted());
     assertNotNull(captor.getValue().getCompletedAt());
+
+    // Just completed — notification should fire
+    verify(achievementNotifier, times(1)).notifyDailyMissionCompleted(userId, mission);
   }
 
   @Test
@@ -329,6 +353,8 @@ class AchievementProgressServiceTest {
 
     // addProgress returns false for completed -> should NOT save
     verify(userDailyMissionProgressRepository, never()).save(any());
+    // Already completed previously — no notification
+    verify(achievementNotifier, never()).notifyDailyMissionCompleted(any(), any());
   }
 
   // ==========================================
@@ -372,5 +398,49 @@ class AchievementProgressServiceTest {
     // Both repositories should have save called
     verify(userAchievementProgressRepository).save(any(UserAchievementProgress.class));
     verify(userDailyMissionProgressRepository).save(any(UserDailyMissionProgress.class));
+  }
+
+  // ==========================================
+  // Notification-specific Tests
+  // ==========================================
+
+  @Test
+  void testNotifiesWhenBothAchievementAndDailyMissionCompleteSimultaneously() {
+    // milestone=1 so a single increment completes both
+    Achievement achievement =
+        new Achievement(
+            UUID.randomUUID(),
+            "First Read",
+            "Baca 1 kali",
+            AchievementType.READING_COMPLETED,
+            1);
+    DailyMission mission =
+        new DailyMission(
+            UUID.randomUUID(),
+            "Daily Read",
+            "Baca 1 kali",
+            AchievementType.READING_COMPLETED,
+            1);
+
+    when(achievementRepository.findByAchievementType(AchievementType.READING_COMPLETED))
+        .thenReturn(List.of(achievement));
+    when(dailyMissionRepository.findByTargetType(AchievementType.READING_COMPLETED))
+        .thenReturn(List.of(mission));
+    when(userAchievementProgressRepository.findByUserIdAndAchievementId(
+            userId, achievement.getId()))
+        .thenReturn(Optional.empty());
+    when(userDailyMissionProgressRepository.findByUserIdAndMissionIdAndDate(
+            eq(userId), eq(mission.getId()), any(LocalDate.class)))
+        .thenReturn(Optional.empty());
+    when(userAchievementProgressRepository.save(any(UserAchievementProgress.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(userDailyMissionProgressRepository.save(any(UserDailyMissionProgress.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    service.incrementProgress(userId, AchievementType.READING_COMPLETED, 1);
+
+    // Both notifications should fire
+    verify(achievementNotifier, times(1)).notifyAchievementUnlocked(userId, achievement);
+    verify(achievementNotifier, times(1)).notifyDailyMissionCompleted(userId, mission);
   }
 }
