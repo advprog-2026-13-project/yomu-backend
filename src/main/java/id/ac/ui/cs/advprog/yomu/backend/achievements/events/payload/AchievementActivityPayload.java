@@ -8,8 +8,8 @@ import java.util.UUID;
  * activity.
  *
  * <p>This eliminates the need for {@code instanceof} checks in the event listener, making the
- * achievement system scalable: adding a new activity type only requires creating a new payload class
- * that implements this interface — zero changes to the listener.
+ * achievement system scalable: adding a new activity type only requires creating a new payload
+ * class that implements this interface — zero changes to the listener.
  */
 public interface AchievementActivityPayload {
   UUID getUserId();

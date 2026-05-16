@@ -134,7 +134,8 @@ class AdminAchievementControllerTest {
   @Test
   void testUpdateDailyMissionSuccess() throws Exception {
     UUID id = UUID.randomUUID();
-    UpdateDailyMissionRequest request = new UpdateDailyMissionRequest("Updated Mission", "New Desc", 15);
+    UpdateDailyMissionRequest request =
+        new UpdateDailyMissionRequest("Updated Mission", "New Desc", 15);
     DailyMission updated =
         new DailyMission(id, "Updated Mission", "New Desc", AchievementType.QUIZ_COMPLETED, 15);
 
@@ -176,4 +177,3 @@ class AdminAchievementControllerTest {
         .andExpect(status().isNoContent());
   }
 }
-

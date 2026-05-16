@@ -106,7 +106,6 @@ class AchievementActivityEventListenerTest {
             "handleAchievementEvent", AchievementEnvelope.class);
 
     Transactional txAnnotation = method.getAnnotation(Transactional.class);
-    assertNotNull(
-        txAnnotation, "handleAchievementEvent should be annotated with @Transactional");
+    assertNotNull(txAnnotation, "handleAchievementEvent should be annotated with @Transactional");
   }
 }

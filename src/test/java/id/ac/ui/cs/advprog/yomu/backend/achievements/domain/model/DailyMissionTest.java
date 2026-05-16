@@ -94,4 +94,3 @@ class DailyMissionTest {
     assertEquals("Updated", updated.getName());
   }
 }
-

@@ -33,8 +33,7 @@ public class AchievementAdminService {
     Achievement existing =
         achievementRepository
             .findById(id)
-            .orElseThrow(
-                () -> new NoSuchElementException("Achievement not found with id: " + id));
+            .orElseThrow(() -> new NoSuchElementException("Achievement not found with id: " + id));
     Achievement updated = existing.update(name, description, milestone);
     return achievementRepository.save(updated);
   }

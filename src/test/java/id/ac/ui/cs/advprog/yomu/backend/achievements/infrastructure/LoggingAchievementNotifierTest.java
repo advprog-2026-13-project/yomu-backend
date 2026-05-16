@@ -23,7 +23,11 @@ class LoggingAchievementNotifierTest {
     UUID userId = UUID.randomUUID();
     Achievement achievement =
         new Achievement(
-            UUID.randomUUID(), "Pembaca Handal", "Baca 10 kali", AchievementType.READING_COMPLETED, 10);
+            UUID.randomUUID(),
+            "Pembaca Handal",
+            "Baca 10 kali",
+            AchievementType.READING_COMPLETED,
+            10);
 
     assertDoesNotThrow(() -> notifier.notifyAchievementUnlocked(userId, achievement));
   }

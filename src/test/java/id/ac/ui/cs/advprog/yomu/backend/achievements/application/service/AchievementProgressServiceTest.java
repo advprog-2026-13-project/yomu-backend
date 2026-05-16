@@ -409,18 +409,10 @@ class AchievementProgressServiceTest {
     // milestone=1 so a single increment completes both
     Achievement achievement =
         new Achievement(
-            UUID.randomUUID(),
-            "First Read",
-            "Baca 1 kali",
-            AchievementType.READING_COMPLETED,
-            1);
+            UUID.randomUUID(), "First Read", "Baca 1 kali", AchievementType.READING_COMPLETED, 1);
     DailyMission mission =
         new DailyMission(
-            UUID.randomUUID(),
-            "Daily Read",
-            "Baca 1 kali",
-            AchievementType.READING_COMPLETED,
-            1);
+            UUID.randomUUID(), "Daily Read", "Baca 1 kali", AchievementType.READING_COMPLETED, 1);
 
     when(achievementRepository.findByAchievementType(AchievementType.READING_COMPLETED))
         .thenReturn(List.of(achievement));

@@ -102,4 +102,3 @@ class AchievementTest {
     assertEquals("Updated", updated.getName());
   }
 }
-

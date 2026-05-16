@@ -19,19 +19,22 @@ class AsyncConfigTest {
 
   @Test
   void achievementTaskExecutorShouldHaveCorrectCorePoolSize() {
-    ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) asyncConfig.achievementTaskExecutor();
+    ThreadPoolTaskExecutor executor =
+        (ThreadPoolTaskExecutor) asyncConfig.achievementTaskExecutor();
     assertEquals(2, executor.getCorePoolSize());
   }
 
   @Test
   void achievementTaskExecutorShouldHaveCorrectMaxPoolSize() {
-    ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) asyncConfig.achievementTaskExecutor();
+    ThreadPoolTaskExecutor executor =
+        (ThreadPoolTaskExecutor) asyncConfig.achievementTaskExecutor();
     assertEquals(5, executor.getMaxPoolSize());
   }
 
   @Test
   void achievementTaskExecutorShouldHaveCorrectThreadPrefix() {
-    ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) asyncConfig.achievementTaskExecutor();
+    ThreadPoolTaskExecutor executor =
+        (ThreadPoolTaskExecutor) asyncConfig.achievementTaskExecutor();
     assertEquals("achievement-", executor.getThreadNamePrefix());
   }
 }

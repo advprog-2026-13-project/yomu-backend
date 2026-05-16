@@ -74,8 +74,7 @@ class AchievementAdminServiceTest {
     when(achievementRepository.findById(id)).thenReturn(Optional.empty());
 
     assertThrows(
-        NoSuchElementException.class,
-        () -> adminService.updateAchievement(id, "Name", "Desc", 10));
+        NoSuchElementException.class, () -> adminService.updateAchievement(id, "Name", "Desc", 10));
 
     verify(achievementRepository, times(1)).findById(id);
     verify(achievementRepository, never()).save(any(Achievement.class));
@@ -160,4 +159,3 @@ class AchievementAdminServiceTest {
     verify(dailyMissionRepository, times(1)).deleteById(id);
   }
 }
-
