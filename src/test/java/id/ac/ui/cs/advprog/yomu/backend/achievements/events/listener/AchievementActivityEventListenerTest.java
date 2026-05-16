@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.achievements.events.listener;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.service.AchievementProgressService;
@@ -8,12 +9,15 @@ import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.Achievement
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementActivityPayload;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementQuizCompletedPayload;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementReadingCompletedPayload;
+import java.lang.reflect.Method;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.transaction.annotation.Transactional;
 
 class AchievementActivityEventListenerTest {
 
@@ -79,5 +83,30 @@ class AchievementActivityEventListenerTest {
 
     verify(achievementProgressService, times(1))
         .incrementProgress(userId, AchievementType.READING_COMPLETED, 1);
+  }
+
+  @Test
+  void handlerMethodShouldBeAnnotatedWithAsync() throws NoSuchMethodException {
+    Method method =
+        AchievementActivityEventListener.class.getMethod(
+            "handleAchievementEvent", AchievementEnvelope.class);
+
+    Async asyncAnnotation = method.getAnnotation(Async.class);
+    assertNotNull(asyncAnnotation, "handleAchievementEvent should be annotated with @Async");
+    assertEquals(
+        "achievementTaskExecutor",
+        asyncAnnotation.value(),
+        "Should use the dedicated achievementTaskExecutor");
+  }
+
+  @Test
+  void handlerMethodShouldBeAnnotatedWithTransactional() throws NoSuchMethodException {
+    Method method =
+        AchievementActivityEventListener.class.getMethod(
+            "handleAchievementEvent", AchievementEnvelope.class);
+
+    Transactional txAnnotation = method.getAnnotation(Transactional.class);
+    assertNotNull(
+        txAnnotation, "handleAchievementEvent should be annotated with @Transactional");
   }
 }
