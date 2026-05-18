@@ -25,7 +25,10 @@ public class LoginRateLimiter {
     AtomicInteger attempts = failedAttempts.computeIfAbsent(username, k -> new AtomicInteger(0));
     int current = attempts.incrementAndGet();
     log.warn(
-        "Authentication failure for user '{}' (attempt {}/{})", username, current, MAX_ATTEMPTS);
+        "Authentication failure for user sha256={} (attempt {}/{})",
+        Integer.toHexString(username.hashCode()),
+        current,
+        MAX_ATTEMPTS);
   }
 
   public void reset(String username) {
