@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,8 @@ class AuthServiceTest {
   @Mock private PasswordEncoder passwordEncoder;
   @Mock private JwtService jwtService;
   @Mock private GoogleService googleService;
+  @Mock private ApplicationEventPublisher eventPublisher;
+  @Mock private LoginRateLimiter rateLimiter;
 
   @InjectMocks private AuthService authService;
 
@@ -67,6 +70,7 @@ class AuthServiceTest {
     LoginRequest request = new LoginRequest(DEFAULT_USERNAME, DEFAULT_PASSWORD);
     User user = createDummyUser();
 
+    when(rateLimiter.isBlocked(anyString())).thenReturn(false);
     when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userRepository.findByUsername(DEFAULT_USERNAME)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
@@ -76,6 +80,7 @@ class AuthServiceTest {
 
     assertNotNull(response);
     assertEquals("jwt-token", response.getAccessToken());
+    verify(rateLimiter).reset(DEFAULT_USERNAME);
   }
 
   @Test
@@ -126,10 +131,12 @@ class AuthServiceTest {
   @Test
   void loginShouldFailWhenUserNotFound() {
     LoginRequest req = new LoginRequest("unknown", "password");
+    when(rateLimiter.isBlocked("unknown")).thenReturn(false);
     when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
 
     assertThrows(IllegalArgumentException.class, () -> authService.login(req));
+    verify(rateLimiter).recordFailure("unknown");
   }
 
   @Test
@@ -137,10 +144,21 @@ class AuthServiceTest {
     User user = createDummyUser();
     LoginRequest req = new LoginRequest(user.getUsername(), "wrong-password");
 
+    when(rateLimiter.isBlocked(anyString())).thenReturn(false);
     when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
     when(passwordEncoder.matches(eq("wrong-password"), anyString())).thenReturn(false);
 
     assertThrows(IllegalArgumentException.class, () -> authService.login(req));
+    verify(rateLimiter).recordFailure(user.getUsername());
+  }
+
+  @Test
+  void loginShouldFailWhenRateLimited() {
+    LoginRequest req = new LoginRequest("blockeduser", "password");
+    when(rateLimiter.isBlocked("blockeduser")).thenReturn(true);
+
+    assertThrows(IllegalArgumentException.class, () -> authService.login(req));
+    verify(userRepository, never()).findByEmail(anyString());
   }
 
   @Test
@@ -233,6 +251,7 @@ class AuthServiceTest {
     LoginRequest request = new LoginRequest(DEFAULT_PHONE, DEFAULT_PASSWORD);
     User user = createDummyUser();
 
+    when(rateLimiter.isBlocked(anyString())).thenReturn(false);
     when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
     when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
     when(userRepository.findByPhoneNumber(DEFAULT_PHONE)).thenReturn(Optional.of(user));
