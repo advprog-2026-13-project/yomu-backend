@@ -8,9 +8,9 @@ import java.util.UUID;
 public interface ForumUseCase {
   List<CommentView> getComments(UUID readingId);
 
-  CommentView postComment(UUID readingId, UUID userId, String content);
+  CommentView postComment(UUID readingId, UUID userId, String authorName, String content);
 
-  CommentView replyToComment(UUID parentCommentId, UUID userId, String content);
+  CommentView replyToComment(UUID parentCommentId, UUID userId, String authorName, String content);
 
   void editComment(UUID commentId, UUID requesterId, String newContent);
 

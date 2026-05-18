@@ -35,12 +35,11 @@ public class StudentQuizServiceImpl implements StudentQuizService {
   @Override
   @Transactional(readOnly = true)
   public List<Reading> getAvailableReadingsForStudent(UUID userId) {
-    var studentId = userId.toString();
     return readingRepository.findAll().stream()
         .filter(
             reading ->
                 !quizAttemptRepository.existsByStudentIdAndReadingId(
-                    studentId, reading.getReadingId()))
+                    userId, reading.getReadingId()))
         .toList();
   }
 
@@ -63,7 +62,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
       QuestionResponse dto = new QuestionResponse();
       dto.setQuestionId(q.getQuestionId());
       dto.setQuestionText(q.getQuestionText());
-      dto.setOptions(q.getOptions());
+      dto.setOptions(new ArrayList<>(q.getOptions()));
       responses.add(dto);
     }
     return responses;
@@ -90,7 +89,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     }
     int score = (int) Math.round(((double) correctCount / correctQuestions.size()) * 100);
     QuizAttempt attempt = new QuizAttempt();
-    attempt.setStudentId(userId.toString());
+    attempt.setStudentId(userId);
     attempt.setReadingId(readingId);
     attempt.setScore(score);
     attempt.setCompletedAt(LocalDateTime.now());
@@ -117,7 +116,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
   }
 
   private void validateNotAttempted(UUID userId, UUID readingId) {
-    if (quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId)) {
+    if (quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "...");
     }
   }

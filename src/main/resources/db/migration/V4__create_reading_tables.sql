@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS reading (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     category VARCHAR(255),
-    author_id VARCHAR(255)
+    author_id UUID
 );
 
 CREATE TABLE IF NOT EXISTS question (
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS question_options (
 
 CREATE TABLE IF NOT EXISTS quiz_attempt (
     quiz_attempt_id UUID PRIMARY KEY,
-    student_id VARCHAR(255),
+    student_id UUID,
     reading_id UUID,
     score INTEGER,
     completed_at TIMESTAMP

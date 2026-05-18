@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, UUID> {
-  boolean existsByStudentIdAndReadingId(String studentId, UUID readingId);
+  boolean existsByStudentIdAndReadingId(UUID studentId, UUID readingId);
 
-  List<QuizAttempt> findByStudentId(String studentId);
+  List<QuizAttempt> findByStudentId(UUID studentId);
 }

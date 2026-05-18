@@ -39,6 +39,9 @@ public class CommentEntity {
   @Column(name = "author_id", nullable = false)
   private UUID authorId;
 
+  @Column(name = "author_name", length = 100)
+  private String authorName;
+
   @Column(name = "parent_id")
   private UUID parentId;
 

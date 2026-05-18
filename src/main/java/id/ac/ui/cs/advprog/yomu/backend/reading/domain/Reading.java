@@ -28,7 +28,7 @@ public class Reading {
 
   private String category;
 
-  private String authorId;
+  private UUID authorId;
 
   @JsonIgnore
   @OneToMany(mappedBy = "reading", cascade = CascadeType.ALL, orphanRemoval = true)

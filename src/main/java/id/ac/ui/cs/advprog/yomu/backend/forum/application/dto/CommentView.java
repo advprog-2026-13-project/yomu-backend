@@ -9,7 +9,8 @@ import java.util.UUID;
 public record CommentView(
     UUID id,
     UUID readingId,
-    UserSummary author,
+    UUID authorId,
+    String authorName,
     UUID parentId,
     String content,
     boolean deleted,

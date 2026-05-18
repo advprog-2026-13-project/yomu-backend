@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.forum.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
@@ -9,7 +8,6 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.in.ForumUseCase;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.CommentRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ForumEventPublisherPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.ReactionRepositoryPort;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.port.out.UserPort;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Comment;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ForumConstraints;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.Reaction;
@@ -32,17 +30,14 @@ public class ForumService implements ForumUseCase {
 
   private final CommentRepositoryPort commentRepository;
   private final ReactionRepositoryPort reactionRepository;
-  private final UserPort userRepository;
   private final ForumEventPublisherPort eventPublisher;
 
   public ForumService(
       CommentRepositoryPort commentRepository,
       ReactionRepositoryPort reactionRepository,
-      UserPort userRepository,
       ForumEventPublisherPort eventPublisher) {
     this.commentRepository = commentRepository;
     this.reactionRepository = reactionRepository;
-    this.userRepository = userRepository;
     this.eventPublisher = eventPublisher;
   }
 
@@ -54,7 +49,6 @@ public class ForumService implements ForumUseCase {
       return List.of();
     }
 
-    Map<UUID, UserSummary> authors = resolveAuthors(comments);
     Map<UUID, List<Comment>> childrenByParentId = groupChildren(comments);
 
     Set<UUID> commentIds = comments.stream().map(Comment::getId).collect(Collectors.toSet());
@@ -63,22 +57,23 @@ public class ForumService implements ForumUseCase {
     return comments.stream()
         .filter(c -> c.getParentId() == null)
         .sorted(Comparator.comparing(Comment::getCreatedAt))
-        .map(c -> toView(c, childrenByParentId, reactionCounts, authors))
+        .map(c -> toView(c, childrenByParentId, reactionCounts))
         .toList();
   }
 
   @Override
   @Transactional
-  public CommentView postComment(UUID readingId, UUID userId, String content) {
+  public CommentView postComment(UUID readingId, UUID userId, String authorName, String content) {
     validateContent(content);
 
-    Comment saved = createAndPublishComment(readingId, userId, null, content);
+    Comment saved = createAndPublishComment(readingId, userId, authorName, null, content);
     return toSingleView(saved);
   }
 
   @Override
   @Transactional
-  public CommentView replyToComment(UUID parentCommentId, UUID userId, String content) {
+  public CommentView replyToComment(
+      UUID parentCommentId, UUID userId, String authorName, String content) {
     validateContent(content);
 
     Comment parent =
@@ -90,16 +85,18 @@ public class ForumService implements ForumUseCase {
       throw new ForumBadRequestException("Cannot reply to a deleted comment");
     }
 
-    Comment saved = createAndPublishComment(parent.getReadingId(), userId, parent.getId(), content);
+    Comment saved =
+        createAndPublishComment(parent.getReadingId(), userId, authorName, parent.getId(), content);
     return toSingleView(saved);
   }
 
   private Comment createAndPublishComment(
-      UUID readingId, UUID authorId, UUID parentId, String content) {
+      UUID readingId, UUID authorId, String authorName, UUID parentId, String content) {
 
     Comment comment = new Comment();
     comment.setReadingId(readingId);
     comment.setAuthorId(authorId);
+    comment.setAuthorName(authorName);
     comment.setParentId(parentId);
     comment.setContent(content);
     comment.setDeleted(false);
@@ -198,12 +195,12 @@ public class ForumService implements ForumUseCase {
   }
 
   private CommentView toSingleView(Comment comment) {
-    UserSummary author = resolveAuthor(comment.getAuthorId());
     Map<ReactionType, Long> reactionCounts = Map.of();
     return new CommentView(
         comment.getId(),
         comment.getReadingId(),
-        author,
+        comment.getAuthorId(),
+        comment.getAuthorName(),
         comment.getParentId(),
         comment.isDeleted() ? null : comment.getContent(),
         comment.isDeleted(),
@@ -216,23 +213,21 @@ public class ForumService implements ForumUseCase {
   private CommentView toView(
       Comment comment,
       Map<UUID, List<Comment>> childrenByParentId,
-      Map<UUID, Map<ReactionType, Long>> reactionCounts,
-      Map<UUID, UserSummary> authors) {
+      Map<UUID, Map<ReactionType, Long>> reactionCounts) {
 
     List<CommentView> replies =
         childrenByParentId.getOrDefault(comment.getId(), List.of()).stream()
             .sorted(Comparator.comparing(Comment::getCreatedAt))
-            .map(c -> toView(c, childrenByParentId, reactionCounts, authors))
+            .map(c -> toView(c, childrenByParentId, reactionCounts))
             .toList();
 
     Map<ReactionType, Long> counts = reactionCounts.getOrDefault(comment.getId(), Map.of());
-    UserSummary author =
-        authors.getOrDefault(comment.getAuthorId(), new UserSummary(comment.getAuthorId(), null));
 
     return new CommentView(
         comment.getId(),
         comment.getReadingId(),
-        author,
+        comment.getAuthorId(),
+        comment.getAuthorName(),
         comment.getParentId(),
         comment.isDeleted() ? null : comment.getContent(),
         comment.isDeleted(),
@@ -240,20 +235,6 @@ public class ForumService implements ForumUseCase {
         comment.getEditedAt(),
         counts,
         replies);
-  }
-
-  private Map<UUID, UserSummary> resolveAuthors(List<Comment> comments) {
-    Set<UUID> authorIds = comments.stream().map(Comment::getAuthorId).collect(Collectors.toSet());
-    if (authorIds.isEmpty()) {
-      return Map.of();
-    }
-
-    return userRepository.findAllById(authorIds).stream()
-        .collect(Collectors.toMap(UserSummary::id, u -> u));
-  }
-
-  private UserSummary resolveAuthor(UUID authorId) {
-    return userRepository.findById(authorId).orElseGet(() -> new UserSummary(authorId, null));
   }
 
   private Map<UUID, List<Comment>> groupChildren(List<Comment> comments) {

@@ -12,6 +12,7 @@ public final class CommentMapper {
     comment.setId(entity.getId());
     comment.setReadingId(entity.getReadingId());
     comment.setAuthorId(entity.getAuthorId());
+    comment.setAuthorName(entity.getAuthorName());
     comment.setParentId(entity.getParentId());
     comment.setContent(entity.getContent());
     comment.setDeleted(entity.isDeleted());
@@ -25,6 +26,7 @@ public final class CommentMapper {
     entity.setId(comment.getId());
     entity.setReadingId(comment.getReadingId());
     entity.setAuthorId(comment.getAuthorId());
+    entity.setAuthorName(comment.getAuthorName());
     entity.setParentId(comment.getParentId());
     entity.setContent(comment.getContent());
     entity.setDeleted(comment.isDeleted());
