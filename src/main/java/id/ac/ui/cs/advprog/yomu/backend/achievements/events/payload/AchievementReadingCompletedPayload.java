@@ -4,7 +4,7 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class AchievementReadingCompletedPayload {
+public class AchievementReadingCompletedPayload implements AchievementActivityPayload {
   private final UUID userId;
   private final UUID readingId;
   private final int durationSec;

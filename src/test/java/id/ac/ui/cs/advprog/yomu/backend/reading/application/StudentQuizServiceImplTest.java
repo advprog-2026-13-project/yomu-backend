@@ -20,7 +20,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,8 +29,9 @@ class StudentQuizServiceImplTest {
   @Mock private ReadingRepository readingRepository;
   @Mock private QuestionRepository questionRepository;
   @Mock private QuizAttemptRepository quizAttemptRepository;
+  @Mock private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
-  @InjectMocks private StudentQuizServiceImpl studentQuizService;
+  private StudentQuizServiceImpl studentQuizService;
 
   private UUID userId;
   private UUID readingId;
@@ -39,6 +39,9 @@ class StudentQuizServiceImplTest {
 
   @BeforeEach
   void setUp() {
+    studentQuizService =
+        new StudentQuizServiceImpl(
+            readingRepository, questionRepository, quizAttemptRepository, eventPublisher);
     userId = UUID.randomUUID();
     readingId = UUID.randomUUID();
     reading = new Reading();
@@ -162,6 +165,7 @@ class StudentQuizServiceImplTest {
     assertThat(result.getScore()).isEqualTo(67);
     assertThat(result.getStudentId()).isEqualTo(userId.toString());
     verify(quizAttemptRepository, times(1)).save(any());
+    verify(eventPublisher, times(2)).publishEvent(any(Object.class));
   }
 
   private Question createQuestion(String correctAns) {

@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IDaily
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.Achievement;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.DailyMission;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,16 @@ public class AchievementAdminService {
     return achievementRepository.save(achievement);
   }
 
+  public Achievement updateAchievement(
+      UUID id, String name, String description, Integer milestone) {
+    Achievement existing =
+        achievementRepository
+            .findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Achievement not found with id: " + id));
+    Achievement updated = existing.update(name, description, milestone);
+    return achievementRepository.save(updated);
+  }
+
   public void deleteAchievement(UUID id) {
     achievementRepository.deleteById(id);
   }
@@ -35,6 +46,17 @@ public class AchievementAdminService {
       String name, String description, AchievementType targetType, int milestone) {
     DailyMission mission = new DailyMission(null, name, description, targetType, milestone);
     return dailyMissionRepository.save(mission);
+  }
+
+  public DailyMission updateDailyMission(
+      UUID id, String name, String description, Integer milestone) {
+    DailyMission existing =
+        dailyMissionRepository
+            .findById(id)
+            .orElseThrow(
+                () -> new NoSuchElementException("Daily mission not found with id: " + id));
+    DailyMission updated = existing.update(name, description, milestone);
+    return dailyMissionRepository.save(updated);
   }
 
   public void deleteDailyMission(UUID id) {

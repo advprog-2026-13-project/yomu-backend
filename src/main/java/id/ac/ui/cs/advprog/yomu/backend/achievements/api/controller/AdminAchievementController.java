@@ -2,10 +2,13 @@ package id.ac.ui.cs.advprog.yomu.backend.achievements.api.controller;
 
 import id.ac.ui.cs.advprog.yomu.backend.achievements.api.dto.CreateAchievementRequest;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.api.dto.CreateDailyMissionRequest;
+import id.ac.ui.cs.advprog.yomu.backend.achievements.api.dto.UpdateAchievementRequest;
+import id.ac.ui.cs.advprog.yomu.backend.achievements.api.dto.UpdateDailyMissionRequest;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.service.AchievementAdminService;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.Achievement;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.DailyMission;
 import jakarta.validation.Valid;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,19 @@ public class AdminAchievementController {
     return new ResponseEntity<>(created, HttpStatus.CREATED);
   }
 
+  @PutMapping("/{id}")
+  public ResponseEntity<Achievement> updateAchievement(
+      @PathVariable UUID id, @Valid @RequestBody UpdateAchievementRequest request) {
+    try {
+      Achievement updated =
+          adminService.updateAchievement(
+              id, request.getName(), request.getDescription(), request.getMilestone());
+      return ResponseEntity.ok(updated);
+    } catch (NoSuchElementException e) {
+      return ResponseEntity.notFound().build();
+    }
+  }
+
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteAchievement(@PathVariable UUID id) {
     adminService.deleteAchievement(id);
@@ -48,6 +64,19 @@ public class AdminAchievementController {
             request.getTargetType(),
             request.getMilestone());
     return new ResponseEntity<>(created, HttpStatus.CREATED);
+  }
+
+  @PutMapping("/daily-missions/{id}")
+  public ResponseEntity<DailyMission> updateDailyMission(
+      @PathVariable UUID id, @Valid @RequestBody UpdateDailyMissionRequest request) {
+    try {
+      DailyMission updated =
+          adminService.updateDailyMission(
+              id, request.getName(), request.getDescription(), request.getMilestone());
+      return ResponseEntity.ok(updated);
+    } catch (NoSuchElementException e) {
+      return ResponseEntity.notFound().build();
+    }
   }
 
   @DeleteMapping("/daily-missions/{id}")
