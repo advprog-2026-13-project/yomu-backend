@@ -6,6 +6,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -27,37 +28,51 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
 
-    String header = request.getHeader("Authorization");
-    if (header == null || !header.startsWith("Bearer ")) {
-      chain.doFilter(request, response);
-      return;
-    }
+    String traceId = UUID.randomUUID().toString().substring(0, 8);
+    MDC.put("traceId", traceId);
 
     try {
+      String header = request.getHeader("Authorization");
+      if (header == null || !header.startsWith("Bearer ")) {
+        chain.doFilter(request, response);
+        return;
+      }
+
       String token = header.substring(7).trim();
       var payload = jwtService.parse(token);
       String userIdStr = payload.userId();
 
-      if (userIdStr != null && !userIdStr.isBlank()) {
-        UUID userId = UUID.fromString(userIdStr);
-
-        userRepository
-            .findById(userId)
-            .ifPresent(
-                user -> {
-                  SecurityUser principal = new SecurityUser(user);
-                  UsernamePasswordAuthenticationToken auth =
-                      new UsernamePasswordAuthenticationToken(
-                          principal, null, principal.getAuthorities());
-                  SecurityContextHolder.getContext().setAuthentication(auth);
-                });
-      } else {
+      if (userIdStr == null || userIdStr.isBlank()) {
         log.warn("JWT payload missing user ID");
+        chain.doFilter(request, response);
+        return;
       }
 
+      UUID userId = UUID.fromString(userIdStr);
+
+      var userOpt = userRepository.findById(userId);
+      if (userOpt.isEmpty()) {
+        log.warn("User not found for ID {}", userIdStr);
+        chain.doFilter(request, response);
+        return;
+      }
+
+      var user = userOpt.get();
+      MDC.put("username", user.getUsername());
+
+      SecurityUser principal = new SecurityUser(user);
+      UsernamePasswordAuthenticationToken auth =
+          new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+      SecurityContextHolder.getContext().setAuthentication(auth);
+
+      log.info("User '{}' authenticated", user.getUsername());
+
     } catch (Exception e) {
-      log.error("JWT Authentication failed: {}", e.getMessage());
+      log.warn("JWT authentication failed: {}", e.getMessage());
       SecurityContextHolder.clearContext();
+    } finally {
+      MDC.remove("username");
+      MDC.remove("traceId");
     }
 
     chain.doFilter(request, response);

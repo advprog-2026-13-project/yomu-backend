@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
+import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.strategy.JwtClaimsStrategyFactory;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -13,26 +14,31 @@ import org.springframework.stereotype.Component;
 public class JwtService {
   private final byte[] secret;
   private final long expirationMinutes;
+  private final JwtClaimsStrategyFactory strategyFactory;
 
   public JwtService(
       @Value("${app.jwt.secret}") String secret,
-      @Value("${app.jwt.expiration-minutes:120}") long expirationMinutes) {
+      @Value("${app.jwt.expiration-minutes:120}") long expirationMinutes,
+      JwtClaimsStrategyFactory strategyFactory) {
     this.secret = secret.getBytes(StandardCharsets.UTF_8);
     this.expirationMinutes = expirationMinutes;
+    this.strategyFactory = strategyFactory;
   }
 
   public String generateToken(User user) {
     Instant now = Instant.now();
     Instant exp = now.plusSeconds(expirationMinutes * 60);
 
-    return Jwts.builder()
-        .subject(user.getId().toString())
-        .claim("username", user.getUsername())
-        .claim("role", user.getRole().name())
-        .issuedAt(Date.from(now))
-        .expiration(Date.from(exp))
-        .signWith(Keys.hmacShaKeyFor(secret))
-        .compact();
+    var builder =
+        Jwts.builder()
+            .subject(user.getId().toString())
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(exp))
+            .signWith(Keys.hmacShaKeyFor(secret));
+
+    strategyFactory.select(user).buildClaims(user).forEach(builder::claim);
+
+    return builder.compact();
   }
 
   public Payload parse(String token) {
