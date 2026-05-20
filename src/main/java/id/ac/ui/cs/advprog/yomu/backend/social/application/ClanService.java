@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
 import id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.ClanMemberRepository;
-import id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.ClanRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,10 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ClanService {
 
-  private final ClanRepository clanRepository;
+  private final ClanRepositoryPort clanRepository;
   private final ClanMemberRepository clanMemberRepository;
 
-  public ClanService(ClanRepository clanRepository, ClanMemberRepository clanMemberRepository) {
+  public ClanService(
+      ClanRepositoryPort clanRepository, ClanMemberRepository clanMemberRepository) {
     this.clanRepository = clanRepository;
     this.clanMemberRepository = clanMemberRepository;
   }
@@ -32,9 +33,7 @@ public class ClanService {
       throw new IllegalArgumentException("Clan name is already taken");
     }
 
-    Clan clan = new Clan();
-    clan.setName(clanName);
-    clan.setLeaderId(leaderId);
+    Clan clan = Clan.createNew(clanName, leaderId);
     clan = clanRepository.save(clan);
 
     ClanMember leader = new ClanMember();

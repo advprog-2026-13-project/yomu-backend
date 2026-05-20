@@ -1,12 +1,12 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.LeaderboardEntryResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategyFactory;
 import id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.ClanMemberRepository;
-import id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.ClanRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -16,12 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class LeaderboardService {
 
-  private final ClanRepository clanRepository;
+  private final ClanRepositoryPort clanRepository;
   private final ClanMemberRepository clanMemberRepository;
   private final RankingStrategyFactory strategyFactory;
 
   public LeaderboardService(
-      ClanRepository clanRepository,
+      ClanRepositoryPort clanRepository,
       ClanMemberRepository clanMemberRepository,
       RankingStrategyFactory strategyFactory) {
     this.clanRepository = clanRepository;
