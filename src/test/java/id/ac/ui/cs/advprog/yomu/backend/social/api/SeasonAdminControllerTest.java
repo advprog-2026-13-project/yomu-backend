@@ -22,10 +22,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 // Unit-level test following the forum ForumAdminControllerTest pattern (standaloneSetup).
-// NOTE: standaloneSetup does NOT enforce @PreAuthorize — method security requires a full
-// Spring Security context. 403 behavior is verified by the @PreAuthorize annotation's
-// presence on the class (readable in source) and is deferred to an integration test.
-// TODO: add @SpringBootTest + @AutoConfigureMockMvc integration test for 403 (non-ADMIN role).
+// TODO(security-test): @PreAuthorize hasRole('ADMIN') aktif di runtime tapi belum ter-test di
+// layer ini (standaloneSetup tidak load security filter). Untuk verify 403 non-admin & 200
+// admin, ikuti pola ForumControllerIntegrationTest: @SpringBootTest + @AutoConfigureMockMvc +
+// register user via real JWT login + Bearer token. Defer karena konsisten dengan kondisi
+// reading/achievements (mayoritas modul belum test layer ini).
 @ExtendWith(MockitoExtension.class)
 class SeasonAdminControllerTest {
 
