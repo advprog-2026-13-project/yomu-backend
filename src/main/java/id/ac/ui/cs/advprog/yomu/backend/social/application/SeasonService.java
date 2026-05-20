@@ -76,7 +76,8 @@ public class SeasonService {
 
       for (int i = 0; i < demoteCount; i++) {
         Clan clan = clanMap.get(ranked.get(total - 1 - i).clanId());
-        clan.setTier(clan.getTier().previousTier()); // BRONZE.previousTier()=BRONZE: no-op at boundary
+        clan.setTier(
+            clan.getTier().previousTier()); // BRONZE.previousTier()=BRONZE: no-op at boundary
         clanRepository.save(clan);
       }
     }

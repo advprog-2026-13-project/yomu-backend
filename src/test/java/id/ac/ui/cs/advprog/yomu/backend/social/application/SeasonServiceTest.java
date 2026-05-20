@@ -51,8 +51,8 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.GOLD,   clans.get(0).getTier()); // rank 1 → GOLD
-    assertEquals(Tier.GOLD,   clans.get(1).getTier()); // rank 2 → GOLD
+    assertEquals(Tier.GOLD, clans.get(0).getTier()); // rank 1 → GOLD
+    assertEquals(Tier.GOLD, clans.get(1).getTier()); // rank 2 → GOLD
     for (int i = 2; i <= 6; i++) assertEquals(Tier.SILVER, clans.get(i).getTier());
     assertEquals(Tier.BRONZE, clans.get(7).getTier()); // rank 8 → BRONZE
   }
@@ -66,7 +66,7 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.GOLD,   clans.get(0).getTier()); // rank 1 → GOLD (floor, not round)
+    assertEquals(Tier.GOLD, clans.get(0).getTier()); // rank 1 → GOLD (floor, not round)
     for (int i = 1; i <= 5; i++) assertEquals(Tier.SILVER, clans.get(i).getTier());
     assertEquals(Tier.BRONZE, clans.get(6).getTier()); // rank 7 → BRONZE
   }
@@ -80,7 +80,7 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.GOLD,   clans.get(0).getTier()); // guard → promotes despite floor=0
+    assertEquals(Tier.GOLD, clans.get(0).getTier()); // guard → promotes despite floor=0
     assertEquals(Tier.SILVER, clans.get(1).getTier()); // middle stays
     assertEquals(Tier.BRONZE, clans.get(2).getTier()); // guard → demotes despite floor=0
   }
@@ -118,7 +118,7 @@ class SeasonServiceTest {
 
     assertEquals(Tier.DIAMOND, clans.get(0).getTier()); // top: nextTier()=DIAMOND (no change)
     assertEquals(Tier.DIAMOND, clans.get(1).getTier()); // middle stays
-    assertEquals(Tier.GOLD,    clans.get(2).getTier()); // bottom demotes normally
+    assertEquals(Tier.GOLD, clans.get(2).getTier()); // bottom demotes normally
   }
 
   @Test
@@ -149,10 +149,11 @@ class SeasonServiceTest {
     seasonService.endSeason();
 
     // rank() is called once per tier; find the SILVER call (the only non-empty one)
-    List<ClanScoreData> silverInput = captor.getAllValues().stream()
-        .filter(l -> !l.isEmpty())
-        .findFirst()
-        .orElseThrow(() -> new AssertionError("rank() was never called with SILVER data"));
+    List<ClanScoreData> silverInput =
+        captor.getAllValues().stream()
+            .filter(l -> !l.isEmpty())
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("rank() was never called with SILVER data"));
     assertTrue(
         silverInput.stream().allMatch(d -> d.score() > 0),
         "ClanScoreData passed to rank() must carry pre-reset scores (>0), not zeros");

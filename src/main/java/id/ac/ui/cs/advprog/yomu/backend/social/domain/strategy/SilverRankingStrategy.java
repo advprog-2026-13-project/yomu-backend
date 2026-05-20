@@ -6,7 +6,8 @@ import java.util.List;
 
 public class SilverRankingStrategy implements RankingStrategy {
 
-  // Bonus per member; keeps member-count relevant without overwhelming raw score — see design doc §4
+  // Bonus per member; keeps member-count relevant without overwhelming raw score — see design doc
+  // §4
   private static final long MEMBER_BONUS = 10L;
 
   @Override

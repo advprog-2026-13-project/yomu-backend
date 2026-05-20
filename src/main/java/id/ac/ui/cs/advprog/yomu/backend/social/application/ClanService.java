@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
-import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
 import java.util.Optional;
 import java.util.UUID;

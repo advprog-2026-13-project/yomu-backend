@@ -41,8 +41,8 @@ class DiamondRankingStrategyTest {
   @Test
   void rank_twoMembers_scoreTreatedAsZero() {
     // < 3 anggota → skor efektif 0; clan lain yang valid harus lebih tinggi
-    ClanScoreData below = scoreData(9999L, 2L);  // 2 anggota → 0
-    ClanScoreData valid = scoreData(10L, 3L);    // 3 anggota → 10/3 ≈ 3.33
+    ClanScoreData below = scoreData(9999L, 2L); // 2 anggota → 0
+    ClanScoreData valid = scoreData(10L, 3L); // 3 anggota → 10/3 ≈ 3.33
     List<ClanScoreData> result = strategy.rank(List.of(below, valid));
     assertSame(valid, result.get(0));
     assertSame(below, result.get(1));
@@ -50,8 +50,8 @@ class DiamondRankingStrategyTest {
 
   @Test
   void rank_oneMember_scoreTreatedAsZero() {
-    ClanScoreData below = scoreData(5000L, 1L);  // 1 anggota → 0
-    ClanScoreData valid = scoreData(1L, 3L);     // 3 anggota → ~0.33, masih > 0
+    ClanScoreData below = scoreData(5000L, 1L); // 1 anggota → 0
+    ClanScoreData valid = scoreData(1L, 3L); // 3 anggota → ~0.33, masih > 0
     List<ClanScoreData> result = strategy.rank(List.of(below, valid));
     assertSame(valid, result.get(0));
     assertSame(below, result.get(1));

@@ -27,7 +27,7 @@ class GoldRankingStrategyTest {
     // clan B: score=400,  members=1  → 400*0.5  + (400/1)*0.5  = 200 + 200 = 400
     // clan A effective 600 > clan B effective 400 → A ranks first
     ClanScoreData clanA = scoreData(1000L, 5L);
-    ClanScoreData clanB = scoreData(400L,  1L);
+    ClanScoreData clanB = scoreData(400L, 1L);
     List<ClanScoreData> result = strategy.rank(List.of(clanB, clanA));
     assertSame(clanA, result.get(0));
     assertSame(clanB, result.get(1));
@@ -48,10 +48,10 @@ class GoldRankingStrategyTest {
     // score=1000, members=1 → 1000*0.5 + (1000/1)*0.5 = 500 + 500 = 1000
     // score=600, members=2  → 600*0.5  + (600/2)*0.5  = 300 + 150 = 450
     // boundary: 1-member clan has effective score equal to its raw score
-    ClanScoreData oneMember  = scoreData(1000L, 1L);
-    ClanScoreData twoMembers = scoreData(600L,  2L);
+    ClanScoreData oneMember = scoreData(1000L, 1L);
+    ClanScoreData twoMembers = scoreData(600L, 2L);
     List<ClanScoreData> result = strategy.rank(List.of(twoMembers, oneMember));
-    assertSame(oneMember,  result.get(0)); // 1000 > 450
+    assertSame(oneMember, result.get(0)); // 1000 > 450
     assertSame(twoMembers, result.get(1));
   }
 
@@ -77,9 +77,9 @@ class GoldRankingStrategyTest {
     //   Diamond: A=900/2=450, B=1000/20=50, C=200/1=200 → A > C > B
     // Gold order: A(675) > B(525) > C(200)
     // Gold order A>B>C differs from Bronze B>A>C and Diamond A>C>B — proves distinctness.
-    ClanScoreData clanA = scoreData(900L,  2L);
+    ClanScoreData clanA = scoreData(900L, 2L);
     ClanScoreData clanB = scoreData(1000L, 20L);
-    ClanScoreData clanC = scoreData(200L,  1L);
+    ClanScoreData clanC = scoreData(200L, 1L);
     List<ClanScoreData> result = strategy.rank(List.of(clanB, clanC, clanA));
     assertSame(clanA, result.get(0)); // Gold: 675
     assertSame(clanB, result.get(1)); // Gold: 525

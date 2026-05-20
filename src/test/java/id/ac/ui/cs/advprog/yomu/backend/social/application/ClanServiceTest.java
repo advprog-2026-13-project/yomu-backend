@@ -24,8 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * Characterization tests — pin behavior SAAT INI (termasuk yang audit-flagged 🟡) sebagai safety
- * net sebelum refactor 4B/4C. Komentar PIN-CURRENT menandai perilaku yang nantinya mau
- * direvisi di Gelombang 3.
+ * net sebelum refactor 4B/4C. Komentar PIN-CURRENT menandai perilaku yang nantinya mau direvisi di
+ * Gelombang 3.
  */
 @ExtendWith(MockitoExtension.class)
 class ClanServiceTest {

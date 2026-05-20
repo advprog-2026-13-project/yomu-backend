@@ -21,8 +21,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
- * Characterization test — pin behavior SAAT INI dari LeaderboardService sebagai safety net
- * sebelum refactor 4B/4C.
+ * Characterization test — pin behavior SAAT INI dari LeaderboardService sebagai safety net sebelum
+ * refactor 4B/4C.
  */
 @ExtendWith(MockitoExtension.class)
 class LeaderboardServiceTest {
