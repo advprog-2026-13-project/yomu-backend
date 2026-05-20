@@ -5,12 +5,12 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
-import id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.ClanMemberRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ClanServiceTest {
 
   @Mock private ClanRepositoryPort clanRepository;
-  @Mock private ClanMemberRepository clanMemberRepository;
+  @Mock private ClanMemberRepositoryPort clanMemberRepository;
 
   @InjectMocks private ClanService clanService;
 

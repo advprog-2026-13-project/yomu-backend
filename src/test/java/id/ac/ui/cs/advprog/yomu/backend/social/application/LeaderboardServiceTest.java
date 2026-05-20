@@ -5,13 +5,13 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.LeaderboardEntryResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategy;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategyFactory;
-import id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.ClanMemberRepository;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class LeaderboardServiceTest {
 
   @Mock private ClanRepositoryPort clanRepository;
-  @Mock private ClanMemberRepository clanMemberRepository;
+  @Mock private ClanMemberRepositoryPort clanMemberRepository;
   @Mock private RankingStrategyFactory strategyFactory;
   @Mock private RankingStrategy rankingStrategy;
 

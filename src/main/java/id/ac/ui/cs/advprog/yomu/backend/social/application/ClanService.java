@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
-import id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.ClanMemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,10 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClanService {
 
   private final ClanRepositoryPort clanRepository;
-  private final ClanMemberRepository clanMemberRepository;
+  private final ClanMemberRepositoryPort clanMemberRepository;
 
   public ClanService(
-      ClanRepositoryPort clanRepository, ClanMemberRepository clanMemberRepository) {
+      ClanRepositoryPort clanRepository, ClanMemberRepositoryPort clanMemberRepository) {
     this.clanRepository = clanRepository;
     this.clanMemberRepository = clanMemberRepository;
   }
@@ -54,10 +54,7 @@ public class ClanService {
             .findById(clanId)
             .orElseThrow(() -> new EntityNotFoundException("Clan not found"));
 
-    ClanMember member = new ClanMember();
-    member.setClanId(clanId);
-    member.setUserId(userId);
-    member.setRole(ClanMemberRole.MEMBER);
+    ClanMember member = ClanMember.join(clanId, userId);
     clanMemberRepository.save(member);
 
     long memberCount = clanMemberRepository.countByClanId(clanId);
