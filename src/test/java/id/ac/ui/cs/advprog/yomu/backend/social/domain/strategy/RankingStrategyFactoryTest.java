@@ -9,14 +9,18 @@ import org.junit.jupiter.api.Test;
 class RankingStrategyFactoryTest {
 
   private BronzeRankingStrategy bronze;
+  private SilverRankingStrategy silver;
+  private GoldRankingStrategy gold;
   private DiamondRankingStrategy diamond;
   private RankingStrategyFactory factory;
 
   @BeforeEach
   void setUp() {
     bronze = new BronzeRankingStrategy();
+    silver = new SilverRankingStrategy();
+    gold = new GoldRankingStrategy();
     diamond = new DiamondRankingStrategy();
-    factory = new RankingStrategyFactory(bronze, diamond);
+    factory = new RankingStrategyFactory(bronze, silver, gold, diamond);
   }
 
   @Test
@@ -25,27 +29,21 @@ class RankingStrategyFactoryTest {
   }
 
   @Test
+  void getStrategy_forSilver_returnsSilverStrategy() {
+    assertNotNull(factory.getStrategy(Tier.SILVER));
+    assertSame(silver, factory.getStrategy(Tier.SILVER));
+    assertInstanceOf(SilverRankingStrategy.class, factory.getStrategy(Tier.SILVER));
+  }
+
+  @Test
+  void getStrategy_forGold_returnsGoldStrategy() {
+    assertNotNull(factory.getStrategy(Tier.GOLD));
+    assertSame(gold, factory.getStrategy(Tier.GOLD));
+    assertInstanceOf(GoldRankingStrategy.class, factory.getStrategy(Tier.GOLD));
+  }
+
+  @Test
   void getStrategy_forDiamond_returnsDiamondStrategy() {
     assertSame(diamond, factory.getStrategy(Tier.DIAMOND));
-  }
-
-  @Test
-  void getStrategy_forSilver_throwsIllegalStateException() {
-    IllegalStateException ex =
-        assertThrows(IllegalStateException.class, () -> factory.getStrategy(Tier.SILVER));
-    assertTrue(
-        ex.getMessage().contains("SILVER"),
-        "Pesan exception harus menyebut nama Tier supaya debug-friendly. Pesan aktual: "
-            + ex.getMessage());
-  }
-
-  @Test
-  void getStrategy_forUnsupportedTier_throwsIllegalStateException() {
-    IllegalStateException ex =
-        assertThrows(IllegalStateException.class, () -> factory.getStrategy(Tier.GOLD));
-    assertTrue(
-        ex.getMessage().contains("GOLD"),
-        "Pesan exception harus menyebut nama Tier supaya debug-friendly. Pesan aktual: "
-            + ex.getMessage());
   }
 }

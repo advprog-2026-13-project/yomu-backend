@@ -9,10 +9,15 @@ public class RankingStrategyFactory {
   private final Map<Tier, RankingStrategy> strategies;
 
   public RankingStrategyFactory(
-      BronzeRankingStrategy bronzeRankingStrategy, DiamondRankingStrategy diamondRankingStrategy) {
+      BronzeRankingStrategy bronze,
+      SilverRankingStrategy silver,
+      GoldRankingStrategy gold,
+      DiamondRankingStrategy diamond) {
     EnumMap<Tier, RankingStrategy> map = new EnumMap<>(Tier.class);
-    map.put(Tier.BRONZE, bronzeRankingStrategy);
-    map.put(Tier.DIAMOND, diamondRankingStrategy);
+    map.put(Tier.BRONZE, bronze);
+    map.put(Tier.SILVER, silver);
+    map.put(Tier.GOLD, gold);
+    map.put(Tier.DIAMOND, diamond);
     this.strategies = map;
   }
 
