@@ -5,8 +5,8 @@ import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRe
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ public class ClanService {
     Clan clan =
         clanRepository
             .findById(clanId)
-            .orElseThrow(() -> new EntityNotFoundException("Clan not found"));
+            .orElseThrow(() -> new ClanNotFoundException("Clan not found"));
 
     ClanMember member = ClanMember.join(clanId, userId);
     clanMemberRepository.save(member);
@@ -65,7 +65,7 @@ public class ClanService {
     ClanMember member =
         clanMemberRepository
             .findByUserId(userId)
-            .orElseThrow(() -> new EntityNotFoundException("User is not in a clan"));
+            .orElseThrow(() -> new ClanNotFoundException("User is not in a clan"));
 
     if (member.getRole() == ClanMemberRole.LEADER) {
       UUID clanId = member.getClanId();
@@ -81,7 +81,7 @@ public class ClanService {
     Clan clan =
         clanRepository
             .findById(clanId)
-            .orElseThrow(() -> new EntityNotFoundException("Clan not found"));
+            .orElseThrow(() -> new ClanNotFoundException("Clan not found"));
     long memberCount = clanMemberRepository.countByClanId(clanId);
     return new ClanResponse(clan, memberCount);
   }
@@ -95,7 +95,7 @@ public class ClanService {
               Clan clan =
                   clanRepository
                       .findById(m.getClanId())
-                      .orElseThrow(() -> new EntityNotFoundException("Clan not found"));
+                      .orElseThrow(() -> new ClanNotFoundException("Clan not found"));
               long count = clanMemberRepository.countByClanId(m.getClanId());
               return new ClanResponse(clan, count);
             });
