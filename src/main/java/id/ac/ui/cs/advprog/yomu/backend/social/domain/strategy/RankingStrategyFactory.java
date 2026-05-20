@@ -3,9 +3,7 @@ package id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
 import java.util.EnumMap;
 import java.util.Map;
-import org.springframework.stereotype.Component;
 
-@Component
 public class RankingStrategyFactory {
 
   private final Map<Tier, RankingStrategy> strategies;
