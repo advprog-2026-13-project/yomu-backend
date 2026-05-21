@@ -56,8 +56,10 @@ class StudentQuizServiceImplTest {
     reading2.setReadingId(UUID.randomUUID());
 
     when(readingRepository.findByHiddenFalse()).thenReturn(List.of(reading, reading2));
-    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(true);
-    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, reading2.getReadingId()))
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId))
+        .thenReturn(true);
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(
+            userId, reading2.getReadingId()))
         .thenReturn(false);
 
     List<Reading> result = studentQuizService.getAllReadingsWithCompletionStatus(userId);
