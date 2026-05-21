@@ -1,7 +1,9 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
@@ -28,10 +30,10 @@ public class ClanService {
 
   public ClanResponse createClan(String clanName, UUID leaderId) {
     if (clanMemberRepository.existsByUserId(leaderId)) {
-      throw new IllegalStateException("User is already a member of a clan");
+      throw new AlreadyInClanException("User is already a member of a clan");
     }
     if (clanRepository.existsByName(clanName)) {
-      throw new IllegalArgumentException("Clan name is already taken");
+      throw new DuplicateClanNameException("Clan name is already taken");
     }
 
     Clan clan = Clan.createNew(clanName, leaderId);

@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
@@ -133,6 +135,25 @@ class ClanServiceTest {
 
     assertEquals(150L, clan.getScore());
     verify(clanRepository).save(clan);
+  }
+
+  // --- UC-4.1: createClan error paths ---
+
+  @Test
+  void createClan_duplicateName_throwsDuplicateClanNameException() {
+    when(clanMemberRepository.existsByUserId(leaderId)).thenReturn(false);
+    when(clanRepository.existsByName("Vipers")).thenReturn(true);
+
+    assertThrows(
+        DuplicateClanNameException.class, () -> clanService.createClan("Vipers", leaderId));
+  }
+
+  @Test
+  void createClan_userAlreadyInClan_throwsAlreadyInClanException() {
+    when(clanMemberRepository.existsByUserId(leaderId)).thenReturn(true);
+
+    assertThrows(
+        AlreadyInClanException.class, () -> clanService.createClan("Vipers", leaderId));
   }
 
   // --- UC-4.6: Delete Clan (operasi eksplisit, terpisah dari leaveClan) ---

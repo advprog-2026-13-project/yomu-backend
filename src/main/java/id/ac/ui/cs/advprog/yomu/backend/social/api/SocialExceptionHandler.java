@@ -1,7 +1,9 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.api;
 
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyMemberException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateJoinRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.JoinRequestAlreadyResolvedException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
@@ -26,6 +28,16 @@ public class SocialExceptionHandler {
 
   @ExceptionHandler(AlreadyMemberException.class)
   public ResponseEntity<ProblemDetail> handleAlreadyMember(AlreadyMemberException ex) {
+    return build(HttpStatus.CONFLICT, ex);
+  }
+
+  @ExceptionHandler(DuplicateClanNameException.class)
+  public ResponseEntity<ProblemDetail> handleDuplicateClanName(DuplicateClanNameException ex) {
+    return build(HttpStatus.CONFLICT, ex);
+  }
+
+  @ExceptionHandler(AlreadyInClanException.class)
+  public ResponseEntity<ProblemDetail> handleAlreadyInClan(AlreadyInClanException ex) {
     return build(HttpStatus.CONFLICT, ex);
   }
 

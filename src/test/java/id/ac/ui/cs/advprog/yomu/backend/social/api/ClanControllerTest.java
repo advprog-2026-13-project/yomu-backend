@@ -8,10 +8,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
+import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.ClanService;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import java.util.UUID;
+import org.springframework.http.MediaType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,6 +64,40 @@ class ClanControllerTest {
   private UsernamePasswordAuthenticationToken userPrincipal() {
     return new UsernamePasswordAuthenticationToken(
         securityUser, null, securityUser.getAuthorities());
+  }
+
+  // ---- createClan ----
+
+  @Test
+  void createClan_happyPath_returns201() throws Exception {
+    Clan clan = Clan.createNew("Vipers", USER_ID);
+    clan.setId(CLAN_ID);
+    when(clanService.createClan(any(), any())).thenReturn(new ClanResponse(clan, 1L));
+
+    mockMvc
+        .perform(
+            post("/api/clans")
+                .principal(userPrincipal())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Vipers\"}"))
+        .andExpect(status().isCreated());
+
+    verify(clanService).createClan("Vipers", USER_ID);
+  }
+
+  @Test
+  void createClan_duplicateName_returns409() throws Exception {
+    doThrow(new DuplicateClanNameException("Clan name is already taken"))
+        .when(clanService)
+        .createClan(any(), any());
+
+    mockMvc
+        .perform(
+            post("/api/clans")
+                .principal(userPrincipal())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Vipers\"}"))
+        .andExpect(status().isConflict());
   }
 
   // ---- deleteClan ----
