@@ -5,8 +5,12 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.LeaderboardEntryResponse;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.IdentityModifier;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
@@ -31,6 +35,8 @@ class LeaderboardServiceTest {
   @Mock private ClanMemberRepositoryPort clanMemberRepository;
   @Mock private RankingStrategyFactory strategyFactory;
   @Mock private RankingStrategy rankingStrategy;
+  @Mock private ClanActivityProvider activityProvider;
+  @Mock private ModifierResolver modifierResolver;
 
   @InjectMocks private LeaderboardService leaderboardService;
 
@@ -54,6 +60,8 @@ class LeaderboardServiceTest {
     when(clanRepository.findByTierOrderByScoreDesc(Tier.BRONZE)).thenReturn(List.of(c1, c2));
     when(clanMemberRepository.countByClanId(c1Id)).thenReturn(5L);
     when(clanMemberRepository.countByClanId(c2Id)).thenReturn(3L);
+    when(activityProvider.getActivity(any())).thenReturn(new ClanActivitySnapshot(0.0, 1.0));
+    when(modifierResolver.resolve(any())).thenReturn(new IdentityModifier());
 
     // Pin: factory dipanggil dengan tier, strategy mengubah / mengurutkan data,
     // dan rank diisi sequentially dari index+1 (bukan dari skor — sudah ranked oleh strategy).
