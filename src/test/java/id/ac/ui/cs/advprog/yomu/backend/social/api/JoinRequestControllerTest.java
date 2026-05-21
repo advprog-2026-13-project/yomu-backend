@@ -74,7 +74,8 @@ class JoinRequestControllerTest {
     when(joinRequestService.submitJoinRequest(any(), any())).thenReturn(req);
 
     mockMvc
-        .perform(post("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
+        .perform(
+            post("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.status").value("PENDING"))
         .andExpect(jsonPath("$.clanId").value(CLAN_ID.toString()));
@@ -87,7 +88,8 @@ class JoinRequestControllerTest {
         .submitJoinRequest(any(), any());
 
     mockMvc
-        .perform(post("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
+        .perform(
+            post("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isConflict());
   }
 
@@ -99,7 +101,8 @@ class JoinRequestControllerTest {
     when(joinRequestService.listPendingRequests(any(), any())).thenReturn(List.of(req));
 
     mockMvc
-        .perform(get("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
+        .perform(
+            get("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(1))
@@ -113,7 +116,8 @@ class JoinRequestControllerTest {
         .listPendingRequests(any(), any());
 
     mockMvc
-        .perform(get("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
+        .perform(
+            get("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isForbidden());
   }
 
@@ -175,10 +179,7 @@ class JoinRequestControllerTest {
 
     mockMvc
         .perform(
-            post(
-                    "/api/social/clans/{clanId}/join-requests/{requestId}/reject",
-                    CLAN_ID,
-                    REQUEST_ID)
+            post("/api/social/clans/{clanId}/join-requests/{requestId}/reject", CLAN_ID, REQUEST_ID)
                 .principal(userPrincipal()))
         .andExpect(status().isOk());
 
@@ -193,10 +194,7 @@ class JoinRequestControllerTest {
 
     mockMvc
         .perform(
-            post(
-                    "/api/social/clans/{clanId}/join-requests/{requestId}/reject",
-                    CLAN_ID,
-                    REQUEST_ID)
+            post("/api/social/clans/{clanId}/join-requests/{requestId}/reject", CLAN_ID, REQUEST_ID)
                 .principal(userPrincipal()))
         .andExpect(status().isForbidden());
   }

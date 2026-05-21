@@ -30,17 +30,14 @@ public class RealClanActivityProvider implements ClanActivityProvider {
   @Override
   public ClanActivitySnapshot getActivity(UUID clanId) {
     List<UUID> memberUserIds =
-        clanMemberRepository.findByClanId(clanId).stream()
-            .map(ClanMember::getUserId)
-            .toList();
+        clanMemberRepository.findByClanId(clanId).stream().map(ClanMember::getUserId).toList();
 
     if (memberUserIds.isEmpty()) {
       return new ClanActivitySnapshot(0.0, 1.0);
     }
 
     long completedCount =
-        achievementQueryService.countMembersCompletedDailyMissionOn(
-            memberUserIds, LocalDate.now());
+        achievementQueryService.countMembersCompletedDailyMissionOn(memberUserIds, LocalDate.now());
     double completionRate = (double) completedCount / memberUserIds.size();
     double averageAccuracy = quizStatsQueryService.averageScore(memberUserIds);
 

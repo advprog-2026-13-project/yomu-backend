@@ -152,8 +152,7 @@ class ClanServiceTest {
   void createClan_userAlreadyInClan_throwsAlreadyInClanException() {
     when(clanMemberRepository.existsByUserId(leaderId)).thenReturn(true);
 
-    assertThrows(
-        AlreadyInClanException.class, () -> clanService.createClan("Vipers", leaderId));
+    assertThrows(AlreadyInClanException.class, () -> clanService.createClan("Vipers", leaderId));
   }
 
   // --- UC-4.6: Delete Clan (operasi eksplisit, terpisah dari leaveClan) ---

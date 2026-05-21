@@ -28,7 +28,9 @@ class RealClanActivityProviderTest {
 
   @BeforeEach
   void setUp() {
-    provider = new RealClanActivityProvider(clanMemberRepository, achievementQueryService, quizStatsQueryService);
+    provider =
+        new RealClanActivityProvider(
+            clanMemberRepository, achievementQueryService, quizStatsQueryService);
   }
 
   @Test
@@ -38,9 +40,12 @@ class RealClanActivityProviderTest {
     UUID u2 = UUID.randomUUID();
     UUID u3 = UUID.randomUUID();
 
-    ClanMember m1 = new ClanMember(); m1.setUserId(u1);
-    ClanMember m2 = new ClanMember(); m2.setUserId(u2);
-    ClanMember m3 = new ClanMember(); m3.setUserId(u3);
+    ClanMember m1 = new ClanMember();
+    m1.setUserId(u1);
+    ClanMember m2 = new ClanMember();
+    m2.setUserId(u2);
+    ClanMember m3 = new ClanMember();
+    m3.setUserId(u3);
 
     when(clanMemberRepository.findByClanId(clanId)).thenReturn(List.of(m1, m2, m3));
 
@@ -72,8 +77,10 @@ class RealClanActivityProviderTest {
     UUID u1 = UUID.randomUUID();
     UUID u2 = UUID.randomUUID();
 
-    ClanMember m1 = new ClanMember(); m1.setUserId(u1);
-    ClanMember m2 = new ClanMember(); m2.setUserId(u2);
+    ClanMember m1 = new ClanMember();
+    m1.setUserId(u1);
+    ClanMember m2 = new ClanMember();
+    m2.setUserId(u2);
 
     when(clanMemberRepository.findByClanId(clanId)).thenReturn(List.of(m1, m2));
 

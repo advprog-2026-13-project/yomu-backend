@@ -15,7 +15,6 @@ import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateCl
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import java.util.UUID;
-import org.springframework.http.MediaType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
@@ -126,9 +126,7 @@ class ClanControllerTest {
 
   @Test
   void deleteClan_clanNotFound_returns404() throws Exception {
-    doThrow(new ClanNotFoundException("Clan not found"))
-        .when(clanService)
-        .deleteClan(any(), any());
+    doThrow(new ClanNotFoundException("Clan not found")).when(clanService).deleteClan(any(), any());
 
     mockMvc
         .perform(delete("/api/social/clans/{clanId}", CLAN_ID).principal(userPrincipal()))

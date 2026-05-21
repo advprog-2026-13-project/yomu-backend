@@ -11,8 +11,8 @@ import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.UserDailyMissi
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AchievementQueryService {

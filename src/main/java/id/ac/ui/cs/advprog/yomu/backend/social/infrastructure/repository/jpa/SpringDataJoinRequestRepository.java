@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SpringDataJoinRequestRepository
-    extends JpaRepository<JoinRequestJpaEntity, UUID> {
+public interface SpringDataJoinRequestRepository extends JpaRepository<JoinRequestJpaEntity, UUID> {
 
   boolean existsByClanIdAndUserIdAndStatus(UUID clanId, UUID userId, JoinRequestStatus status);
 

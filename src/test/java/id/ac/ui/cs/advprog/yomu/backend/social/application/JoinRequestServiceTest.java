@@ -85,8 +85,7 @@ class JoinRequestServiceTest {
     when(clanRepository.findById(CLAN_ID)).thenReturn(Optional.empty());
 
     assertThrows(
-        ClanNotFoundException.class,
-        () -> joinRequestService.submitJoinRequest(CLAN_ID, USER_ID));
+        ClanNotFoundException.class, () -> joinRequestService.submitJoinRequest(CLAN_ID, USER_ID));
     verify(joinRequestRepository, never()).save(any());
   }
 
@@ -95,8 +94,7 @@ class JoinRequestServiceTest {
     when(clanMemberRepository.existsByUserId(USER_ID)).thenReturn(true);
 
     assertThrows(
-        AlreadyMemberException.class,
-        () -> joinRequestService.submitJoinRequest(CLAN_ID, USER_ID));
+        AlreadyMemberException.class, () -> joinRequestService.submitJoinRequest(CLAN_ID, USER_ID));
     verify(joinRequestRepository, never()).save(any());
   }
 

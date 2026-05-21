@@ -18,9 +18,9 @@ public class QuizStatsQueryService {
   }
 
   /**
-   * Returns average quiz score for the given users as a value in [0.0, 1.0].
-   * Default 1.0 when no attempts exist — clan with no quiz history is not penalised
-   * (LowAccuracyPenalty only triggers when result is below 0.5).
+   * Returns average quiz score for the given users as a value in [0.0, 1.0]. Default 1.0 when no
+   * attempts exist — clan with no quiz history is not penalised (LowAccuracyPenalty only triggers
+   * when result is below 0.5).
    */
   public double averageScore(List<UUID> userIds) {
     if (userIds.isEmpty()) return 1.0;
