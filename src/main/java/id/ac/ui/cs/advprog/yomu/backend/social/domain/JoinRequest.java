@@ -3,8 +3,12 @@ package id.ac.ui.cs.advprog.yomu.backend.social.domain;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class JoinRequest {
 
   private UUID id;
@@ -13,8 +17,6 @@ public class JoinRequest {
   private JoinRequestStatus status;
   private Instant createdAt;
   private Instant resolvedAt;
-
-  private JoinRequest() {}
 
   public static JoinRequest create(UUID clanId, UUID userId) {
     JoinRequest req = new JoinRequest();
