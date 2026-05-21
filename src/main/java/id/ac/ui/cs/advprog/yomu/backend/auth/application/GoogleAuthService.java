@@ -7,16 +7,12 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.events.UserRegisteredEvent;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.JwtService;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GoogleAuthService {
-
-  private static final Logger log = LoggerFactory.getLogger(GoogleAuthService.class);
 
   private final UserRepository userRepository;
   private final JwtService jwtService;

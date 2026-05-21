@@ -170,23 +170,10 @@ class AuthServiceTest {
   }
 
   @Test
-  void loginWithGoogleShouldReturnExistingUserBySub() {
-    String idToken = "mock-token";
-    User existingUser = createDummyUser();
-    existingUser.setGoogleSub("sub123");
+  void loginWithGoogleShouldDelegateToGoogleAuthService() {
+    when(googleAuthService.loginWithGoogle("mock-token")).thenReturn(new AuthResponse("jwt"));
 
-    when(googleAuthService.loginWithGoogle(idToken)).thenReturn(new AuthResponse("jwt"));
-
-    assertNotNull(authService.loginWithGoogle(idToken));
-  }
-
-  @Test
-  void loginWithGoogleShouldLinkExistingEmailToGoogleSub() {
-    String idToken = "mock-token";
-
-    when(googleAuthService.loginWithGoogle(idToken)).thenReturn(new AuthResponse("jwt"));
-
-    assertNotNull(authService.loginWithGoogle(idToken));
+    assertNotNull(authService.loginWithGoogle("mock-token"));
   }
 
   @Test

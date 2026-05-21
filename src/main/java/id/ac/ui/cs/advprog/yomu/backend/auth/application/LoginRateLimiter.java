@@ -14,7 +14,7 @@ public class LoginRateLimiter {
   private static final Logger log = LoggerFactory.getLogger(LoginRateLimiter.class);
 
   private static final int MAX_ATTEMPTS = 5;
-  private static final long EVICTION_MILLIS = 15 * 60 * 1000;
+  private static final long EVICTION_MILLIS = 15L * 60 * 1000;
 
   private final Map<String, AttemptEntry> failedAttempts = new ConcurrentHashMap<>();
 

@@ -134,6 +134,8 @@ public class AuthService {
     SecurityContextHolder.clearContext();
   }
 
+  private static final String USER_NOT_FOUND = "User not found";
+
   private User getCurrentUser() {
     var auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth == null || !(auth.getPrincipal() instanceof SecurityUser principal))
@@ -141,7 +143,7 @@ public class AuthService {
 
     return userRepository
         .findById(principal.getUser().getId())
-        .orElseThrow(() -> new IllegalStateException("User not found"));
+        .orElseThrow(() -> new IllegalStateException(USER_NOT_FOUND));
   }
 
   public AuthResponse loginWithGoogle(String idToken) {
@@ -153,7 +155,7 @@ public class AuthService {
     var user =
         userRepository
             .findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
     user.setRole(Role.ADMIN);
     userRepository.save(user);
   }
@@ -163,7 +165,7 @@ public class AuthService {
     var user =
         userRepository
             .findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
     user.setRole(Role.USER);
     userRepository.save(user);
   }
