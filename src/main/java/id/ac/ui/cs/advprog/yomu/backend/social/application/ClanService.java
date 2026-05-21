@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.yomu.backend.social.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
@@ -83,6 +84,20 @@ public class ClanService {
               long count = clanMemberRepository.countByClanId(m.getClanId());
               return new ClanResponse(clan, count);
             });
+  }
+
+  public void deleteClan(UUID clanId, UUID callerId) {
+    Clan clan =
+        clanRepository
+            .findById(clanId)
+            .orElseThrow(() -> new ClanNotFoundException("Clan not found"));
+
+    if (!clan.getLeaderId().equals(callerId)) {
+      throw new NotClanLeaderException("Only the clan leader can delete the clan");
+    }
+
+    clanMemberRepository.deleteAll(clanMemberRepository.findByClanId(clanId));
+    clanRepository.deleteById(clanId);
   }
 
   public void addScoreToMemberClan(UUID userId, long scoreToAdd) {

@@ -134,4 +134,58 @@ class ClanServiceTest {
     assertEquals(150L, clan.getScore());
     verify(clanRepository).save(clan);
   }
+
+  // --- UC-4.6: Delete Clan (operasi eksplisit, terpisah dari leaveClan) ---
+
+  @Test
+  void deleteClan_asLeader_deletesAllMembersAndClan() {
+    Clan clan = new Clan();
+    clan.setId(clanId);
+    clan.setLeaderId(leaderId);
+    ClanMember leader = new ClanMember();
+    leader.setUserId(leaderId);
+    leader.setClanId(clanId);
+    leader.setRole(ClanMemberRole.LEADER);
+    ClanMember peer = new ClanMember();
+    peer.setUserId(otherUserId);
+    peer.setClanId(clanId);
+    peer.setRole(ClanMemberRole.MEMBER);
+    List<ClanMember> allMembers = List.of(leader, peer);
+
+    when(clanRepository.findById(clanId)).thenReturn(Optional.of(clan));
+    when(clanMemberRepository.findByClanId(clanId)).thenReturn(allMembers);
+
+    clanService.deleteClan(clanId, leaderId);
+
+    verify(clanMemberRepository).deleteAll(allMembers);
+    verify(clanRepository).deleteById(clanId);
+  }
+
+  @Test
+  void deleteClan_asNonLeader_throwsNotClanLeaderException() {
+    Clan clan = new Clan();
+    clan.setId(clanId);
+    clan.setLeaderId(leaderId);
+
+    when(clanRepository.findById(clanId)).thenReturn(Optional.of(clan));
+
+    assertThrows(
+        id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException.class,
+        () -> clanService.deleteClan(clanId, otherUserId));
+
+    verify(clanMemberRepository, never()).deleteAll(anyIterable());
+    verify(clanRepository, never()).deleteById(any(UUID.class));
+  }
+
+  @Test
+  void deleteClan_clanNotFound_throwsClanNotFoundException() {
+    when(clanRepository.findById(clanId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException.class,
+        () -> clanService.deleteClan(clanId, leaderId));
+
+    verify(clanMemberRepository, never()).deleteAll(anyIterable());
+    verify(clanRepository, never()).deleteById(any(UUID.class));
+  }
 }
