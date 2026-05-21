@@ -13,28 +13,35 @@ import org.springframework.stereotype.Service;
 @Service
 public class GoogleService {
 
-  private static final Logger logger = LoggerFactory.getLogger(GoogleService.class);
+  private static final Logger log = LoggerFactory.getLogger(GoogleService.class);
 
   @Value("${app.google.client-id}")
   private String googleClientId;
 
-  private GoogleIdTokenVerifier verifier;
+  private volatile GoogleIdTokenVerifier verifier;
 
   public GoogleIdToken.Payload verifyToken(String idTokenString) {
-    if (this.verifier == null) {
-      this.verifier =
-          new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-              .setAudience(Collections.singletonList(googleClientId))
-              .build();
+    GoogleIdTokenVerifier v = verifier;
+    if (v == null) {
+      synchronized (this) {
+        v = verifier;
+        if (v == null) {
+          v =
+              new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                  .setAudience(Collections.singletonList(googleClientId))
+                  .build();
+          verifier = v;
+        }
+      }
     }
 
     try {
-      GoogleIdToken idToken = verifier.verify(idTokenString);
+      GoogleIdToken idToken = v.verify(idTokenString);
       if (idToken != null) {
         return idToken.getPayload();
       }
     } catch (Exception e) {
-      logger.warn("Google token verification failed: {}", e.getMessage());
+      log.warn("Google token verification failed: {}", e.getMessage());
     }
     return new GoogleIdToken.Payload();
   }

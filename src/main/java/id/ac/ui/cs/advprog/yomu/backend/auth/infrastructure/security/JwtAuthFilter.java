@@ -1,8 +1,11 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +18,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+  private static final int BEARER_PREFIX_LENGTH = 7;
+
   private final JwtService jwtService;
   private final UserRepository userRepository;
 
@@ -28,17 +34,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
 
-    String traceId = UUID.randomUUID().toString().substring(0, 8);
-    MDC.put("traceId", traceId);
+    String header = request.getHeader("Authorization");
+    if (header == null || !header.startsWith("Bearer ")) {
+      chain.doFilter(request, response);
+      return;
+    }
 
     try {
-      String header = request.getHeader("Authorization");
-      if (header == null || !header.startsWith("Bearer ")) {
-        chain.doFilter(request, response);
-        return;
-      }
-
-      String token = header.substring(7).trim();
+      String token = header.substring(BEARER_PREFIX_LENGTH).trim();
       var payload = jwtService.parse(token);
       String userIdStr = payload.userId();
 
@@ -49,8 +52,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       }
 
       UUID userId = UUID.fromString(userIdStr);
-
       var userOpt = userRepository.findById(userId);
+
       if (userOpt.isEmpty()) {
         log.warn("User not found for ID {}", userIdStr);
         chain.doFilter(request, response);
@@ -65,14 +68,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
           new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
       SecurityContextHolder.getContext().setAuthentication(auth);
 
-      log.info("User '{}' authenticated", user.getUsername());
+      log.debug("User '{}' authenticated", user.getUsername());
 
-    } catch (Exception e) {
-      log.warn("JWT authentication failed: {}", e.getMessage());
+    } catch (JwtException | IllegalArgumentException e) {
+      log.warn("JWT parse failed: {}", e.getMessage());
       SecurityContextHolder.clearContext();
-    } finally {
-      MDC.remove("username");
-      MDC.remove("traceId");
     }
 
     chain.doFilter(request, response);

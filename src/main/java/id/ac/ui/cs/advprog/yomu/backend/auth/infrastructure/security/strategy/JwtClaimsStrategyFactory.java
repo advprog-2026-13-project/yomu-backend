@@ -13,18 +13,16 @@ public class JwtClaimsStrategyFactory {
 
   public JwtClaimsStrategyFactory(List<JwtClaimsStrategy> strategies) {
     this.strategies = strategies;
-    this.defaultStrategy = new UserJwtClaimsStrategy();
+    this.defaultStrategy =
+        strategies.stream()
+            .filter(s -> s.supportedRole() == Role.USER)
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("No USER strategy registered"));
   }
 
   public JwtClaimsStrategy select(User user) {
-    Role role = user.getRole();
     return strategies.stream()
-        .filter(
-            s -> {
-              if (s instanceof UserJwtClaimsStrategy u) return u.supportedRole() == role;
-              if (s instanceof AdminJwtClaimsStrategy a) return a.supportedRole() == role;
-              return false;
-            })
+        .filter(s -> s.supportedRole() == user.getRole())
         .findFirst()
         .orElse(defaultStrategy);
   }

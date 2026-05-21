@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.api;
 
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
-import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
+import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,35 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
 
-  private final UserRepository userRepository;
+  private final AuthService authService;
 
-  public AdminUserController(UserRepository userRepository) {
-    this.userRepository = userRepository;
+  public AdminUserController(AuthService authService) {
+    this.authService = authService;
   }
 
   @PutMapping("/{id}/promote")
   public ResponseEntity<Void> promoteToAdmin(@PathVariable UUID id) {
-    var user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-    user.setRole(Role.ADMIN);
-    userRepository.save(user);
-
+    authService.promoteToAdmin(id);
     return ResponseEntity.noContent().build();
   }
 
   @PutMapping("/{id}/demote")
   public ResponseEntity<Void> demoteToUser(@PathVariable UUID id) {
-    var user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-    user.setRole(Role.USER);
-    userRepository.save(user);
-
+    authService.demoteToUser(id);
     return ResponseEntity.noContent().build();
   }
 }
