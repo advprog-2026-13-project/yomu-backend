@@ -161,4 +161,41 @@ class AdminContentServiceImplTest {
 
     verify(questionRepository).deleteById(questionId);
   }
+
+  @Test
+  void hideReading_success() {
+    when(readingRepository.findById(readingId)).thenReturn(Optional.of(reading));
+    when(readingRepository.save(any(Reading.class))).thenReturn(reading);
+
+    service.hideReading(readingId);
+
+    assertTrue(reading.isHidden());
+    verify(readingRepository).save(reading);
+  }
+
+  @Test
+  void hideReading_notFound() {
+    when(readingRepository.findById(readingId)).thenReturn(Optional.empty());
+
+    assertThrows(ResponseStatusException.class, () -> service.hideReading(readingId));
+  }
+
+  @Test
+  void unhideReading_success() {
+    reading.setHidden(true);
+    when(readingRepository.findById(readingId)).thenReturn(Optional.of(reading));
+    when(readingRepository.save(any(Reading.class))).thenReturn(reading);
+
+    service.unhideReading(readingId);
+
+    assertFalse(reading.isHidden());
+    verify(readingRepository).save(reading);
+  }
+
+  @Test
+  void unhideReading_notFound() {
+    when(readingRepository.findById(readingId)).thenReturn(Optional.empty());
+
+    assertThrows(ResponseStatusException.class, () -> service.unhideReading(readingId));
+  }
 }

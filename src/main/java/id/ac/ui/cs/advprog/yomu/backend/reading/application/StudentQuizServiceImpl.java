@@ -34,36 +34,37 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<Reading> getAvailableReadingsForStudent(UUID userId) {
+  public List<Reading> getAllReadingsWithCompletionStatus(UUID userId) {
     var studentId = userId.toString();
-    return readingRepository.findAll().stream()
-        .filter(
-            reading ->
-                !quizAttemptRepository.existsByStudentIdAndReadingId(
-                    studentId, reading.getReadingId()))
-        .toList();
+    List<Reading> visibleReadings = readingRepository.findByHiddenFalse();
+    for (Reading reading : visibleReadings) {
+      boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(studentId, reading.getReadingId());
+      reading.setCompleted(isCompleted);
+    }
+    return visibleReadings;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Reading getReadingForStudent(UUID userId, UUID readingId) {
-    validateNotAttempted(userId, readingId);
-    return readingRepository
+    Reading reading = readingRepository
         .findById(readingId)
         .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
+    boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId);
+    reading.setCompleted(isCompleted);
+    return reading;
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<QuestionResponse> getQuestionsForReading(UUID userId, UUID readingId) {
-    validateNotAttempted(userId, readingId);
     List<Question> questions = questionRepository.findByReading_ReadingId(readingId);
     List<QuestionResponse> responses = new ArrayList<>();
     for (Question q : questions) {
       QuestionResponse dto = new QuestionResponse();
       dto.setQuestionId(q.getQuestionId());
       dto.setQuestionText(q.getQuestionText());
-      dto.setOptions(q.getOptions());
+      dto.setOptions(new ArrayList<>(q.getOptions()));
       responses.add(dto);
     }
     return responses;
@@ -100,6 +101,25 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     publishAchievementEvents(userId, readingId, score);
 
     return savedAttempt;
+  }
+
+  @Override
+  @Transactional
+  public void completeReading(UUID userId, UUID readingId) {
+    validateNotAttempted(userId, readingId);
+
+    QuizAttempt attempt = new QuizAttempt();
+    attempt.setStudentId(userId.toString());
+    attempt.setReadingId(readingId);
+    attempt.setScore(100); // 100 as default score for completing reading material
+    attempt.setCompletedAt(java.time.LocalDateTime.now());
+    quizAttemptRepository.save(attempt);
+
+    // Publish Reading Completed Event
+    AchievementReadingCompletedPayload readingPayload =
+        new AchievementReadingCompletedPayload(userId, readingId, 0); // Duration not tracked yet
+    eventPublisher.publishEvent(
+        AchievementEnvelope.of(AchievementType.READING_COMPLETED, 1, readingPayload));
   }
 
   private void publishAchievementEvents(UUID userId, UUID readingId, int score) {

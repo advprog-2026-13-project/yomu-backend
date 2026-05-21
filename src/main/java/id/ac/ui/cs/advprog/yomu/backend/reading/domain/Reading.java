@@ -30,7 +30,13 @@ public class Reading {
 
   private String authorId;
 
+  @Column(nullable = false)
+  private boolean hidden = false;
+
   @JsonIgnore
   @OneToMany(mappedBy = "reading", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Question> questions;
+
+  @Transient
+  private boolean completed;
 }

@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface StudentQuizService {
-  List<Reading> getAvailableReadingsForStudent(UUID userId);
+  List<Reading> getAllReadingsWithCompletionStatus(UUID userId);
 
   Reading getReadingForStudent(UUID userId, UUID readingId);
 
   List<QuestionResponse> getQuestionsForReading(UUID userId, UUID readingId);
 
   QuizAttempt submitQuiz(UUID userId, UUID readingId, QuizSubmissionRequest request);
+
+  void completeReading(UUID userId, UUID readingId);
 }

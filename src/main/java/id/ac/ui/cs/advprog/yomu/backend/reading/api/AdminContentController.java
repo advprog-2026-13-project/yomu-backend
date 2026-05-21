@@ -48,6 +48,18 @@ public class AdminContentController {
     return ResponseEntity.noContent().build();
   }
 
+  @PatchMapping("/readings/{id}/hide")
+  public ResponseEntity<Void> hideReading(@PathVariable UUID id) {
+    adminContentService.hideReading(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PatchMapping("/readings/{id}/unhide")
+  public ResponseEntity<Void> unhideReading(@PathVariable UUID id) {
+    adminContentService.unhideReading(id);
+    return ResponseEntity.noContent().build();
+  }
+
   @PostMapping("/readings/{readingId}/questions")
   public ResponseEntity<Question> addQuestion(
       @PathVariable UUID readingId, @Valid @RequestBody QuestionDTO questionDto) {
