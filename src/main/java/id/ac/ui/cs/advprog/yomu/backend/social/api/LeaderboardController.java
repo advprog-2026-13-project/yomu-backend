@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/leaderboard")
+@RequestMapping("/api/social/leaderboard")
 public class LeaderboardController {
 
   private final LeaderboardService leaderboardService;

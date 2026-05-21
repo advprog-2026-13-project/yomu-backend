@@ -76,7 +76,7 @@ class ClanControllerTest {
 
     mockMvc
         .perform(
-            post("/api/clans")
+            post("/api/social/clans")
                 .principal(userPrincipal())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Vipers\"}"))
@@ -93,7 +93,7 @@ class ClanControllerTest {
 
     mockMvc
         .perform(
-            post("/api/clans")
+            post("/api/social/clans")
                 .principal(userPrincipal())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Vipers\"}"))
@@ -107,7 +107,7 @@ class ClanControllerTest {
     doNothing().when(clanService).deleteClan(any(), any());
 
     mockMvc
-        .perform(delete("/api/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
+        .perform(delete("/api/social/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isNoContent());
 
     verify(clanService).deleteClan(CLAN_ID, USER_ID);
@@ -120,7 +120,7 @@ class ClanControllerTest {
         .deleteClan(any(), any());
 
     mockMvc
-        .perform(delete("/api/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
+        .perform(delete("/api/social/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isForbidden());
   }
 
@@ -131,7 +131,7 @@ class ClanControllerTest {
         .deleteClan(any(), any());
 
     mockMvc
-        .perform(delete("/api/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
+        .perform(delete("/api/social/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isNotFound());
   }
 }
