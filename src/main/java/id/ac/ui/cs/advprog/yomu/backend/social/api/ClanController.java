@@ -41,6 +41,14 @@ public class ClanController {
     return ResponseEntity.ok(clanService.getClan(clanId));
   }
 
+  @DeleteMapping("/{clanId}")
+  public ResponseEntity<Void> deleteClan(
+      @PathVariable UUID clanId, @AuthenticationPrincipal SecurityUser principal) {
+    UUID callerId = principal.getUser().getId();
+    clanService.deleteClan(clanId, callerId);
+    return ResponseEntity.noContent().build();
+  }
+
   @GetMapping("/me")
   public ResponseEntity<ClanResponse> getMyClan(@AuthenticationPrincipal SecurityUser principal) {
     UUID userId = principal.getUser().getId();
