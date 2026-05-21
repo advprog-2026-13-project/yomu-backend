@@ -37,7 +37,8 @@ public class StudentQuizServiceImpl implements StudentQuizService {
   public List<Reading> getAllReadingsWithCompletionStatus(UUID userId) {
     List<Reading> visibleReadings = readingRepository.findByHiddenFalse();
     for (Reading reading : visibleReadings) {
-      boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(userId, reading.getReadingId());
+      boolean isCompleted =
+          quizAttemptRepository.existsByStudentIdAndReadingId(userId, reading.getReadingId());
       reading.setCompleted(isCompleted);
     }
     return visibleReadings;
@@ -46,10 +47,12 @@ public class StudentQuizServiceImpl implements StudentQuizService {
   @Override
   @Transactional(readOnly = true)
   public Reading getReadingForStudent(UUID userId, UUID readingId) {
-    Reading reading = readingRepository
-        .findById(readingId)
-        .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
-    boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId);
+    Reading reading =
+        readingRepository
+            .findById(readingId)
+            .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
+    boolean isCompleted =
+        quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId);
     reading.setCompleted(isCompleted);
     return reading;
   }

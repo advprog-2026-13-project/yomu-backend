@@ -37,6 +37,5 @@ public class Reading {
   @OneToMany(mappedBy = "reading", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Question> questions;
 
-  @Transient
-  private boolean completed;
+  @Transient private boolean completed;
 }

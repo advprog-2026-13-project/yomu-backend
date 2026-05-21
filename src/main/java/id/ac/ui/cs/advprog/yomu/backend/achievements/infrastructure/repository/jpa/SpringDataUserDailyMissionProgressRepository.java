@@ -23,6 +23,7 @@ public interface SpringDataUserDailyMissionProgressRepository
   void deleteByDate(LocalDate date);
 
   @Modifying
-  @Query("DELETE FROM UserDailyMissionProgressJpaEntity p WHERE p.userId = :userId AND p.date = :date")
+  @Query(
+      "DELETE FROM UserDailyMissionProgressJpaEntity p WHERE p.userId = :userId AND p.date = :date")
   void deleteByUserIdAndDate(UUID userId, LocalDate date);
 }
