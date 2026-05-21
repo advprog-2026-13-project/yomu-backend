@@ -10,6 +10,7 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.JoinRequestService;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateJoinRequestException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.JoinRequestAlreadyResolvedException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.JoinRequest;
 import java.util.List;
@@ -150,6 +151,22 @@ class JoinRequestControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  void approve_alreadyResolved_returns409() throws Exception {
+    doThrow(new JoinRequestAlreadyResolvedException("Cannot approve request with status: APPROVED"))
+        .when(joinRequestService)
+        .approveRequest(any(), any(), any());
+
+    mockMvc
+        .perform(
+            post(
+                    "/api/social/clans/{clanId}/join-requests/{requestId}/approve",
+                    CLAN_ID,
+                    REQUEST_ID)
+                .principal(userPrincipal()))
+        .andExpect(status().isConflict());
+  }
+
   // ---- reject ----
 
   @Test
@@ -166,5 +183,21 @@ class JoinRequestControllerTest {
         .andExpect(status().isOk());
 
     verify(joinRequestService).rejectRequest(CLAN_ID, REQUEST_ID, USER_ID);
+  }
+
+  @Test
+  void reject_asNonLeader_returns403() throws Exception {
+    doThrow(new NotClanLeaderException("Not the leader"))
+        .when(joinRequestService)
+        .rejectRequest(any(), any(), any());
+
+    mockMvc
+        .perform(
+            post(
+                    "/api/social/clans/{clanId}/join-requests/{requestId}/reject",
+                    CLAN_ID,
+                    REQUEST_ID)
+                .principal(userPrincipal()))
+        .andExpect(status().isForbidden());
   }
 }
