@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.*;
 import id.ac.ui.cs.advprog.yomu.backend.auth.events.UserRegisteredEvent;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.*;
+import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,7 +17,7 @@ public class AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
-  private final GoogleService googleService;
+  private final GoogleAuthService googleAuthService;
   private final ApplicationEventPublisher eventPublisher;
   private final LoginRateLimiter rateLimiter;
 
@@ -24,13 +25,13 @@ public class AuthService {
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
-      GoogleService googleService,
+      GoogleAuthService googleAuthService,
       ApplicationEventPublisher eventPublisher,
       LoginRateLimiter rateLimiter) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
-    this.googleService = googleService;
+    this.googleAuthService = googleAuthService;
     this.eventPublisher = eventPublisher;
     this.rateLimiter = rateLimiter;
   }
@@ -133,6 +134,8 @@ public class AuthService {
     SecurityContextHolder.clearContext();
   }
 
+  private static final String USER_NOT_FOUND = "User not found";
+
   private User getCurrentUser() {
     var auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth == null || !(auth.getPrincipal() instanceof SecurityUser principal))
@@ -140,46 +143,30 @@ public class AuthService {
 
     return userRepository
         .findById(principal.getUser().getId())
-        .orElseThrow(() -> new IllegalStateException("User not found"));
+        .orElseThrow(() -> new IllegalStateException(USER_NOT_FOUND));
+  }
+
+  public AuthResponse loginWithGoogle(String idToken) {
+    return googleAuthService.loginWithGoogle(idToken);
   }
 
   @Transactional
-  public AuthResponse loginWithGoogle(String idToken) {
-    var payload = googleService.verifyToken(idToken);
-    if (payload.isEmpty()) throw new IllegalArgumentException("Invalid Google Token");
-
-    String email = payload.getEmail();
-    String googleSub = payload.getSubject();
-
-    if (email == null || googleSub == null) {
-      throw new IllegalArgumentException("Google account data is incomplete");
-    }
-
-    Object nameObj = payload.get("name");
-    String name = (nameObj != null) ? nameObj.toString() : "Google User";
-
-    User user =
+  public void promoteToAdmin(UUID userId) {
+    var user =
         userRepository
-            .findByGoogleSub(googleSub)
-            .or(() -> userRepository.findByEmail(email))
-            .map(
-                existingUser -> {
-                  if (existingUser.getGoogleSub() == null) {
-                    existingUser.setGoogleSub(googleSub);
-                    return userRepository.save(existingUser);
-                  }
-                  return existingUser;
-                })
-            .orElseGet(
-                () -> {
-                  String subSuffix = googleSub.length() > 5 ? googleSub.substring(0, 5) : googleSub;
-                  User newUser =
-                      new User(
-                          email.split("@")[0] + "_" + subSuffix, name, email, null, "", Role.USER);
-                  newUser.setGoogleSub(googleSub);
-                  return userRepository.save(newUser);
-                });
+            .findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
+    user.setRole(Role.ADMIN);
+    userRepository.save(user);
+  }
 
-    return new AuthResponse(jwtService.generateToken(user));
+  @Transactional
+  public void demoteToUser(UUID userId) {
+    var user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException(USER_NOT_FOUND));
+    user.setRole(Role.USER);
+    userRepository.save(user);
   }
 }

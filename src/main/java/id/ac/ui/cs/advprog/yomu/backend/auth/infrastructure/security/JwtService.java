@@ -7,12 +7,16 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtService {
-  private final byte[] secret;
+
+  private static final int SECONDS_PER_MINUTE = 60;
+
+  private final SecretKey signingKey;
   private final long expirationMinutes;
   private final JwtClaimsStrategyFactory strategyFactory;
 
@@ -20,21 +24,21 @@ public class JwtService {
       @Value("${app.jwt.secret}") String secret,
       @Value("${app.jwt.expiration-minutes:120}") long expirationMinutes,
       JwtClaimsStrategyFactory strategyFactory) {
-    this.secret = secret.getBytes(StandardCharsets.UTF_8);
+    this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     this.expirationMinutes = expirationMinutes;
     this.strategyFactory = strategyFactory;
   }
 
   public String generateToken(User user) {
     Instant now = Instant.now();
-    Instant exp = now.plusSeconds(expirationMinutes * 60);
+    Instant exp = now.plusSeconds(expirationMinutes * SECONDS_PER_MINUTE);
 
     var builder =
         Jwts.builder()
             .subject(user.getId().toString())
             .issuedAt(Date.from(now))
             .expiration(Date.from(exp))
-            .signWith(Keys.hmacShaKeyFor(secret));
+            .signWith(signingKey);
 
     strategyFactory.select(user).buildClaims(user).forEach(builder::claim);
 
@@ -42,12 +46,7 @@ public class JwtService {
   }
 
   public Payload parse(String token) {
-    var claims =
-        Jwts.parser()
-            .verifyWith(Keys.hmacShaKeyFor(secret))
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+    var claims = Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload();
 
     return new Payload(
         claims.getSubject(),

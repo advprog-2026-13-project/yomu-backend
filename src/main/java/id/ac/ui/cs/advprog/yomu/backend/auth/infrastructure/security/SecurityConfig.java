@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security;
 
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -12,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableAsync
+@EnableScheduling
 @EnableMethodSecurity
 public class SecurityConfig {
   @Bean

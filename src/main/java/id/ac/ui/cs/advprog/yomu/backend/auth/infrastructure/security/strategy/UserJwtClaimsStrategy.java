@@ -17,6 +17,7 @@ public class UserJwtClaimsStrategy implements JwtClaimsStrategy {
     return claims;
   }
 
+  @Override
   public Role supportedRole() {
     return Role.USER;
   }

@@ -18,6 +18,7 @@ public class AdminJwtClaimsStrategy implements JwtClaimsStrategy {
     return claims;
   }
 
+  @Override
   public Role supportedRole() {
     return Role.ADMIN;
   }
