@@ -47,6 +47,11 @@ public class UserDailyMissionProgressRepositoryAdapter
     repository.deleteByDate(date);
   }
 
+  @Override
+  public void deleteByUserIdAndDate(UUID userId, LocalDate date) {
+    repository.deleteByUserIdAndDate(userId, date);
+  }
+
   private UserDailyMissionProgress toDomain(UserDailyMissionProgressJpaEntity entity) {
     return new UserDailyMissionProgress(
         entity.getId(),

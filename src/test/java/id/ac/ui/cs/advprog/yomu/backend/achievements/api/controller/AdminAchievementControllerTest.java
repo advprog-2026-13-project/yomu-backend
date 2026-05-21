@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.yomu.backend.achievements.api.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -175,5 +177,22 @@ class AdminAchievementControllerTest {
     mockMvc
         .perform(delete("/api/admin/achievements/daily-missions/" + id))
         .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void testResetAllDailyMissions() throws Exception {
+    mockMvc
+        .perform(post("/api/admin/achievements/daily-missions/reset"))
+        .andExpect(status().isNoContent());
+    verify(adminService, times(1)).resetAllDailyMissionsForToday();
+  }
+
+  @Test
+  void testResetDailyMissionsForUser() throws Exception {
+    UUID userId = UUID.randomUUID();
+    mockMvc
+        .perform(post("/api/admin/achievements/daily-missions/reset/" + userId))
+        .andExpect(status().isNoContent());
+    verify(adminService, times(1)).resetDailyMissionsForUser(userId);
   }
 }
