@@ -73,8 +73,7 @@ class StudentQuizServiceImplTest {
 
   @Test
   void testGetReading_Success() {
-    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId))
-        .thenReturn(false);
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(false);
     when(readingRepository.findById(readingId)).thenReturn(Optional.of(reading));
 
     Reading result = studentQuizService.getReadingForStudent(userId, readingId);
@@ -95,8 +94,7 @@ class StudentQuizServiceImplTest {
 
   @Test
   void testGetReading_NotFound_ThrowsException() {
-    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId))
-        .thenReturn(false);
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(false);
     when(readingRepository.findById(readingId)).thenReturn(Optional.empty());
 
     assertThrows(
@@ -126,8 +124,7 @@ class StudentQuizServiceImplTest {
   void testSubmitQuiz_NoQuestionsFound_ThrowsException() {
     QuizSubmissionRequest request = new QuizSubmissionRequest();
 
-    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId))
-        .thenReturn(false);
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(false);
     when(questionRepository.findByReading_ReadingId(readingId)).thenReturn(new ArrayList<>());
 
     assertThrows(
@@ -140,8 +137,7 @@ class StudentQuizServiceImplTest {
     Question q2 = createQuestion("B");
     Question q3 = createQuestion("C");
 
-    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId))
-        .thenReturn(false);
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(false);
     when(questionRepository.findByReading_ReadingId(readingId)).thenReturn(List.of(q1, q2, q3));
 
     when(quizAttemptRepository.save(any(QuizAttempt.class)))
@@ -165,7 +161,7 @@ class StudentQuizServiceImplTest {
     QuizAttempt result = studentQuizService.submitQuiz(userId, readingId, request);
 
     assertThat(result.getScore()).isEqualTo(67);
-    assertThat(result.getStudentId()).isEqualTo(userId.toString());
+    assertThat(result.getStudentId()).isEqualTo(userId);
     verify(quizAttemptRepository, times(1)).save(any());
     verify(eventPublisher, times(2)).publishEvent(any(Object.class));
   }

@@ -94,7 +94,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     }
     int score = (int) Math.round(((double) correctCount / correctQuestions.size()) * 100);
     QuizAttempt attempt = new QuizAttempt();
-    attempt.setStudentId(userId.toString());
+    attempt.setStudentId(userId);
     attempt.setReadingId(readingId);
     attempt.setScore(score);
     attempt.setCompletedAt(LocalDateTime.now());
@@ -140,7 +140,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
   }
 
   private void validateNotAttempted(UUID userId, UUID readingId) {
-    if (quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId)) {
+    if (quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "...");
     }
   }

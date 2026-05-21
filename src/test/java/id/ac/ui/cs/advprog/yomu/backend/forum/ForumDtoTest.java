@@ -7,7 +7,6 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 import id.ac.ui.cs.advprog.yomu.backend.forum.domain.ReactionType;
 import java.time.Instant;
 import java.util.Collections;
@@ -18,25 +17,18 @@ import org.junit.jupiter.api.Test;
 class ForumDtoTest {
 
   @Test
-  void userSummaryRecordShouldWork() {
-    UUID id = UUID.randomUUID();
-    UserSummary summary = new UserSummary(id, "Alice");
-    assertEquals(id, summary.id());
-    assertEquals("Alice", summary.displayName());
-  }
-
-  @Test
   void commentViewRecordShouldWork() {
     UUID id = UUID.randomUUID();
     UUID rid = UUID.randomUUID();
-    UserSummary author = new UserSummary(UUID.randomUUID(), "Alice");
+    UUID authorId = UUID.randomUUID();
     Instant now = Instant.now();
 
     CommentView view =
         new CommentView(
             id,
             rid,
-            author,
+            authorId,
+            "Alice",
             null,
             "Hello",
             false,
@@ -47,6 +39,7 @@ class ForumDtoTest {
 
     assertEquals(id, view.id());
     assertEquals("Hello", view.content());
+    assertEquals("Alice", view.authorName());
     assertEquals(5L, view.reactionCounts().get(ReactionType.UPVOTE));
     assertTrue(view.replies().isEmpty());
   }

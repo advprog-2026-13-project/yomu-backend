@@ -2,8 +2,10 @@ package id.ac.ui.cs.advprog.yomu.backend.auth.application;
 
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.*;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.*;
+import id.ac.ui.cs.advprog.yomu.backend.auth.events.UserRegisteredEvent;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.*;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,16 +17,22 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final GoogleService googleService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final LoginRateLimiter rateLimiter;
 
   public AuthService(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
-      GoogleService googleService) {
+      GoogleService googleService,
+      ApplicationEventPublisher eventPublisher,
+      LoginRateLimiter rateLimiter) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.googleService = googleService;
+    this.eventPublisher = eventPublisher;
+    this.rateLimiter = rateLimiter;
   }
 
   @Transactional
@@ -52,22 +60,39 @@ public class AuthService {
             passwordEncoder.encode(req.getPassword()),
             Role.USER);
 
-    return MeResponse.fromEntity(userRepository.save(user));
+    var saved = userRepository.save(user);
+
+    eventPublisher.publishEvent(
+        new UserRegisteredEvent(saved.getId(), saved.getUsername(), saved.getDisplayName()));
+
+    return MeResponse.fromEntity(saved);
   }
 
   public AuthResponse login(LoginRequest req) {
     String identifier = req.getIdentifier();
+
+    if (rateLimiter.isBlocked(identifier)) {
+      throw new IllegalArgumentException(
+          "Account temporarily locked due to too many failed attempts");
+    }
 
     var user =
         userRepository
             .findByEmail(identifier)
             .or(() -> userRepository.findByUsername(identifier))
             .or(() -> userRepository.findByPhoneNumber(identifier))
-            .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+            .orElseThrow(
+                () -> {
+                  rateLimiter.recordFailure(identifier);
+                  return new IllegalArgumentException("Invalid credentials");
+                });
 
-    if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash()))
+    if (!passwordEncoder.matches(req.getPassword(), user.getPasswordHash())) {
+      rateLimiter.recordFailure(identifier);
       throw new IllegalArgumentException("Invalid credentials");
+    }
 
+    rateLimiter.reset(identifier);
     return new AuthResponse(jwtService.generateToken(user));
   }
 

@@ -19,6 +19,8 @@ public class Comment {
 
   private UUID authorId;
 
+  private String authorName;
+
   private UUID parentId;
 
   private String content;

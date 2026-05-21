@@ -39,7 +39,9 @@ public class ForumController {
       @AuthenticationPrincipal SecurityUser principal) {
 
     UUID userId = principal.getUser().getId();
-    CommentView created = forumUseCase.postComment(readingId, userId, request.getContent());
+    String authorName = principal.getUser().getDisplayName();
+    CommentView created =
+        forumUseCase.postComment(readingId, userId, authorName, request.getContent());
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 
@@ -51,7 +53,8 @@ public class ForumController {
       @AuthenticationPrincipal SecurityUser principal) {
 
     UUID userId = principal.getUser().getId();
-    CommentView created = forumUseCase.replyToComment(id, userId, request.getContent());
+    String authorName = principal.getUser().getDisplayName();
+    CommentView created = forumUseCase.replyToComment(id, userId, authorName, request.getContent());
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 

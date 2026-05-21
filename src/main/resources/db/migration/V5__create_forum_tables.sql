@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS forum_comments (
     id UUID PRIMARY KEY,
     reading_id UUID NOT NULL,
     author_id UUID NOT NULL,
+    author_name VARCHAR(100),
     parent_id UUID,
     content TEXT NOT NULL,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,

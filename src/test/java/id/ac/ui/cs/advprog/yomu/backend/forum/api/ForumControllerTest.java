@@ -24,7 +24,6 @@ import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.PostCommentRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReactRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.api.dto.ReplyRequest;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.CommentView;
-import id.ac.ui.cs.advprog.yomu.backend.forum.application.dto.UserSummary;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumBadRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumForbiddenException;
 import id.ac.ui.cs.advprog.yomu.backend.forum.application.exception.ForumNotFoundException;
@@ -98,7 +97,8 @@ class ForumControllerTest {
     return new CommentView(
         id,
         reading,
-        new UserSummary(userId, "Bob"),
+        userId,
+        "Bob",
         parent,
         "Test content",
         false,
@@ -143,7 +143,8 @@ class ForumControllerTest {
   @Test
   void postCommentShouldReturn201WithCreatedView() throws Exception {
     CommentView view = buildView(commentId, readingId, null);
-    when(forumUseCase.postComment(eq(readingId), eq(userId), eq("Hello!"))).thenReturn(view);
+    when(forumUseCase.postComment(eq(readingId), eq(userId), eq("Bob"), eq("Hello!")))
+        .thenReturn(view);
 
     PostCommentRequest request = new PostCommentRequest("Hello!");
 
@@ -170,7 +171,7 @@ class ForumControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
 
-    verify(forumUseCase, never()).postComment(any(), any(), any());
+    verify(forumUseCase, never()).postComment(any(), any(), any(), any());
   }
 
   // ─── POST /api/forums/comments/{id}/replies ─────────────────────
@@ -179,7 +180,8 @@ class ForumControllerTest {
   void replyToCommentShouldReturn201WithReplyView() throws Exception {
     UUID replyId = UUID.randomUUID();
     CommentView view = buildView(replyId, readingId, commentId);
-    when(forumUseCase.replyToComment(eq(commentId), eq(userId), eq("I agree"))).thenReturn(view);
+    when(forumUseCase.replyToComment(eq(commentId), eq(userId), eq("Bob"), eq("I agree")))
+        .thenReturn(view);
 
     ReplyRequest request = new ReplyRequest("I agree");
 
@@ -195,7 +197,7 @@ class ForumControllerTest {
 
   @Test
   void replyToCommentShouldReturn404WhenParentNotFound() throws Exception {
-    when(forumUseCase.replyToComment(any(), any(), any()))
+    when(forumUseCase.replyToComment(any(), any(), any(), any()))
         .thenThrow(new ForumNotFoundException("Parent comment not found"));
 
     ReplyRequest request = new ReplyRequest("reply");

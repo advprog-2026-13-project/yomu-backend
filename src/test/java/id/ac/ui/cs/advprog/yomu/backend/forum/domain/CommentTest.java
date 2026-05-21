@@ -62,11 +62,13 @@ class CommentTest {
     UUID parentId = UUID.randomUUID();
     Instant now = Instant.now();
 
-    Comment c = new Comment(id, readingId, authorId, parentId, "Content", false, now, null);
+    Comment c =
+        new Comment(id, readingId, authorId, "Alice", parentId, "Content", false, now, null);
 
     assertEquals(id, c.getId());
     assertEquals(readingId, c.getReadingId());
     assertEquals(authorId, c.getAuthorId());
+    assertEquals("Alice", c.getAuthorName());
     assertEquals(parentId, c.getParentId());
     assertEquals("Content", c.getContent());
     assertFalse(c.isDeleted());

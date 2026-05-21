@@ -28,7 +28,7 @@ public class Reading {
 
   private String category;
 
-  private String authorId;
+  private UUID authorId;
 
   @Column(nullable = false)
   private boolean hidden = false;

@@ -16,7 +16,7 @@ public class QuizAttempt {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID quizAttemptId;
 
-  private String studentId;
+  private UUID studentId;
   private UUID readingId;
   private Integer score;
   private LocalDateTime completedAt;
