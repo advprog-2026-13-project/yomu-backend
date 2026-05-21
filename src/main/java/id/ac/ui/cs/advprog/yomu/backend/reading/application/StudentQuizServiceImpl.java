@@ -38,7 +38,8 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     var studentId = userId.toString();
     List<Reading> visibleReadings = readingRepository.findByHiddenFalse();
     for (Reading reading : visibleReadings) {
-      boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(studentId, reading.getReadingId());
+      boolean isCompleted =
+          quizAttemptRepository.existsByStudentIdAndReadingId(studentId, reading.getReadingId());
       reading.setCompleted(isCompleted);
     }
     return visibleReadings;
@@ -47,10 +48,12 @@ public class StudentQuizServiceImpl implements StudentQuizService {
   @Override
   @Transactional(readOnly = true)
   public Reading getReadingForStudent(UUID userId, UUID readingId) {
-    Reading reading = readingRepository
-        .findById(readingId)
-        .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
-    boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId);
+    Reading reading =
+        readingRepository
+            .findById(readingId)
+            .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
+    boolean isCompleted =
+        quizAttemptRepository.existsByStudentIdAndReadingId(userId.toString(), readingId);
     reading.setCompleted(isCompleted);
     return reading;
   }
