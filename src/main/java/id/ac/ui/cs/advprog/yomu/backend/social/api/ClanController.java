@@ -29,13 +29,6 @@ public class ClanController {
         .body(clanService.createClan(req.getName(), userId));
   }
 
-  @PostMapping("/{clanId}/join")
-  public ResponseEntity<ClanResponse> joinClan(
-      @PathVariable UUID clanId, @AuthenticationPrincipal SecurityUser principal) {
-    UUID userId = principal.getUser().getId();
-    return ResponseEntity.ok(clanService.joinClan(clanId, userId));
-  }
-
   @DeleteMapping("/leave")
   public ResponseEntity<Void> leaveClan(@AuthenticationPrincipal SecurityUser principal) {
     UUID userId = principal.getUser().getId();

@@ -45,22 +45,6 @@ public class ClanService {
     return new ClanResponse(clan, 1L);
   }
 
-  public ClanResponse joinClan(UUID clanId, UUID userId) {
-    if (clanMemberRepository.existsByUserId(userId)) {
-      throw new IllegalStateException("User is already a member of a clan");
-    }
-    Clan clan =
-        clanRepository
-            .findById(clanId)
-            .orElseThrow(() -> new ClanNotFoundException("Clan not found"));
-
-    ClanMember member = ClanMember.join(clanId, userId);
-    clanMemberRepository.save(member);
-
-    long memberCount = clanMemberRepository.countByClanId(clanId);
-    return new ClanResponse(clan, memberCount);
-  }
-
   public void leaveClan(UUID userId) {
     ClanMember member =
         clanMemberRepository

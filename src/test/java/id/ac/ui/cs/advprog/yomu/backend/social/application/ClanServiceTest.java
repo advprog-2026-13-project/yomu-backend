@@ -79,30 +79,6 @@ class ClanServiceTest {
   }
 
   @Test
-  void joinClan_happyPath_savesMemberAndReturnsResponseWithFreshCount() {
-    when(clanMemberRepository.existsByUserId(otherUserId)).thenReturn(false);
-    Clan existing = new Clan();
-    existing.setId(clanId);
-    existing.setName("Vipers");
-    existing.setLeaderId(leaderId);
-    when(clanRepository.findById(clanId)).thenReturn(Optional.of(existing));
-    when(clanMemberRepository.countByClanId(clanId)).thenReturn(2L);
-
-    ClanResponse response = clanService.joinClan(clanId, otherUserId);
-
-    assertEquals(clanId, response.getId());
-    assertEquals("Vipers", response.getName());
-    assertEquals(2L, response.getMemberCount());
-
-    ArgumentCaptor<ClanMember> memberCaptor = ArgumentCaptor.forClass(ClanMember.class);
-    verify(clanMemberRepository).save(memberCaptor.capture());
-    ClanMember saved = memberCaptor.getValue();
-    assertEquals(clanId, saved.getClanId());
-    assertEquals(otherUserId, saved.getUserId());
-    assertEquals(ClanMemberRole.MEMBER, saved.getRole());
-  }
-
-  @Test
   void leaveClan_asLeader_hardDeletesAllMembersAndClanItself() {
     // PIN-CURRENT (audit 🟡): leader leave => hard-delete semua member + Clan. Tidak ada
     // transfer ownership, tidak ada warning, tidak publish event. Behavior implicit.
