@@ -51,8 +51,7 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         readingRepository
             .findById(readingId)
             .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
-    boolean isCompleted =
-        quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId);
+    boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId);
     reading.setCompleted(isCompleted);
     return reading;
   }
@@ -127,12 +126,14 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   private void publishAchievementEvents(UUID userId, UUID readingId, int score) {
     // 1. Publish Reading Completed Event
-    AchievementReadingCompletedPayload readingPayload = new AchievementReadingCompletedPayload(userId, readingId, 0); // Duration not tracked yet
+    AchievementReadingCompletedPayload readingPayload =
+        new AchievementReadingCompletedPayload(userId, readingId, 0); // Duration not tracked yet
     eventPublisher.publishEvent(
         AchievementEnvelope.of(AchievementType.READING_COMPLETED, 1, readingPayload));
 
     // 2. Publish Quiz Completed Event
-    AchievementQuizCompletedPayload quizPayload = new AchievementQuizCompletedPayload(userId, readingId, score, true);
+    AchievementQuizCompletedPayload quizPayload =
+        new AchievementQuizCompletedPayload(userId, readingId, score, true);
     eventPublisher.publishEvent(
         AchievementEnvelope.of(AchievementType.QUIZ_COMPLETED, 1, quizPayload));
   }
