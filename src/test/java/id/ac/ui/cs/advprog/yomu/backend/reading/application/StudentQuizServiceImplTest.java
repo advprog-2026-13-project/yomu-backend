@@ -171,6 +171,35 @@ class StudentQuizServiceImplTest {
     verify(eventPublisher, times(2)).publishEvent(any(Object.class));
   }
 
+  @Test
+  void testSubmitQuiz_AlreadyAttempted_ThrowsException() {
+    QuizSubmissionRequest request = new QuizSubmissionRequest();
+
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(true);
+
+    assertThrows(
+        RuntimeException.class, () -> studentQuizService.submitQuiz(userId, readingId, request));
+  }
+
+  // --- 5. Tests for completeReading ---
+
+  @Test
+  void testCompleteReading_Success_SavesAttemptAndPublishesEvent() {
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(false);
+
+    studentQuizService.completeReading(userId, readingId);
+
+    verify(quizAttemptRepository, times(1)).save(any(QuizAttempt.class));
+    verify(eventPublisher, times(1)).publishEvent(any(Object.class));
+  }
+
+  @Test
+  void testCompleteReading_AlreadyAttempted_ThrowsException() {
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(true);
+
+    assertThrows(RuntimeException.class, () -> studentQuizService.completeReading(userId, readingId));
+  }
+
   private Question createQuestion(String correctAns) {
     Question q = new Question();
     q.setQuestionId(UUID.randomUUID());
