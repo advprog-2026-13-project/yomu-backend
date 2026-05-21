@@ -48,22 +48,23 @@ class StudentQuizServiceImplTest {
     reading.setReadingId(readingId);
   }
 
-  // --- 1. Tests for getAvailableReadingsForStudent ---
+  // --- 1. Tests for getAllReadingsWithCompletionStatus ---
 
   @Test
-  void testGetAvailableReadings_FiltersAttemptedReadings() {
+  void testGetAllReadingsWithCompletionStatus_SetsCompletedFlag() {
     Reading reading2 = new Reading();
     reading2.setReadingId(UUID.randomUUID());
 
-    when(readingRepository.findAll()).thenReturn(List.of(reading, reading2));
+    when(readingRepository.findByHiddenFalse()).thenReturn(List.of(reading, reading2));
     when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(true);
     when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, reading2.getReadingId()))
         .thenReturn(false);
 
-    List<Reading> available = studentQuizService.getAvailableReadingsForStudent(userId);
+    List<Reading> result = studentQuizService.getAllReadingsWithCompletionStatus(userId);
 
-    assertThat(available).hasSize(1);
-    assertThat(available.get(0).getReadingId()).isEqualTo(reading2.getReadingId());
+    assertThat(result).hasSize(2);
+    assertThat(result.get(0).isCompleted()).isTrue();
+    assertThat(result.get(1).isCompleted()).isFalse();
   }
 
   // --- 2. Tests for getReadingForStudent ---
@@ -75,11 +76,22 @@ class StudentQuizServiceImplTest {
 
     Reading result = studentQuizService.getReadingForStudent(userId, readingId);
     assertThat(result).isNotNull();
+    assertThat(result.isCompleted()).isFalse();
+  }
+
+  @Test
+  void testGetReading_AlreadyAttempted_ReturnsReadingWithCompletedTrue() {
+    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId))
+        .thenReturn(true);
+    when(readingRepository.findById(readingId)).thenReturn(Optional.of(reading));
+
+    Reading result = studentQuizService.getReadingForStudent(userId, readingId);
+    assertThat(result).isNotNull();
+    assertThat(result.isCompleted()).isTrue();
   }
 
   @Test
   void testGetReading_NotFound_ThrowsException() {
-    when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(false);
     when(readingRepository.findById(readingId)).thenReturn(Optional.empty());
 
     assertThrows(

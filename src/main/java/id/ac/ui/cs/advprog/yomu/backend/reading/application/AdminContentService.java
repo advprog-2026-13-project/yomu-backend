@@ -18,6 +18,10 @@ public interface AdminContentService {
 
   void deleteReading(UUID readingId);
 
+  void hideReading(UUID readingId);
+
+  void unhideReading(UUID readingId);
+
   Question addQuestionToReading(UUID readingId, QuestionDTO questionDto);
 
   Question updateQuestion(UUID questionId, QuestionDTO updatedQuestionDto);

@@ -34,22 +34,24 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<Reading> getAvailableReadingsForStudent(UUID userId) {
-    return readingRepository.findAll().stream()
-        .filter(
-            reading ->
-                !quizAttemptRepository.existsByStudentIdAndReadingId(
-                    userId, reading.getReadingId()))
-        .toList();
+  public List<Reading> getAllReadingsWithCompletionStatus(UUID userId) {
+    List<Reading> visibleReadings = readingRepository.findByHiddenFalse();
+    for (Reading reading : visibleReadings) {
+      boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(userId, reading.getReadingId());
+      reading.setCompleted(isCompleted);
+    }
+    return visibleReadings;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Reading getReadingForStudent(UUID userId, UUID readingId) {
-    validateNotAttempted(userId, readingId);
-    return readingRepository
+    Reading reading = readingRepository
         .findById(readingId)
         .orElseThrow(() -> new RuntimeException("Bacaan tidak ditemukan"));
+    boolean isCompleted = quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId);
+    reading.setCompleted(isCompleted);
+    return reading;
   }
 
   @Override
@@ -99,6 +101,25 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     publishAchievementEvents(userId, readingId, score);
 
     return savedAttempt;
+  }
+
+  @Override
+  @Transactional
+  public void completeReading(UUID userId, UUID readingId) {
+    validateNotAttempted(userId, readingId);
+
+    QuizAttempt attempt = new QuizAttempt();
+    attempt.setStudentId(userId);
+    attempt.setReadingId(readingId);
+    attempt.setScore(100); // 100 as default score for completing reading material
+    attempt.setCompletedAt(java.time.LocalDateTime.now());
+    quizAttemptRepository.save(attempt);
+
+    // Publish Reading Completed Event
+    AchievementReadingCompletedPayload readingPayload =
+        new AchievementReadingCompletedPayload(userId, readingId, 0); // Duration not tracked yet
+    eventPublisher.publishEvent(
+        AchievementEnvelope.of(AchievementType.READING_COMPLETED, 1, readingPayload));
   }
 
   private void publishAchievementEvents(UUID userId, UUID readingId, int score) {

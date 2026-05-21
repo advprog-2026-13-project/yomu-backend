@@ -25,7 +25,7 @@ public class StudentQuizController {
   @GetMapping("/readings")
   public ResponseEntity<List<Reading>> getAvailableReadings() {
     var userId = getCurrentUserId();
-    return ResponseEntity.ok(studentQuizService.getAvailableReadingsForStudent(userId));
+    return ResponseEntity.ok(studentQuizService.getAllReadingsWithCompletionStatus(userId));
   }
 
   @GetMapping("/readings/{readingId}")
@@ -45,6 +45,13 @@ public class StudentQuizController {
       @PathVariable UUID readingId, @RequestBody QuizSubmissionRequest request) {
     var userId = getCurrentUserId();
     return ResponseEntity.ok(studentQuizService.submitQuiz(userId, readingId, request));
+  }
+
+  @PostMapping("/readings/{readingId}/complete")
+  public ResponseEntity<Void> completeReading(@PathVariable UUID readingId) {
+    var userId = getCurrentUserId();
+    studentQuizService.completeReading(userId, readingId);
+    return ResponseEntity.ok().build();
   }
 
   private UUID getCurrentUserId() {

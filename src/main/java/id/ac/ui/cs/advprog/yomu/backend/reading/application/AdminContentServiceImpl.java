@@ -67,6 +67,22 @@ public class AdminContentServiceImpl implements AdminContentService {
 
   @Override
   @Transactional
+  public void hideReading(UUID readingId) {
+    Reading reading = getReadingById(readingId);
+    reading.setHidden(true);
+    readingRepository.save(reading);
+  }
+
+  @Override
+  @Transactional
+  public void unhideReading(UUID readingId) {
+    Reading reading = getReadingById(readingId);
+    reading.setHidden(false);
+    readingRepository.save(reading);
+  }
+
+  @Override
+  @Transactional
   public Question addQuestionToReading(UUID readingId, QuestionDTO questionDto) {
     Reading reading = getReadingById(readingId);
     Question question = new Question();

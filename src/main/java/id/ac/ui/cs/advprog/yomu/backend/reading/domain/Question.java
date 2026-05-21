@@ -25,7 +25,8 @@ public class Question {
   @Column(columnDefinition = "TEXT")
   private String questionText;
 
-  @ElementCollection private List<String> options;
+  @ElementCollection(fetch = FetchType.EAGER)
+  private List<String> options;
 
   private String correctAnswer;
 }
