@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.events.UserRegisteredEvent;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.UserRepository;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.JwtService;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -75,11 +76,12 @@ public class GoogleAuthService {
 
   private String generateUniqueUsername(String email, String googleSub) {
     String base = email.split("@")[0];
-    String suffix = googleSub.length() > 5 ? googleSub.substring(0, 5) : googleSub;
+    int suffixLen = Math.min(googleSub.length(), 8);
+    String suffix = googleSub.substring(0, suffixLen);
     String candidate = base + "_" + suffix;
 
     if (userRepository.existsByUsername(candidate)) {
-      candidate = base + "_" + googleSub.substring(0, 8);
+      candidate = base + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
 
     return candidate;
