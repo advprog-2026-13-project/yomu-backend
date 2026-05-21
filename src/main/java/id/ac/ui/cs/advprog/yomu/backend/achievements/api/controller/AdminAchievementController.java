@@ -12,10 +12,12 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/achievements")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminAchievementController {
 
   private final AchievementAdminService adminService;
@@ -25,8 +27,6 @@ public class AdminAchievementController {
   }
 
   @PostMapping
-  // Usually you'd uncomment this when security is fully integrated:
-  // @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<Achievement> createAchievement(
       @Valid @RequestBody CreateAchievementRequest request) {
     Achievement created =
@@ -82,6 +82,18 @@ public class AdminAchievementController {
   @DeleteMapping("/daily-missions/{id}")
   public ResponseEntity<Void> deleteDailyMission(@PathVariable UUID id) {
     adminService.deleteDailyMission(id);
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/daily-missions/reset")
+  public ResponseEntity<Void> resetAllDailyMissions() {
+    adminService.resetAllDailyMissionsForToday();
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/daily-missions/reset/{userId}")
+  public ResponseEntity<Void> resetDailyMissionsForUser(@PathVariable UUID userId) {
+    adminService.resetDailyMissionsForUser(userId);
     return ResponseEntity.noContent().build();
   }
 }
