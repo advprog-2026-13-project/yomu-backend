@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
@@ -118,6 +119,76 @@ class ClanServiceTest {
     verify(clanMemberRepository).delete(member);
     verify(clanRepository, never()).deleteById(any(UUID.class));
     verify(clanMemberRepository, never()).deleteAll(anyIterable());
+  }
+
+  // --- getClan ---
+
+  @Test
+  void getClan_happyPath_returnsClanResponseWithMemberCount() {
+    Clan clan = new Clan();
+    clan.setId(clanId);
+    clan.setName("Vipers");
+    clan.setLeaderId(leaderId);
+    clan.setTier(Tier.BRONZE);
+    clan.setScore(0L);
+    when(clanRepository.findById(clanId)).thenReturn(Optional.of(clan));
+    when(clanMemberRepository.countByClanId(clanId)).thenReturn(3L);
+
+    ClanResponse response = clanService.getClan(clanId);
+
+    assertEquals(clanId, response.getId());
+    assertEquals("Vipers", response.getName());
+    assertEquals(3L, response.getMemberCount());
+  }
+
+  @Test
+  void getClan_clanNotFound_throwsClanNotFoundException() {
+    when(clanRepository.findById(clanId)).thenReturn(Optional.empty());
+
+    assertThrows(ClanNotFoundException.class, () -> clanService.getClan(clanId));
+  }
+
+  // --- getMyClan ---
+
+  @Test
+  void getMyClan_userInClan_returnsClanResponse() {
+    ClanMember member = new ClanMember();
+    member.setUserId(leaderId);
+    member.setClanId(clanId);
+    Clan clan = new Clan();
+    clan.setId(clanId);
+    clan.setName("Vipers");
+    clan.setLeaderId(leaderId);
+    clan.setTier(Tier.BRONZE);
+    clan.setScore(0L);
+    when(clanMemberRepository.findByUserId(leaderId)).thenReturn(Optional.of(member));
+    when(clanRepository.findById(clanId)).thenReturn(Optional.of(clan));
+    when(clanMemberRepository.countByClanId(clanId)).thenReturn(2L);
+
+    Optional<ClanResponse> result = clanService.getMyClan(leaderId);
+
+    assertTrue(result.isPresent());
+    assertEquals(clanId, result.get().getId());
+    assertEquals(2L, result.get().getMemberCount());
+  }
+
+  @Test
+  void getMyClan_userNotInAnyClan_returnsEmpty() {
+    when(clanMemberRepository.findByUserId(leaderId)).thenReturn(Optional.empty());
+
+    Optional<ClanResponse> result = clanService.getMyClan(leaderId);
+
+    assertTrue(result.isEmpty());
+    verify(clanRepository, never()).findById(any());
+  }
+
+  // --- leaveClan error path ---
+
+  @Test
+  void leaveClan_userNotInAnyClan_throwsClanNotFoundException() {
+    when(clanMemberRepository.findByUserId(leaderId)).thenReturn(Optional.empty());
+
+    assertThrows(ClanNotFoundException.class, () -> clanService.leaveClan(leaderId));
   }
 
   @Test

@@ -10,10 +10,12 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.ClanService;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,6 +100,91 @@ class ClanControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Vipers\"}"))
         .andExpect(status().isConflict());
+  }
+
+  @Test
+  void createClan_userAlreadyInClan_returns409() throws Exception {
+    doThrow(new AlreadyInClanException("User is already a member of a clan"))
+        .when(clanService)
+        .createClan(any(), any());
+
+    mockMvc
+        .perform(
+            post("/api/social/clans")
+                .principal(userPrincipal())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Vipers\"}"))
+        .andExpect(status().isConflict());
+  }
+
+  // ---- leaveClan ----
+
+  @Test
+  void leaveClan_happyPath_returns204() throws Exception {
+    doNothing().when(clanService).leaveClan(any());
+
+    mockMvc
+        .perform(delete("/api/social/clans/leave").principal(userPrincipal()))
+        .andExpect(status().isNoContent());
+
+    verify(clanService).leaveClan(USER_ID);
+  }
+
+  @Test
+  void leaveClan_userNotInClan_returns404() throws Exception {
+    doThrow(new ClanNotFoundException("User is not in a clan")).when(clanService).leaveClan(any());
+
+    mockMvc
+        .perform(delete("/api/social/clans/leave").principal(userPrincipal()))
+        .andExpect(status().isNotFound());
+  }
+
+  // ---- getClan ----
+
+  @Test
+  void getClan_happyPath_returns200WithClanBody() throws Exception {
+    Clan clan = Clan.createNew("Vipers", USER_ID);
+    clan.setId(CLAN_ID);
+    when(clanService.getClan(CLAN_ID)).thenReturn(new ClanResponse(clan, 3L));
+
+    mockMvc
+        .perform(get("/api/social/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
+        .andExpect(status().isOk());
+
+    verify(clanService).getClan(CLAN_ID);
+  }
+
+  @Test
+  void getClan_notFound_returns404() throws Exception {
+    doThrow(new ClanNotFoundException("Clan not found")).when(clanService).getClan(any());
+
+    mockMvc
+        .perform(get("/api/social/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
+        .andExpect(status().isNotFound());
+  }
+
+  // ---- getMyClan ----
+
+  @Test
+  void getMyClan_userInClan_returns200() throws Exception {
+    Clan clan = Clan.createNew("Vipers", USER_ID);
+    clan.setId(CLAN_ID);
+    when(clanService.getMyClan(USER_ID)).thenReturn(Optional.of(new ClanResponse(clan, 2L)));
+
+    mockMvc
+        .perform(get("/api/social/clans/me").principal(userPrincipal()))
+        .andExpect(status().isOk());
+
+    verify(clanService).getMyClan(USER_ID);
+  }
+
+  @Test
+  void getMyClan_userNotInClan_returns404() throws Exception {
+    when(clanService.getMyClan(USER_ID)).thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(get("/api/social/clans/me").principal(userPrincipal()))
+        .andExpect(status().isNotFound());
   }
 
   // ---- deleteClan ----

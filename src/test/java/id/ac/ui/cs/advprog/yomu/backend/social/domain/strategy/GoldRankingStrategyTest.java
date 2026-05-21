@@ -103,6 +103,18 @@ class GoldRankingStrategyTest {
     assertSame(clanB, result.get(1));
   }
 
+  @Test
+  void rank_zeroMemberClanAmongNormalClans_scoredZeroAndRanksLast() {
+    // The false branch of `memberCount > 0 ? ... : 0.0` inside the comparator is only
+    // evaluated when the comparator is invoked — i.e., the list has ≥ 2 elements.
+    // A single-element list never calls the comparator, so this test uses 2 clans.
+    ClanScoreData zeroBig = scoreData(9999L, 0L); // memberCount=0 → effective score = 0.0
+    ClanScoreData small = scoreData(1L, 1L); // effective score = 1*0.5 + (1/1)*0.5 = 1.0
+    List<ClanScoreData> result = strategy.rank(List.of(zeroBig, small));
+    assertSame(small, result.get(0)); // 1.0 > 0.0
+    assertSame(zeroBig, result.get(1));
+  }
+
   private ClanScoreData scoreData(long score, long memberCount) {
     return new ClanScoreData(UUID.randomUUID(), "Clan", Tier.GOLD, score, memberCount);
   }
