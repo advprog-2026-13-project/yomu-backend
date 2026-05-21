@@ -197,7 +197,8 @@ class StudentQuizServiceImplTest {
   void testCompleteReading_AlreadyAttempted_ThrowsException() {
     when(quizAttemptRepository.existsByStudentIdAndReadingId(userId, readingId)).thenReturn(true);
 
-    assertThrows(RuntimeException.class, () -> studentQuizService.completeReading(userId, readingId));
+    assertThrows(
+        RuntimeException.class, () -> studentQuizService.completeReading(userId, readingId));
   }
 
   private Question createQuestion(String correctAns) {

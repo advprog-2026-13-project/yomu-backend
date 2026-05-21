@@ -99,8 +99,7 @@ class StudentQuizControllerTest {
     qr.setQuestionText("What is Java?");
     qr.setOptions(List.of("A", "B"));
 
-    when(studentQuizService.getQuestionsForReading(userId, readingId))
-        .thenReturn(List.of(qr));
+    when(studentQuizService.getQuestionsForReading(userId, readingId)).thenReturn(List.of(qr));
 
     ResponseEntity<List<QuestionResponse>> response = controller.getQuestions(readingId);
 

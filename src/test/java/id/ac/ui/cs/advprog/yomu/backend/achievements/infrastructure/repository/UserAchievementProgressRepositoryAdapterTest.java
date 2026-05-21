@@ -102,8 +102,7 @@ class UserAchievementProgressRepositoryAdapterTest {
 
   @Test
   void findByUserIdAndIsCompleted_ReturnsMappedList() {
-    when(springDataRepository.findByUserIdAndIsCompleted(userId, true))
-        .thenReturn(List.of(entity));
+    when(springDataRepository.findByUserIdAndIsCompleted(userId, true)).thenReturn(List.of(entity));
 
     List<UserAchievementProgress> result = adapter.findByUserIdAndIsCompleted(userId, true);
 
@@ -113,8 +112,7 @@ class UserAchievementProgressRepositoryAdapterTest {
 
   @Test
   void findByUserIdAndIsCompleted_WhenEmpty_ReturnsEmptyList() {
-    when(springDataRepository.findByUserIdAndIsCompleted(userId, false))
-        .thenReturn(List.of());
+    when(springDataRepository.findByUserIdAndIsCompleted(userId, false)).thenReturn(List.of());
 
     List<UserAchievementProgress> result = adapter.findByUserIdAndIsCompleted(userId, false);
 
@@ -124,11 +122,9 @@ class UserAchievementProgressRepositoryAdapterTest {
   @Test
   void save_ConvertsToEntityAndBack() {
     UserAchievementProgress domain =
-        new UserAchievementProgress(
-            progressId, userId, achievementId, 3, true, completedAt, false);
+        new UserAchievementProgress(progressId, userId, achievementId, 3, true, completedAt, false);
 
-    when(springDataRepository.save(any(UserAchievementProgressJpaEntity.class)))
-        .thenReturn(entity);
+    when(springDataRepository.save(any(UserAchievementProgressJpaEntity.class))).thenReturn(entity);
 
     UserAchievementProgress result = adapter.save(domain);
 

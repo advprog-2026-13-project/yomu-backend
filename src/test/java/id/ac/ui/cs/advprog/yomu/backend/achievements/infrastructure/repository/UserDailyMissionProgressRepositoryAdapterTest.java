@@ -106,8 +106,7 @@ class UserDailyMissionProgressRepositoryAdapterTest {
   @Test
   void save_ConvertsToEntityAndBack() {
     UserDailyMissionProgress domain =
-        new UserDailyMissionProgress(
-            progressId, userId, missionId, date, 2, true, completedAt);
+        new UserDailyMissionProgress(progressId, userId, missionId, date, 2, true, completedAt);
 
     when(springDataRepository.save(any(UserDailyMissionProgressJpaEntity.class)))
         .thenReturn(entity);
