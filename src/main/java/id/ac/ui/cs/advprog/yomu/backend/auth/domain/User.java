@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.backend.auth.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
@@ -32,9 +33,11 @@ public class User {
   @Column(length = 20)
   private String phoneNumber;
 
+  @JsonIgnore
   @Column(length = 200)
   private String passwordHash;
 
+  @JsonIgnore
   @Column(length = 255, unique = true)
   private String googleSub;
 
