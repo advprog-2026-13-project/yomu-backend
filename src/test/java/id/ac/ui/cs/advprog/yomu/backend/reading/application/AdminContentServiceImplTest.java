@@ -138,6 +138,16 @@ class AdminContentServiceImplTest {
   }
 
   @Test
+  void getQuestionsForReading() {
+    when(questionRepository.findByReading_ReadingId(readingId)).thenReturn(List.of(question));
+
+    List<Question> result = service.getQuestionsForReading(readingId);
+
+    assertEquals(1, result.size());
+    assertEquals("Q?", result.get(0).getQuestionText());
+  }
+
+  @Test
   void updateQuestion_success() {
     when(questionRepository.findById(questionId)).thenReturn(Optional.of(question));
     when(questionRepository.save(any(Question.class))).thenReturn(question);

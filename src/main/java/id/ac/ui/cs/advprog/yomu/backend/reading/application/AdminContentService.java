@@ -24,6 +24,8 @@ public interface AdminContentService {
 
   Question addQuestionToReading(UUID readingId, QuestionDTO questionDto);
 
+  List<Question> getQuestionsForReading(UUID readingId);
+
   Question updateQuestion(UUID questionId, QuestionDTO updatedQuestionDto);
 
   void deleteQuestion(UUID questionId);

@@ -56,12 +56,12 @@ class AuthServiceTest {
     when(userRepository.existsByPhoneNumber(anyString())).thenReturn(false);
     when(passwordEncoder.encode(anyString())).thenReturn(encodedPassword);
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(jwtService.generateToken(any(User.class))).thenReturn("jwt-token");
 
-    MeResponse response = authService.register(request);
+    AuthResponse response = authService.register(request);
 
     assertNotNull(response);
-    assertEquals(DEFAULT_USERNAME, response.getUsername());
-    assertEquals(DEFAULT_DISPLAY_NAME, response.getDisplayName());
+    assertEquals("jwt-token", response.getAccessToken());
     verify(userRepository).save(any(User.class));
   }
 
