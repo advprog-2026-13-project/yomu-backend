@@ -84,4 +84,16 @@ public class AdminAchievementController {
     adminService.deleteDailyMission(id);
     return ResponseEntity.noContent().build();
   }
+
+  @PostMapping("/daily-missions/reset")
+  public ResponseEntity<Void> resetAllDailyMissions() {
+    adminService.resetAllDailyMissionsForToday();
+    return ResponseEntity.noContent().build();
+  }
+
+  @PostMapping("/daily-missions/reset/{userId}")
+  public ResponseEntity<Void> resetDailyMissionsForUser(@PathVariable UUID userId) {
+    adminService.resetDailyMissionsForUser(userId);
+    return ResponseEntity.noContent().build();
+  }
 }

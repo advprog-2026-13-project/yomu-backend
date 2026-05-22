@@ -9,7 +9,10 @@ public class Achievement {
   private final UUID id;
   private final String name;
   private final String description;
+
+  @com.fasterxml.jackson.annotation.JsonProperty("type")
   private final AchievementType achievementType;
+
   private final int milestone;
 
   public Achievement(

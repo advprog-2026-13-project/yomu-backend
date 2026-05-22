@@ -17,4 +17,6 @@ public interface IUserDailyMissionProgressRepository {
   UserDailyMissionProgress save(UserDailyMissionProgress progress);
 
   void deleteByDate(LocalDate date);
+
+  void deleteByUserIdAndDate(UUID userId, LocalDate date);
 }

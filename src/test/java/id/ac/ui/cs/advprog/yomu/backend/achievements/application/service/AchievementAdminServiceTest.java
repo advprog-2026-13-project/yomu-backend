@@ -8,9 +8,11 @@ import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IAchievementRepository;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IDailyMissionRepository;
+import id.ac.ui.cs.advprog.yomu.backend.achievements.application.port.out.IUserDailyMissionProgressRepository;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.Achievement;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.domain.model.DailyMission;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
+import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +27,8 @@ class AchievementAdminServiceTest {
   @Mock private IAchievementRepository achievementRepository;
 
   @Mock private IDailyMissionRepository dailyMissionRepository;
+
+  @Mock private IUserDailyMissionProgressRepository userDailyMissionProgressRepository;
 
   @InjectMocks private AchievementAdminService adminService;
 
@@ -157,5 +161,19 @@ class AchievementAdminServiceTest {
     UUID id = UUID.randomUUID();
     adminService.deleteDailyMission(id);
     verify(dailyMissionRepository, times(1)).deleteById(id);
+  }
+
+  @Test
+  void testResetAllDailyMissionsForToday() {
+    adminService.resetAllDailyMissionsForToday();
+    verify(userDailyMissionProgressRepository, times(1)).deleteByDate(LocalDate.now());
+  }
+
+  @Test
+  void testResetDailyMissionsForUser() {
+    UUID userId = UUID.randomUUID();
+    adminService.resetDailyMissionsForUser(userId);
+    verify(userDailyMissionProgressRepository, times(1))
+        .deleteByUserIdAndDate(userId, LocalDate.now());
   }
 }
