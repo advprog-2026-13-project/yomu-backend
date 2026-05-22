@@ -35,6 +35,10 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/api/auth/login", "/api/auth/register", "/api/auth/google", "/error")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/social/leaderboard")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/social/clans/{clanId}")
+                    .permitAll()
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

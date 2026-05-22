@@ -1,9 +1,9 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.repository;
 
-import id.ac.ui.cs.advprog.yomu.backend.achievements.application.service.AchievementQueryService;
-import id.ac.ui.cs.advprog.yomu.backend.reading.application.QuizStatsQueryService;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.DailyMissionMetricsPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.QuizScoreMetricsPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
 import java.time.LocalDate;
@@ -15,16 +15,16 @@ import org.springframework.stereotype.Component;
 public class RealClanActivityProvider implements ClanActivityProvider {
 
   private final ClanMemberRepositoryPort clanMemberRepository;
-  private final AchievementQueryService achievementQueryService;
-  private final QuizStatsQueryService quizStatsQueryService;
+  private final DailyMissionMetricsPort dailyMissionMetrics;
+  private final QuizScoreMetricsPort quizScoreMetrics;
 
   public RealClanActivityProvider(
       ClanMemberRepositoryPort clanMemberRepository,
-      AchievementQueryService achievementQueryService,
-      QuizStatsQueryService quizStatsQueryService) {
+      DailyMissionMetricsPort dailyMissionMetrics,
+      QuizScoreMetricsPort quizScoreMetrics) {
     this.clanMemberRepository = clanMemberRepository;
-    this.achievementQueryService = achievementQueryService;
-    this.quizStatsQueryService = quizStatsQueryService;
+    this.dailyMissionMetrics = dailyMissionMetrics;
+    this.quizScoreMetrics = quizScoreMetrics;
   }
 
   @Override
@@ -37,9 +37,9 @@ public class RealClanActivityProvider implements ClanActivityProvider {
     }
 
     long completedCount =
-        achievementQueryService.countMembersCompletedDailyMissionOn(memberUserIds, LocalDate.now());
+        dailyMissionMetrics.countCompletedByUsersOnDate(memberUserIds, LocalDate.now());
     double completionRate = (double) completedCount / memberUserIds.size();
-    double averageAccuracy = quizStatsQueryService.averageScore(memberUserIds);
+    double averageAccuracy = quizScoreMetrics.averageScore(memberUserIds);
 
     return new ClanActivitySnapshot(completionRate, averageAccuracy);
   }

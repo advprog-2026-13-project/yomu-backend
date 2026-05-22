@@ -46,4 +46,9 @@ public class ClanRepositoryAdapter implements ClanRepositoryPort {
   public List<Clan> findByTierOrderByScoreDesc(Tier tier) {
     return jpa.findByTierOrderByScoreDesc(tier).stream().map(ClanMapper::toDomain).toList();
   }
+
+  @Override
+  public List<Clan> findAll() {
+    return jpa.findAll().stream().map(ClanMapper::toDomain).toList();
+  }
 }

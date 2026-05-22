@@ -112,4 +112,19 @@ public class ClanService {
               clanRepository.save(clan);
             });
   }
+
+  public void adminDeleteClan(UUID clanId) {
+    clanRepository.findById(clanId).orElseThrow(() -> new ClanNotFoundException("Clan not found"));
+    clanMemberRepository.deleteAll(clanMemberRepository.findByClanId(clanId));
+    clanRepository.deleteById(clanId);
+  }
+
+  public void adminRemoveMember(UUID clanId, UUID userId) {
+    var member =
+        clanMemberRepository
+            .findByUserId(userId)
+            .filter(m -> m.getClanId().equals(clanId))
+            .orElseThrow(() -> new ClanNotFoundException("Member not found in this clan"));
+    clanMemberRepository.delete(member);
+  }
 }

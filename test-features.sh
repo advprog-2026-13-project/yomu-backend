@@ -239,6 +239,79 @@ if [ -n "$MISSION_ID" ]; then
   check $DEL_M "DELETE /api/admin/achievements/daily-missions/$MISSION_ID"
 fi
 
+# ─── 6. SOCIAL / LEAGUE ────────────────────────
+
+echo ""
+echo "── Social / League ──"
+
+# Create clan (only if user is not in one)
+MY_CLAN=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/social/clans/me" \
+  -H "Authorization: Bearer $TOKEN")
+
+if [ "$MY_CLAN" = "200" ]; then
+  echo "  (already in a clan, skipping creation)"
+  check 200 "POST /api/social/clans (already exists)"
+else
+  CLAN=$(curl -s -w "\n%{http_code}" -X POST "$BASE/api/social/clans" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $TOKEN" \
+    -d '{"name":"Test Clan"}')
+  STATUS=$(echo "$CLAN" | tail -1)
+  CLAN_ID=$(echo "$CLAN" | sed '$d' | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+  check $STATUS "POST /api/social/clans"
+fi
+
+CLAN_ID=$(curl -s "$BASE/api/social/clans/me" \
+  -H "Authorization: Bearer $TOKEN" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+
+if [ -n "$CLAN_ID" ]; then
+  # Get clan
+  GET_CL=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/social/clans/$CLAN_ID")
+  check $GET_CL "GET /api/social/clans/$CLAN_ID"
+
+  # Get my clan
+  MY_CL=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/social/clans/me" \
+    -H "Authorization: Bearer $TOKEN")
+  check $MY_CL "GET /api/social/clans/me"
+fi
+
+# List join requests (as clan leader)
+if [ -n "$CLAN_ID" ]; then
+  GET_JR=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/social/clans/$CLAN_ID/join-requests" \
+    -H "Authorization: Bearer $TOKEN")
+  check $GET_JR "GET /api/social/clans/$CLAN_ID/join-requests"
+fi
+
+# Leaderboard
+LB=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/social/leaderboard")
+check $LB "GET /api/social/leaderboard"
+
+# Leaderboard by tier
+LB_GOLD=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/social/leaderboard?tier=GOLD")
+check $LB_GOLD "GET /api/social/leaderboard?tier=GOLD"
+
+# End season (admin)
+END_S=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$BASE/api/admin/social/seasons/end" \
+  -H "Authorization: Bearer $TOKEN")
+check $END_S "POST /api/admin/social/seasons/end"
+
+# List all clans (admin)
+ADM_CL=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/admin/social/clans" \
+  -H "Authorization: Bearer $TOKEN")
+check $ADM_CL "GET /api/admin/social/clans"
+
+# List clan members (admin)
+if [ -n "$CLAN_ID" ]; then
+  ADM_MEM=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/admin/social/clans/$CLAN_ID/members" \
+    -H "Authorization: Bearer $TOKEN")
+  check $ADM_MEM "GET /api/admin/social/clans/$CLAN_ID/members"
+fi
+
+# List all join requests (admin)
+ADM_JR=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/admin/social/join-requests" \
+  -H "Authorization: Bearer $TOKEN")
+check $ADM_JR "GET /api/admin/social/join-requests"
+
 # ─── SUMMARY ─────────────────────────────────
 
 echo ""

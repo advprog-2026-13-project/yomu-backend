@@ -44,4 +44,9 @@ public class JoinRequestRepositoryAdapter implements JoinRequestRepositoryPort {
         .map(JoinRequestMapper::toDomain)
         .toList();
   }
+
+  @Override
+  public List<JoinRequest> findAll() {
+    return jpa.findAll().stream().map(JoinRequestMapper::toDomain).toList();
+  }
 }

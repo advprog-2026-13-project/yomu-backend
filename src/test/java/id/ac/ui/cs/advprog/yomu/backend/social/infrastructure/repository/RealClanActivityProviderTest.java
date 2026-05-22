@@ -3,9 +3,9 @@ package id.ac.ui.cs.advprog.yomu.backend.social.infrastructure.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-import id.ac.ui.cs.advprog.yomu.backend.achievements.application.service.AchievementQueryService;
-import id.ac.ui.cs.advprog.yomu.backend.reading.application.QuizStatsQueryService;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.DailyMissionMetricsPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.QuizScoreMetricsPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
 import java.time.LocalDate;
@@ -21,16 +21,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RealClanActivityProviderTest {
 
   @Mock private ClanMemberRepositoryPort clanMemberRepository;
-  @Mock private AchievementQueryService achievementQueryService;
-  @Mock private QuizStatsQueryService quizStatsQueryService;
+  @Mock private DailyMissionMetricsPort dailyMissionMetrics;
+  @Mock private QuizScoreMetricsPort quizScoreMetrics;
 
   private RealClanActivityProvider provider;
 
   @BeforeEach
   void setUp() {
     provider =
-        new RealClanActivityProvider(
-            clanMemberRepository, achievementQueryService, quizStatsQueryService);
+        new RealClanActivityProvider(clanMemberRepository, dailyMissionMetrics, quizScoreMetrics);
   }
 
   @Test
@@ -50,9 +49,8 @@ class RealClanActivityProviderTest {
     when(clanMemberRepository.findByClanId(clanId)).thenReturn(List.of(m1, m2, m3));
 
     List<UUID> userIds = List.of(u1, u2, u3);
-    when(achievementQueryService.countMembersCompletedDailyMissionOn(userIds, LocalDate.now()))
-        .thenReturn(2L);
-    when(quizStatsQueryService.averageScore(userIds)).thenReturn(0.75);
+    when(dailyMissionMetrics.countCompletedByUsersOnDate(userIds, LocalDate.now())).thenReturn(2L);
+    when(quizScoreMetrics.averageScore(userIds)).thenReturn(0.75);
 
     ClanActivitySnapshot snapshot = provider.getActivity(clanId);
 
@@ -85,9 +83,8 @@ class RealClanActivityProviderTest {
     when(clanMemberRepository.findByClanId(clanId)).thenReturn(List.of(m1, m2));
 
     List<UUID> userIds = List.of(u1, u2);
-    when(achievementQueryService.countMembersCompletedDailyMissionOn(userIds, LocalDate.now()))
-        .thenReturn(2L);
-    when(quizStatsQueryService.averageScore(userIds)).thenReturn(0.9);
+    when(dailyMissionMetrics.countCompletedByUsersOnDate(userIds, LocalDate.now())).thenReturn(2L);
+    when(quizScoreMetrics.averageScore(userIds)).thenReturn(0.9);
 
     ClanActivitySnapshot snapshot = provider.getActivity(clanId);
 

@@ -17,4 +17,6 @@ public interface ClanRepositoryPort {
   void deleteById(UUID id);
 
   List<Clan> findByTierOrderByScoreDesc(Tier tier);
+
+  List<Clan> findAll();
 }

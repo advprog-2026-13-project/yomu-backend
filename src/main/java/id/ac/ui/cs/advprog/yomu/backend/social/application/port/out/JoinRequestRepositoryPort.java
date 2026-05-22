@@ -15,4 +15,6 @@ public interface JoinRequestRepositoryPort {
   boolean existsByClanIdAndUserIdAndStatus(UUID clanId, UUID userId, JoinRequestStatus status);
 
   List<JoinRequest> findByClanIdAndStatus(UUID clanId, JoinRequestStatus status);
+
+  List<JoinRequest> findAll();
 }
