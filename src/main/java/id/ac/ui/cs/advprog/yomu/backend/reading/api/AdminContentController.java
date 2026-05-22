@@ -60,6 +60,11 @@ public class AdminContentController {
     return ResponseEntity.noContent().build();
   }
 
+  @GetMapping("/readings/{readingId}/questions")
+  public ResponseEntity<List<Question>> getQuestions(@PathVariable UUID readingId) {
+    return ResponseEntity.ok(adminContentService.getQuestionsForReading(readingId));
+  }
+
   @PostMapping("/readings/{readingId}/questions")
   public ResponseEntity<Question> addQuestion(
       @PathVariable UUID readingId, @Valid @RequestBody QuestionDTO questionDto) {

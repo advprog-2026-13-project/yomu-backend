@@ -11,10 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.AuthResponse;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.LoginRequest;
-import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.MeResponse;
 import id.ac.ui.cs.advprog.yomu.backend.auth.api.dto.RegisterRequest;
 import id.ac.ui.cs.advprog.yomu.backend.auth.application.AuthService;
-import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,18 +43,9 @@ class AuthControllerTest {
   @Test
   void registerShouldReturnOkWhenRequestIsValid() throws Exception {
     RegisterRequest request = createRegisterRequest();
-    User dummyUser = createDummyUser();
 
-    MeResponse response =
-        new MeResponse(
-            dummyUser.getId(),
-            dummyUser.getUsername(),
-            dummyUser.getDisplayName(),
-            dummyUser.getEmail(),
-            dummyUser.getPhoneNumber(),
-            dummyUser.getRole());
-
-    when(authService.register(any(RegisterRequest.class))).thenReturn(response);
+    when(authService.register(any(RegisterRequest.class)))
+        .thenReturn(new AuthResponse("jwt-token"));
 
     mockMvc
         .perform(
@@ -64,10 +53,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.username").value(DEFAULT_USERNAME))
-        .andExpect(jsonPath("$.displayName").value(DEFAULT_DISPLAY_NAME))
-        .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
-        .andExpect(jsonPath("$.phoneNumber").value(DEFAULT_PHONE));
+        .andExpect(jsonPath("$.accessToken").value("jwt-token"));
 
     verify(authService).register(any(RegisterRequest.class));
   }

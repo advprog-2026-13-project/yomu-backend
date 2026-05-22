@@ -82,6 +82,12 @@ public class AdminContentServiceImpl implements AdminContentService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<Question> getQuestionsForReading(UUID readingId) {
+    return questionRepository.findByReading_ReadingId(readingId);
+  }
+
+  @Override
   @Transactional
   public Question addQuestionToReading(UUID readingId, QuestionDTO questionDto) {
     Reading reading = getReadingById(readingId);

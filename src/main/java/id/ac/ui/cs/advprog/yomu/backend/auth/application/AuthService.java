@@ -37,7 +37,7 @@ public class AuthService {
   }
 
   @Transactional
-  public MeResponse register(RegisterRequest req) {
+  public AuthResponse register(RegisterRequest req) {
     if (userRepository.existsByUsername(req.getUsername()))
       throw new IllegalArgumentException("Username already taken");
 
@@ -66,7 +66,7 @@ public class AuthService {
     eventPublisher.publishEvent(
         new UserRegisteredEvent(saved.getId(), saved.getUsername(), saved.getDisplayName()));
 
-    return MeResponse.fromEntity(saved);
+    return new AuthResponse(jwtService.generateToken(saved));
   }
 
   public AuthResponse login(LoginRequest req) {
