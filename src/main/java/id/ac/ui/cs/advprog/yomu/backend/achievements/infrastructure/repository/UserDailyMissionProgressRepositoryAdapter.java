@@ -43,6 +43,11 @@ public class UserDailyMissionProgressRepositoryAdapter
   }
 
   @Override
+  public long countDistinctCompletedUsersByUserIdInAndDate(List<UUID> userIds, LocalDate date) {
+    return repository.countDistinctCompletedUsersByUserIdInAndDate(userIds, date);
+  }
+
+  @Override
   public void deleteByDate(LocalDate date) {
     repository.deleteByDate(date);
   }
