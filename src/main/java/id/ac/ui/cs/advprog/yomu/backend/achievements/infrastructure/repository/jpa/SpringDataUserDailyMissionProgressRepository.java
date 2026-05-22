@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,6 +18,12 @@ public interface SpringDataUserDailyMissionProgressRepository
       UUID userId, UUID missionId, LocalDate date);
 
   List<UserDailyMissionProgressJpaEntity> findByUserIdAndDate(UUID userId, LocalDate date);
+
+  @Query(
+      "SELECT COUNT(DISTINCT p.userId) FROM UserDailyMissionProgressJpaEntity p"
+          + " WHERE p.userId IN :userIds AND p.date = :date AND p.isCompleted = true")
+  long countDistinctCompletedUsersByUserIdInAndDate(
+      @Param("userIds") List<UUID> userIds, @Param("date") LocalDate date);
 
   @Modifying
   @Query("DELETE FROM UserDailyMissionProgressJpaEntity p WHERE p.date = :date")

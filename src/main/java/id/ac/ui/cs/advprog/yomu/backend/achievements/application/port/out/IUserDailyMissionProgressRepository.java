@@ -12,6 +12,8 @@ public interface IUserDailyMissionProgressRepository {
 
   List<UserDailyMissionProgress> findByUserIdAndDate(UUID userId, LocalDate date);
 
+  long countDistinctCompletedUsersByUserIdInAndDate(List<UUID> userIds, LocalDate date);
+
   UserDailyMissionProgress save(UserDailyMissionProgress progress);
 
   void deleteByDate(LocalDate date);

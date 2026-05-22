@@ -125,7 +125,8 @@ class JwtAuthFilterTest {
     SecurityContextHolder.getContext()
         .setAuthentication(mock(org.springframework.security.core.Authentication.class));
 
-    when(jwtService.parse("invalid-token")).thenThrow(new RuntimeException("Invalid token"));
+    when(jwtService.parse("invalid-token"))
+        .thenThrow(new io.jsonwebtoken.MalformedJwtException("Invalid token"));
 
     jwtAuthFilter.doFilterInternal(request, response, filterChain);
 

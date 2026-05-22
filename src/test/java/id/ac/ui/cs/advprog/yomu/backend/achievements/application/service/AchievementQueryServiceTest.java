@@ -70,4 +70,31 @@ class AchievementQueryServiceTest {
         .thenReturn(List.of(mock(UserAchievementProgress.class)));
     assertEquals(1, queryService.getCompletedAchievements(userId).size());
   }
+
+  @Test
+  void countMembersCompletedDailyMissionOn_returnsTwoWhenTwoOfThreeUsersCompleted() {
+    List<UUID> userIds = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+    LocalDate date = LocalDate.of(2026, 5, 21);
+    when(userDailyMissionProgressRepository.countDistinctCompletedUsersByUserIdInAndDate(
+            userIds, date))
+        .thenReturn(2L);
+
+    assertEquals(2L, queryService.countMembersCompletedDailyMissionOn(userIds, date));
+  }
+
+  @Test
+  void countMembersCompletedDailyMissionOn_returnsZeroWithoutCallingRepoWhenUserIdsEmpty() {
+    assertEquals(0L, queryService.countMembersCompletedDailyMissionOn(List.of(), LocalDate.now()));
+  }
+
+  @Test
+  void countMembersCompletedDailyMissionOn_returnsZeroWhenNoMembersCompleted() {
+    List<UUID> userIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+    LocalDate date = LocalDate.of(2026, 5, 21);
+    when(userDailyMissionProgressRepository.countDistinctCompletedUsersByUserIdInAndDate(
+            userIds, date))
+        .thenReturn(0L);
+
+    assertEquals(0L, queryService.countMembersCompletedDailyMissionOn(userIds, date));
+  }
 }

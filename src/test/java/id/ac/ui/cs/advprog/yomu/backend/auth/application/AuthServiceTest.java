@@ -30,7 +30,7 @@ class AuthServiceTest {
   @Mock private UserRepository userRepository;
   @Mock private PasswordEncoder passwordEncoder;
   @Mock private JwtService jwtService;
-  @Mock private GoogleService googleService;
+  @Mock private GoogleAuthService googleAuthService;
   @Mock private ApplicationEventPublisher eventPublisher;
   @Mock private LoginRateLimiter rateLimiter;
 
@@ -163,46 +163,17 @@ class AuthServiceTest {
 
   @Test
   void googleLoginShouldFailWhenTokenInvalid() {
-    when(googleService.verifyToken("invalid-token"))
-        .thenReturn(new com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload());
+    when(googleAuthService.loginWithGoogle("invalid-token"))
+        .thenThrow(new IllegalArgumentException("Invalid Google Token"));
     assertThrows(
         IllegalArgumentException.class, () -> authService.loginWithGoogle("invalid-token"));
   }
 
   @Test
-  void loginWithGoogleShouldReturnExistingUserBySub() {
-    String idToken = "mock-token";
-    var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
-    User existingUser = createDummyUser();
-    existingUser.setGoogleSub("sub123");
+  void loginWithGoogleShouldDelegateToGoogleAuthService() {
+    when(googleAuthService.loginWithGoogle("mock-token")).thenReturn(new AuthResponse("jwt"));
 
-    when(googleService.verifyToken(idToken)).thenReturn(payload);
-    when(payload.getSubject()).thenReturn("sub123");
-
-    when(payload.getEmail()).thenReturn(DEFAULT_EMAIL);
-
-    when(userRepository.findByGoogleSub("sub123")).thenReturn(Optional.of(existingUser));
-    when(jwtService.generateToken(existingUser)).thenReturn("jwt");
-
-    assertNotNull(authService.loginWithGoogle(idToken));
-  }
-
-  @Test
-  void loginWithGoogleShouldLinkExistingEmailToGoogleSub() {
-    String idToken = "mock-token";
-    var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
-    User emailUser = createDummyUser();
-
-    when(googleService.verifyToken(idToken)).thenReturn(payload);
-    when(payload.getSubject()).thenReturn("sub123");
-    when(payload.getEmail()).thenReturn(DEFAULT_EMAIL);
-
-    when(userRepository.findByGoogleSub("sub123")).thenReturn(Optional.empty());
-    when(userRepository.findByEmail(DEFAULT_EMAIL)).thenReturn(Optional.of(emailUser));
-
-    authService.loginWithGoogle(idToken);
-
-    verify(userRepository).save(emailUser);
+    assertNotNull(authService.loginWithGoogle("mock-token"));
   }
 
   @Test
@@ -305,11 +276,9 @@ class AuthServiceTest {
   @Test
   void loginWithGoogleShouldThrowWhenEmailIsNull() {
     String idToken = "mock-token";
-    var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
 
-    when(googleService.verifyToken(idToken)).thenReturn(payload);
-    when(payload.getSubject()).thenReturn("sub123");
-    when(payload.getEmail()).thenReturn(null);
+    when(googleAuthService.loginWithGoogle(idToken))
+        .thenThrow(new IllegalArgumentException("Google account data is incomplete"));
 
     assertThrows(IllegalArgumentException.class, () -> authService.loginWithGoogle(idToken));
   }
@@ -317,17 +286,8 @@ class AuthServiceTest {
   @Test
   void loginWithGoogleShouldCreateNewUser() {
     String idToken = "mock-token";
-    var payload = mock(com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload.class);
 
-    when(googleService.verifyToken(idToken)).thenReturn(payload);
-    when(payload.getSubject()).thenReturn("sub123-new");
-    when(payload.getEmail()).thenReturn("newuser@gmail.com");
-    when(payload.get("name")).thenReturn("New User");
-
-    when(userRepository.findByGoogleSub("sub123-new")).thenReturn(Optional.empty());
-    when(userRepository.findByEmail("newuser@gmail.com")).thenReturn(Optional.empty());
-    when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
-    when(jwtService.generateToken(any(User.class))).thenReturn("jwt");
+    when(googleAuthService.loginWithGoogle(idToken)).thenReturn(new AuthResponse("jwt"));
 
     assertNotNull(authService.loginWithGoogle(idToken));
   }

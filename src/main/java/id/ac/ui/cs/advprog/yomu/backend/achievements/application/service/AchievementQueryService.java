@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AchievementQueryService {
@@ -50,5 +51,12 @@ public class AchievementQueryService {
 
   public List<UserAchievementProgress> getCompletedAchievements(UUID userId) {
     return userAchievementProgressRepository.findByUserIdAndIsCompleted(userId, true);
+  }
+
+  @Transactional(readOnly = true)
+  public long countMembersCompletedDailyMissionOn(List<UUID> userIds, LocalDate date) {
+    if (userIds.isEmpty()) return 0L;
+    return userDailyMissionProgressRepository.countDistinctCompletedUsersByUserIdInAndDate(
+        userIds, date);
   }
 }

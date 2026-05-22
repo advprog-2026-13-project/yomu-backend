@@ -1,0 +1,16 @@
+CREATE TABLE clans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(50) NOT NULL UNIQUE,
+    tier VARCHAR(20) NOT NULL DEFAULT 'BRONZE',
+    score BIGINT NOT NULL DEFAULT 0,
+    leader_id UUID NOT NULL REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE clan_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    clan_id UUID NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL UNIQUE REFERENCES users(id),
+    role VARCHAR(20) NOT NULL DEFAULT 'MEMBER',
+    joined_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
