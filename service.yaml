@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yomu-backend-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: yomu-backend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
