@@ -8,11 +8,13 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategyFactory;
 
 @Service
@@ -25,14 +27,20 @@ public class SeasonService {
   private final ClanRepositoryPort clanRepository;
   private final ClanMemberRepositoryPort clanMemberRepository;
   private final RankingStrategyFactory strategyFactory;
+  private final ClanActivityProvider activityProvider;
+  private final ModifierResolver modifierResolver;
 
   public SeasonService(
       ClanRepositoryPort clanRepository,
       ClanMemberRepositoryPort clanMemberRepository,
-      RankingStrategyFactory strategyFactory) {
+      RankingStrategyFactory strategyFactory,
+      ClanActivityProvider activityProvider,
+      ModifierResolver modifierResolver) {
     this.clanRepository = clanRepository;
     this.clanMemberRepository = clanMemberRepository;
     this.strategyFactory = strategyFactory;
+    this.activityProvider = activityProvider;
+    this.modifierResolver = modifierResolver;
   }
 
   public void endSeason() {
@@ -84,13 +92,18 @@ public class SeasonService {
   private List<ClanScoreData> buildScoreData(List<Clan> clans) {
     return clans.stream()
         .map(
-            c ->
-                new ClanScoreData(
-                    c.getId(),
-                    c.getName(),
-                    c.getTier(),
-                    c.getScore(),
-                    clanMemberRepository.countByClanId(c.getId())))
+            c -> {
+              long modifiedScore =
+                  modifierResolver
+                      .resolve(activityProvider.getActivity(c.getId()))
+                      .apply(c.getScore());
+              return new ClanScoreData(
+                  c.getId(),
+                  c.getName(),
+                  c.getTier(),
+                  modifiedScore,
+                  clanMemberRepository.countByClanId(c.getId()));
+            })
         .toList();
   }
 }

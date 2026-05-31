@@ -100,8 +100,9 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     attempt.setCompletedAt(LocalDateTime.now());
     QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
 
-    // Publish Achievement Events
     publishAchievementEvents(userId, readingId, score);
+    eventPublisher.publishEvent(
+        new QuizCompletedEvent(this, userId, readingId, correctCount, correctQuestions.size(), (long) score));
 
     return savedAttempt;
   }

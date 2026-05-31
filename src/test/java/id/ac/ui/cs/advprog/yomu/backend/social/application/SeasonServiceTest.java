@@ -4,9 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategy;
@@ -29,6 +32,8 @@ class SeasonServiceTest {
   @Mock private ClanMemberRepositoryPort clanMemberRepository;
   @Mock private RankingStrategyFactory strategyFactory;
   @Mock private RankingStrategy rankingStrategy;
+  @Mock private ClanActivityProvider activityProvider;
+  @Mock private ModifierResolver modifierResolver;
 
   @InjectMocks private SeasonService seasonService;
 
@@ -39,6 +44,10 @@ class SeasonServiceTest {
     lenient().when(rankingStrategy.rank(anyList())).thenAnswer(inv -> inv.getArgument(0));
     lenient().when(clanMemberRepository.countByClanId(any())).thenReturn(1L);
     lenient().when(clanRepository.save(any(Clan.class))).thenAnswer(inv -> inv.getArgument(0));
+    lenient()
+        .when(activityProvider.getActivity(any()))
+        .thenReturn(new ClanActivitySnapshot(0.0, 1.0));
+    lenient().when(modifierResolver.resolve(any())).thenReturn(score -> score);
   }
 
   @Test
