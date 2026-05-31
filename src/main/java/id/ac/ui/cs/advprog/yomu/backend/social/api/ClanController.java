@@ -4,7 +4,11 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUse
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.CreateClanRequest;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.ClanService;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
 import jakarta.validation.Valid;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +20,16 @@ import org.springframework.web.bind.annotation.*;
 public class ClanController {
 
   private final ClanService clanService;
+  private final ClanMemberRepositoryPort clanMemberRepository;
+  private final UserLookupPort userLookup;
 
-  public ClanController(ClanService clanService) {
+  public ClanController(
+      ClanService clanService,
+      ClanMemberRepositoryPort clanMemberRepository,
+      UserLookupPort userLookup) {
     this.clanService = clanService;
+    this.clanMemberRepository = clanMemberRepository;
+    this.userLookup = userLookup;
   }
 
   @PostMapping
@@ -41,6 +52,22 @@ public class ClanController {
     return ResponseEntity.ok(clanService.getClan(clanId));
   }
 
+  @GetMapping("/{clanId}/members")
+  public ResponseEntity<List<ClanMemberInfo>> getClanMembers(@PathVariable UUID clanId) {
+    clanService.getClan(clanId); // validates clan exists; throws ClanNotFoundException if not
+    var members =
+        clanMemberRepository.findByClanId(clanId).stream()
+            .map(
+                m ->
+                    new ClanMemberInfo(
+                        m.getUserId(),
+                        userLookup.findUsernameById(m.getUserId()).orElse(null),
+                        m.getRole().name(),
+                        m.getJoinedAt()))
+            .toList();
+    return ResponseEntity.ok(members);
+  }
+
   @DeleteMapping("/{clanId}")
   public ResponseEntity<Void> deleteClan(
       @PathVariable UUID clanId, @AuthenticationPrincipal SecurityUser principal) {
@@ -57,4 +84,6 @@ public class ClanController {
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }
+
+  record ClanMemberInfo(UUID userId, String username, String role, Instant joinedAt) {}
 }

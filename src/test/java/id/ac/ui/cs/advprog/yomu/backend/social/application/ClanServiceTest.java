@@ -25,11 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-/**
- * Characterization tests — pin behavior SAAT INI (termasuk yang audit-flagged 🟡) sebagai safety
- * net sebelum refactor 4B/4C. Komentar PIN-CURRENT menandai perilaku yang nantinya mau direvisi di
- * Gelombang 3.
- */
 @ExtendWith(MockitoExtension.class)
 class ClanServiceTest {
 
@@ -68,9 +63,6 @@ class ClanServiceTest {
     assertEquals(leaderId, response.getLeaderId());
     assertEquals(Tier.BRONZE, response.getTier());
     assertEquals(0L, response.getScore());
-    // PIN-CURRENT (audit 🟢 #17): memberCount di-hardcode 1L tanpa query countByClanId.
-    // Konsisten kalau leader baru, tapi inkonsisten dengan branch lain (joinClan, getClan)
-    // yang re-query. Pertahankan dulu.
     assertEquals(1L, response.getMemberCount());
 
     ArgumentCaptor<ClanMember> memberCaptor = ArgumentCaptor.forClass(ClanMember.class);
@@ -83,9 +75,6 @@ class ClanServiceTest {
 
   @Test
   void leaveClan_asLeader_hardDeletesAllMembersAndClanItself() {
-    // PIN-CURRENT (audit 🟡): leader leave => hard-delete semua member + Clan. Tidak ada
-    // transfer ownership, tidak ada warning, tidak publish event. Behavior implicit.
-    // Mau di-revisit di Gelombang 3 (auto-transfer / disband flow eksplisit).
     ClanMember leader = new ClanMember();
     leader.setUserId(leaderId);
     leader.setClanId(clanId);
@@ -121,8 +110,6 @@ class ClanServiceTest {
     verify(clanMemberRepository, never()).deleteAll(anyIterable());
   }
 
-  // --- getClan ---
-
   @Test
   void getClan_happyPath_returnsClanResponseWithMemberCount() {
     Clan clan = new Clan();
@@ -147,8 +134,6 @@ class ClanServiceTest {
 
     assertThrows(ClanNotFoundException.class, () -> clanService.getClan(clanId));
   }
-
-  // --- getMyClan ---
 
   @Test
   void getMyClan_userInClan_returnsClanResponse() {
@@ -182,8 +167,6 @@ class ClanServiceTest {
     verify(clanRepository, never()).findById(any());
   }
 
-  // --- leaveClan error path ---
-
   @Test
   void leaveClan_userNotInAnyClan_throwsClanNotFoundException() {
     when(clanMemberRepository.findByUserId(leaderId)).thenReturn(Optional.empty());
@@ -208,8 +191,6 @@ class ClanServiceTest {
     verify(clanRepository).save(clan);
   }
 
-  // --- UC-4.1: createClan error paths ---
-
   @Test
   void createClan_duplicateName_throwsDuplicateClanNameException() {
     when(clanMemberRepository.existsByUserId(leaderId)).thenReturn(false);
@@ -225,8 +206,6 @@ class ClanServiceTest {
 
     assertThrows(AlreadyInClanException.class, () -> clanService.createClan("Vipers", leaderId));
   }
-
-  // --- UC-4.6: Delete Clan (operasi eksplisit, terpisah dari leaveClan) ---
 
   @Test
   void deleteClan_asLeader_deletesAllMembersAndClan() {

@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.yomu.backend.social.api;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.JoinRequestResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.JoinRequestService;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class JoinRequestController {
 
   private final JoinRequestService joinRequestService;
+  private final UserLookupPort userLookup;
 
-  public JoinRequestController(JoinRequestService joinRequestService) {
+  public JoinRequestController(JoinRequestService joinRequestService, UserLookupPort userLookup) {
     this.joinRequestService = joinRequestService;
+    this.userLookup = userLookup;
   }
 
   @PostMapping("/{clanId}/join-requests")
@@ -35,7 +38,8 @@ public class JoinRequestController {
     UUID callerId = principal.getUser().getId();
     List<JoinRequestResponse> responses =
         joinRequestService.listPendingRequests(clanId, callerId).stream()
-            .map(JoinRequestResponse::new)
+            .map(r -> new JoinRequestResponse(
+                r, userLookup.findUsernameById(r.getUserId()).orElse(null)))
             .toList();
     return ResponseEntity.ok(responses);
   }

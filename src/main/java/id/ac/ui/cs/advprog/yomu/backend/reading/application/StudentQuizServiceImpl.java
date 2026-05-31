@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.Achievement
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementQuizCompletedPayload;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementReadingCompletedPayload;
+import id.ac.ui.cs.advprog.yomu.backend.shared.event.QuizCompletedEvent;
 import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuestionResponse;
 import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuizSubmissionRequest;
 import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Question;

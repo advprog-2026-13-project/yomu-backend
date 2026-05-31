@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.JoinRequestService;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateJoinRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.JoinRequestAlreadyResolvedException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
@@ -36,6 +37,7 @@ class JoinRequestControllerTest {
   private static final UUID REQUEST_ID = UUID.randomUUID();
 
   @Mock private JoinRequestService joinRequestService;
+  @Mock private UserLookupPort userLookup;
 
   @InjectMocks private JoinRequestController joinRequestController;
 
@@ -66,7 +68,6 @@ class JoinRequestControllerTest {
         securityUser, null, securityUser.getAuthorities());
   }
 
-  // ---- submit ----
 
   @Test
   void submit_happyPath_returns201WithPendingStatus() throws Exception {
@@ -93,12 +94,11 @@ class JoinRequestControllerTest {
         .andExpect(status().isConflict());
   }
 
-  // ---- listPending ----
-
   @Test
   void listPending_asLeader_returns200WithList() throws Exception {
     JoinRequest req = JoinRequest.create(CLAN_ID, USER_ID);
     when(joinRequestService.listPendingRequests(any(), any())).thenReturn(List.of(req));
+    when(userLookup.findUsernameById(USER_ID)).thenReturn(java.util.Optional.of("testuser"));
 
     mockMvc
         .perform(
@@ -106,7 +106,8 @@ class JoinRequestControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].status").value("PENDING"));
+        .andExpect(jsonPath("$[0].status").value("PENDING"))
+        .andExpect(jsonPath("$[0].username").value("testuser"));
   }
 
   @Test
@@ -120,8 +121,6 @@ class JoinRequestControllerTest {
             get("/api/social/clans/{clanId}/join-requests", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isForbidden());
   }
-
-  // ---- approve ----
 
   @Test
   void approve_asLeader_returns200() throws Exception {
@@ -170,8 +169,6 @@ class JoinRequestControllerTest {
                 .principal(userPrincipal()))
         .andExpect(status().isConflict());
   }
-
-  // ---- reject ----
 
   @Test
   void reject_asLeader_returns200() throws Exception {

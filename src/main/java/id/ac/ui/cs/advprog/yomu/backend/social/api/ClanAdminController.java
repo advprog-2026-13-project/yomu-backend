@@ -6,6 +6,8 @@ import id.ac.ui.cs.advprog.yomu.backend.social.application.ClanService;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.JoinRequestRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +27,19 @@ public class ClanAdminController {
   private final ClanMemberRepositoryPort clanMemberRepository;
   private final JoinRequestRepositoryPort joinRequestRepository;
   private final ClanService clanService;
+  private final UserLookupPort userLookup;
 
   public ClanAdminController(
       ClanRepositoryPort clanRepository,
       ClanMemberRepositoryPort clanMemberRepository,
       JoinRequestRepositoryPort joinRequestRepository,
-      ClanService clanService) {
+      ClanService clanService,
+      UserLookupPort userLookup) {
     this.clanRepository = clanRepository;
     this.clanMemberRepository = clanMemberRepository;
     this.joinRequestRepository = joinRequestRepository;
     this.clanService = clanService;
+    this.userLookup = userLookup;
   }
 
   @GetMapping("/clans")
@@ -59,7 +64,11 @@ public class ClanAdminController {
             .map(
                 m ->
                     new ClanMemberResponse(
-                        m.getId(), m.getUserId(), m.getRole().name(), m.getJoinedAt()))
+                        m.getId(),
+                        m.getUserId(),
+                        userLookup.findUsernameById(m.getUserId()).orElse(null),
+                        m.getRole().name(),
+                        m.getJoinedAt()))
             .toList();
     return ResponseEntity.ok(members);
   }
@@ -76,5 +85,5 @@ public class ClanAdminController {
     return ResponseEntity.ok(requests);
   }
 
-  record ClanMemberResponse(UUID id, UUID userId, String role, java.time.Instant joinedAt) {}
+  record ClanMemberResponse(UUID id, UUID userId, String username, String role, Instant joinedAt) {}
 }

@@ -10,40 +10,30 @@ public class JoinRequestResponse {
   private final UUID id;
   private final UUID clanId;
   private final UUID userId;
+  private final String username;
   private final JoinRequestStatus status;
   private final Instant createdAt;
   private final Instant resolvedAt;
 
   public JoinRequestResponse(JoinRequest req) {
+    this(req, null);
+  }
+
+  public JoinRequestResponse(JoinRequest req, String username) {
     this.id = req.getId();
     this.clanId = req.getClanId();
     this.userId = req.getUserId();
+    this.username = username;
     this.status = req.getStatus();
     this.createdAt = req.getCreatedAt();
     this.resolvedAt = req.getResolvedAt();
   }
 
-  public UUID getId() {
-    return id;
-  }
-
-  public UUID getClanId() {
-    return clanId;
-  }
-
-  public UUID getUserId() {
-    return userId;
-  }
-
-  public JoinRequestStatus getStatus() {
-    return status;
-  }
-
-  public Instant getCreatedAt() {
-    return createdAt;
-  }
-
-  public Instant getResolvedAt() {
-    return resolvedAt;
-  }
+  public UUID getId() { return id; }
+  public UUID getClanId() { return clanId; }
+  public UUID getUserId() { return userId; }
+  public String getUsername() { return username; }
+  public JoinRequestStatus getStatus() { return status; }
+  public Instant getCreatedAt() { return createdAt; }
+  public Instant getResolvedAt() { return resolvedAt; }
 }

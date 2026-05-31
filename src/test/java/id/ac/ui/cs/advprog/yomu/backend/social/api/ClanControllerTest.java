@@ -10,11 +10,17 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.ClanService;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -38,6 +44,8 @@ class ClanControllerTest {
   private static final UUID USER_ID = UUID.randomUUID();
 
   @Mock private ClanService clanService;
+  @Mock private ClanMemberRepositoryPort clanMemberRepository;
+  @Mock private UserLookupPort userLookup;
 
   @InjectMocks private ClanController clanController;
 
@@ -68,7 +76,6 @@ class ClanControllerTest {
         securityUser, null, securityUser.getAuthorities());
   }
 
-  // ---- createClan ----
 
   @Test
   void createClan_happyPath_returns201() throws Exception {
@@ -117,8 +124,6 @@ class ClanControllerTest {
         .andExpect(status().isConflict());
   }
 
-  // ---- leaveClan ----
-
   @Test
   void leaveClan_happyPath_returns204() throws Exception {
     doNothing().when(clanService).leaveClan(any());
@@ -138,8 +143,6 @@ class ClanControllerTest {
         .perform(delete("/api/social/clans/leave").principal(userPrincipal()))
         .andExpect(status().isNotFound());
   }
-
-  // ---- getClan ----
 
   @Test
   void getClan_happyPath_returns200WithClanBody() throws Exception {
@@ -163,8 +166,6 @@ class ClanControllerTest {
         .andExpect(status().isNotFound());
   }
 
-  // ---- getMyClan ----
-
   @Test
   void getMyClan_userInClan_returns200() throws Exception {
     Clan clan = Clan.createNew("Vipers", USER_ID);
@@ -186,8 +187,6 @@ class ClanControllerTest {
         .perform(get("/api/social/clans/me").principal(userPrincipal()))
         .andExpect(status().isNotFound());
   }
-
-  // ---- deleteClan ----
 
   @Test
   void deleteClan_asLeader_returns204() throws Exception {
@@ -217,6 +216,37 @@ class ClanControllerTest {
 
     mockMvc
         .perform(delete("/api/social/clans/{clanId}", CLAN_ID).principal(userPrincipal()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void getClanMembers_returns200WithUsernameList() throws Exception {
+    Clan clan = Clan.createNew("Vipers", USER_ID);
+    clan.setId(CLAN_ID);
+    when(clanService.getClan(CLAN_ID)).thenReturn(new ClanResponse(clan, 2L));
+
+    UUID memberId = UUID.randomUUID();
+    ClanMember leader = new ClanMember(UUID.randomUUID(), CLAN_ID, USER_ID, ClanMemberRole.LEADER, Instant.now());
+    ClanMember member = new ClanMember(UUID.randomUUID(), CLAN_ID, memberId, ClanMemberRole.MEMBER, Instant.now());
+    when(clanMemberRepository.findByClanId(CLAN_ID)).thenReturn(List.of(leader, member));
+    when(userLookup.findUsernameById(USER_ID)).thenReturn(Optional.of("leader_user"));
+    when(userLookup.findUsernameById(memberId)).thenReturn(Optional.of("member_user"));
+
+    mockMvc
+        .perform(get("/api/social/clans/{clanId}/members", CLAN_ID).principal(userPrincipal()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].username").value("leader_user"))
+        .andExpect(jsonPath("$[0].role").value("LEADER"))
+        .andExpect(jsonPath("$[1].username").value("member_user"))
+        .andExpect(jsonPath("$[1].role").value("MEMBER"));
+  }
+
+  @Test
+  void getClanMembers_clanNotFound_returns404() throws Exception {
+    doThrow(new ClanNotFoundException("Clan not found")).when(clanService).getClan(any());
+
+    mockMvc
+        .perform(get("/api/social/clans/{clanId}/members", CLAN_ID).principal(userPrincipal()))
         .andExpect(status().isNotFound());
   }
 }

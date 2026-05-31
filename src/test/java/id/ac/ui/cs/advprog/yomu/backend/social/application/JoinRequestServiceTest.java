@@ -66,8 +66,6 @@ class JoinRequestServiceTest {
         .thenAnswer(inv -> inv.getArgument(0));
   }
 
-  // ---- submitJoinRequest ----
-
   @Test
   void submitJoinRequest_happyPath_returnsPendingRequest() {
     JoinRequest result = joinRequestService.submitJoinRequest(CLAN_ID, USER_ID);
@@ -110,8 +108,6 @@ class JoinRequestServiceTest {
     verify(joinRequestRepository, never()).save(any());
   }
 
-  // ---- listPendingRequests ----
-
   @Test
   void listPendingRequests_asLeader_returnsPendingList() {
     JoinRequest pending = JoinRequest.create(CLAN_ID, USER_ID);
@@ -133,8 +129,6 @@ class JoinRequestServiceTest {
         () -> joinRequestService.listPendingRequests(CLAN_ID, nonLeader));
     verify(joinRequestRepository, never()).findByClanIdAndStatus(any(), any());
   }
-
-  // ---- approveRequest ----
 
   @Test
   void approveRequest_asLeader_approvesRequestAndCreatesMember() {
@@ -176,8 +170,6 @@ class JoinRequestServiceTest {
     verify(clanMemberRepository, never()).save(any());
   }
 
-  // ---- rejectRequest ----
-
   @Test
   void rejectRequest_asLeader_rejectsRequestWithoutCreatingMember() {
     JoinRequest pending = JoinRequest.create(CLAN_ID, USER_ID);
@@ -190,6 +182,20 @@ class JoinRequestServiceTest {
     assertNotNull(pending.getResolvedAt());
     verify(joinRequestRepository).save(pending);
     verify(clanMemberRepository, never()).save(any());
+  }
+
+  @Test
+  void approveRequest_userAlreadyMember_throwsAlreadyMemberException() {
+    JoinRequest pending = JoinRequest.create(CLAN_ID, USER_ID);
+    pending.setId(REQUEST_ID);
+    when(joinRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.of(pending));
+    when(clanMemberRepository.existsByUserId(USER_ID)).thenReturn(true);
+
+    assertThrows(
+        AlreadyMemberException.class,
+        () -> joinRequestService.approveRequest(CLAN_ID, REQUEST_ID, LEADER_ID));
+    verify(clanMemberRepository, never()).save(any());
+    verify(joinRequestRepository, never()).save(any());
   }
 
   @Test

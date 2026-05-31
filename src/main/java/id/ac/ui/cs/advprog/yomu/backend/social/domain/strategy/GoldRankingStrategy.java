@@ -6,7 +6,6 @@ import java.util.List;
 
 public class GoldRankingStrategy implements RankingStrategy {
 
-  // 50/50 split between total volume and per-member efficiency — see design doc §4
   private static final double WEIGHT = 0.5;
 
   @Override

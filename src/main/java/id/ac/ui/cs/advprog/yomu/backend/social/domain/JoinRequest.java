@@ -20,7 +20,7 @@ public class JoinRequest {
 
   public static JoinRequest create(UUID clanId, UUID userId) {
     JoinRequest req = new JoinRequest();
-    req.id = UUID.randomUUID();
+    // id intentionally not set — assigned by the persistence layer via @GeneratedValue
     req.clanId = clanId;
     req.userId = userId;
     req.status = JoinRequestStatus.PENDING;
