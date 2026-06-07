@@ -38,8 +38,10 @@ public class JoinRequestController {
     UUID callerId = principal.getUser().getId();
     List<JoinRequestResponse> responses =
         joinRequestService.listPendingRequests(clanId, callerId).stream()
-            .map(r -> new JoinRequestResponse(
-                r, userLookup.findUsernameById(r.getUserId()).orElse(null)))
+            .map(
+                r ->
+                    new JoinRequestResponse(
+                        r, userLookup.findUsernameById(r.getUserId()).orElse(null)))
             .toList();
     return ResponseEntity.ok(responses);
   }

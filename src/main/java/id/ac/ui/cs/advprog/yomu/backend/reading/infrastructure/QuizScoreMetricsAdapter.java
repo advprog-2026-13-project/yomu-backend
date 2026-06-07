@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure;
 
 import id.ac.ui.cs.advprog.yomu.backend.reading.application.QuizStatsQueryService;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.QuizScoreMetricsPort;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ public class QuizScoreMetricsAdapter implements QuizScoreMetricsPort {
   }
 
   @Override
-  public double averageScore(List<UUID> userIds) {
-    return quizStatsQueryService.averageScore(userIds);
+  public double averageScore(List<UUID> userIds, LocalDateTime since) {
+    return quizStatsQueryService.averageScore(userIds, since);
   }
 }

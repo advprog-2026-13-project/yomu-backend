@@ -1,5 +1,15 @@
 package id.ac.ui.cs.advprog.yomu.backend.social.application;
 
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.SeasonStatePort;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategyFactory;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -8,14 +18,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
-import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
-import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategyFactory;
 
 @Service
 @Transactional
@@ -29,18 +31,21 @@ public class SeasonService {
   private final RankingStrategyFactory strategyFactory;
   private final ClanActivityProvider activityProvider;
   private final ModifierResolver modifierResolver;
+  private final SeasonStatePort seasonState;
 
   public SeasonService(
       ClanRepositoryPort clanRepository,
       ClanMemberRepositoryPort clanMemberRepository,
       RankingStrategyFactory strategyFactory,
       ClanActivityProvider activityProvider,
-      ModifierResolver modifierResolver) {
+      ModifierResolver modifierResolver,
+      SeasonStatePort seasonState) {
     this.clanRepository = clanRepository;
     this.clanMemberRepository = clanMemberRepository;
     this.strategyFactory = strategyFactory;
     this.activityProvider = activityProvider;
     this.modifierResolver = modifierResolver;
+    this.seasonState = seasonState;
   }
 
   public void endSeason() {
@@ -61,7 +66,7 @@ public class SeasonService {
     for (Tier tier : Tier.values()) {
       List<ClanScoreData> ranked = rankedByTier.getOrDefault(tier, List.of());
       int total = ranked.size();
-      if (total < 2) continue; 
+      if (total < 2) continue;
 
       Map<UUID, Clan> clanMap = new HashMap<>();
       for (Clan c : clansByTier.get(tier)) clanMap.put(c.getId(), c);
@@ -71,14 +76,13 @@ public class SeasonService {
 
       for (int i = 0; i < promoteCount; i++) {
         Clan clan = clanMap.get(ranked.get(i).clanId());
-        clan.setTier(clan.getTier().nextTier()); 
+        clan.setTier(clan.getTier().nextTier());
         clanRepository.save(clan);
       }
 
       for (int i = 0; i < demoteCount; i++) {
         Clan clan = clanMap.get(ranked.get(total - 1 - i).clanId());
-        clan.setTier(
-            clan.getTier().previousTier()); 
+        clan.setTier(clan.getTier().previousTier());
         clanRepository.save(clan);
       }
     }
@@ -87,6 +91,10 @@ public class SeasonService {
       clan.setScore(0L);
       clanRepository.save(clan);
     }
+
+    // Tandai season baru: perhitungan debuff (akurasi kuis) hanya menghitung
+    // attempt sejak titik ini, sehingga debuff ter-reset untuk season berikutnya.
+    seasonState.startNewSeason(LocalDateTime.now());
   }
 
   private List<ClanScoreData> buildScoreData(List<Clan> clans) {

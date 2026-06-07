@@ -8,13 +8,29 @@ public class ModifierResolver {
   public ScoreModifier resolve(ClanActivitySnapshot snapshot) {
     ScoreModifier chain = new IdentityModifier();
 
-    if (snapshot.dailyMissionCompletionRate() >= PRODUCTIVITY_THRESHOLD) {
+    if (isProductivityBuffActive(snapshot)) {
       chain = new ProductivityBuff(chain);
     }
-    if (snapshot.averageAccuracy() < LOW_ACCURACY_THRESHOLD) {
+    if (isLowAccuracyPenaltyActive(snapshot)) {
       chain = new LowAccuracyPenalty(chain);
     }
 
     return chain;
+  }
+
+  public ClanModifierStatus describe(ClanActivitySnapshot snapshot) {
+    return new ClanModifierStatus(
+        isProductivityBuffActive(snapshot),
+        isLowAccuracyPenaltyActive(snapshot),
+        snapshot.dailyMissionCompletionRate(),
+        snapshot.averageAccuracy());
+  }
+
+  public boolean isProductivityBuffActive(ClanActivitySnapshot snapshot) {
+    return snapshot.dailyMissionCompletionRate() >= PRODUCTIVITY_THRESHOLD;
+  }
+
+  public boolean isLowAccuracyPenaltyActive(ClanActivitySnapshot snapshot) {
+    return snapshot.averageAccuracy() < LOW_ACCURACY_THRESHOLD;
   }
 }

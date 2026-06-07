@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.Achievement
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.envelope.AchievementType;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementQuizCompletedPayload;
 import id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload.AchievementReadingCompletedPayload;
-import id.ac.ui.cs.advprog.yomu.backend.shared.event.QuizCompletedEvent;
 import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuestionResponse;
 import id.ac.ui.cs.advprog.yomu.backend.reading.api.dto.QuizSubmissionRequest;
 import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Question;
@@ -13,6 +12,7 @@ import id.ac.ui.cs.advprog.yomu.backend.reading.domain.Reading;
 import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.QuestionRepository;
 import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.QuizAttemptRepository;
 import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.ReadingRepository;
+import id.ac.ui.cs.advprog.yomu.backend.shared.event.QuizCompletedEvent;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,7 +102,8 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
     publishAchievementEvents(userId, readingId, score);
     eventPublisher.publishEvent(
-        new QuizCompletedEvent(this, userId, readingId, correctCount, correctQuestions.size(), (long) score));
+        new QuizCompletedEvent(
+            this, userId, readingId, correctCount, correctQuestions.size(), (long) score));
 
     return savedAttempt;
   }

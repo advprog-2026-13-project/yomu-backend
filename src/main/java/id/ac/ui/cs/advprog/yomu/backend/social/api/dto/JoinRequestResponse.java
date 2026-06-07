@@ -29,11 +29,31 @@ public class JoinRequestResponse {
     this.resolvedAt = req.getResolvedAt();
   }
 
-  public UUID getId() { return id; }
-  public UUID getClanId() { return clanId; }
-  public UUID getUserId() { return userId; }
-  public String getUsername() { return username; }
-  public JoinRequestStatus getStatus() { return status; }
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getResolvedAt() { return resolvedAt; }
+  public UUID getId() {
+    return id;
+  }
+
+  public UUID getClanId() {
+    return clanId;
+  }
+
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public JoinRequestStatus getStatus() {
+    return status;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getResolvedAt() {
+    return resolvedAt;
+  }
 }
