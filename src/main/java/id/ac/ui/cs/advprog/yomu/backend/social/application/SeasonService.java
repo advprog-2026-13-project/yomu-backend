@@ -7,6 +7,7 @@ import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.SeasonStateP
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.event.ClanPromotedEvent;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategyFactory;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ public class SeasonService {
   private final ClanActivityProvider activityProvider;
   private final ModifierResolver modifierResolver;
   private final SeasonStatePort seasonState;
+  private final ApplicationEventPublisher eventPublisher;
 
   public SeasonService(
       ClanRepositoryPort clanRepository,
@@ -39,13 +42,15 @@ public class SeasonService {
       RankingStrategyFactory strategyFactory,
       ClanActivityProvider activityProvider,
       ModifierResolver modifierResolver,
-      SeasonStatePort seasonState) {
+      SeasonStatePort seasonState,
+      ApplicationEventPublisher eventPublisher) {
     this.clanRepository = clanRepository;
     this.clanMemberRepository = clanMemberRepository;
     this.strategyFactory = strategyFactory;
     this.activityProvider = activityProvider;
     this.modifierResolver = modifierResolver;
     this.seasonState = seasonState;
+    this.eventPublisher = eventPublisher;
   }
 
   public void endSeason() {
@@ -76,8 +81,14 @@ public class SeasonService {
 
       for (int i = 0; i < promoteCount; i++) {
         Clan clan = clanMap.get(ranked.get(i).clanId());
-        clan.setTier(clan.getTier().nextTier());
+        Tier oldTier = clan.getTier();
+        Tier promotedTier = oldTier.nextTier();
+        clan.setTier(promotedTier);
         clanRepository.save(clan);
+        if (promotedTier == Tier.DIAMOND && oldTier != Tier.DIAMOND) {
+          eventPublisher.publishEvent(
+              new ClanPromotedEvent(clan.getId(), clan.getName(), promotedTier, clan.getLeaderId()));
+        }
       }
 
       for (int i = 0; i < demoteCount; i++) {
