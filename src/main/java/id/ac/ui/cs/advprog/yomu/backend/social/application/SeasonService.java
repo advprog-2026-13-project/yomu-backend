@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRe
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.SeasonStatePort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.event.ClanPromotedEvent;
@@ -86,8 +87,13 @@ public class SeasonService {
         clan.setTier(promotedTier);
         clanRepository.save(clan);
         if (promotedTier == Tier.DIAMOND && oldTier != Tier.DIAMOND) {
+          List<UUID> memberUserIds =
+              clanMemberRepository.findByClanId(clan.getId()).stream()
+                  .map(ClanMember::getUserId)
+                  .toList();
           eventPublisher.publishEvent(
-              new ClanPromotedEvent(clan.getId(), clan.getName(), promotedTier, clan.getLeaderId()));
+              new ClanPromotedEvent(
+                  clan.getId(), clan.getName(), promotedTier, clan.getLeaderId(), memberUserIds));
         }
       }
 
