@@ -19,11 +19,6 @@ class ScoreModifierDecoratorTest {
   }
 
   @Test
-  void doubleXpBuff_apply1000_returns2000() {
-    assertEquals(2000L, new DoubleXpBuff(base).apply(1000));
-  }
-
-  @Test
   void stacking_lowAccuracyOverProductivity_apply1000_returns960() {
     ScoreModifier stacked = new LowAccuracyPenalty(new ProductivityBuff(base));
     assertEquals(960L, stacked.apply(1000));

@@ -6,9 +6,6 @@ import java.util.UUID;
 
 public interface QuizScoreMetricsPort {
 
-  /**
-   * Rata-rata akurasi kuis (0.0–1.0) untuk user yang percobaannya selesai pada {@code since} atau
-   * sesudahnya. Memungkinkan perhitungan di-scope per-season (reset saat end-season).
-   */
+  // Returns [0.0–1.0] average accuracy; only attempts completed on or after `since` are counted.
   double averageScore(List<UUID> userIds, LocalDateTime since);
 }

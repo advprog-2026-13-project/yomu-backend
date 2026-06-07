@@ -12,6 +12,7 @@ import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanModifierStatus;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.IdentityModifier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategy;
@@ -58,7 +59,8 @@ class LeaderboardServiceTest {
     when(clanMemberRepository.countByClanId(c2Id)).thenReturn(3L);
     when(activityProvider.getActivity(any())).thenReturn(new ClanActivitySnapshot(0.0, 1.0));
     when(modifierResolver.resolve(any())).thenReturn(new IdentityModifier());
-    
+    when(modifierResolver.describe(any())).thenReturn(ClanModifierStatus.none());
+
     ClanScoreData ranked1 = new ClanScoreData(c1Id, "Alpha", Tier.BRONZE, 100L, 5L);
     ClanScoreData ranked2 = new ClanScoreData(c2Id, "Beta", Tier.BRONZE, 50L, 3L);
     when(strategyFactory.getStrategy(Tier.BRONZE)).thenReturn(rankingStrategy);

@@ -7,11 +7,14 @@ import static org.mockito.Mockito.*;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.SeasonStatePort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.event.ClanPromotedEvent;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategy;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategyFactory;
 import java.util.ArrayList;
@@ -24,6 +27,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class SeasonServiceTest {
@@ -34,6 +38,8 @@ class SeasonServiceTest {
   @Mock private RankingStrategy rankingStrategy;
   @Mock private ClanActivityProvider activityProvider;
   @Mock private ModifierResolver modifierResolver;
+  @Mock private SeasonStatePort seasonState;
+  @Mock private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks private SeasonService seasonService;
 
@@ -57,10 +63,10 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.GOLD, clans.get(0).getTier()); 
-    assertEquals(Tier.GOLD, clans.get(1).getTier()); 
+    assertEquals(Tier.GOLD, clans.get(0).getTier());
+    assertEquals(Tier.GOLD, clans.get(1).getTier());
     for (int i = 2; i <= 6; i++) assertEquals(Tier.SILVER, clans.get(i).getTier());
-    assertEquals(Tier.BRONZE, clans.get(7).getTier()); 
+    assertEquals(Tier.BRONZE, clans.get(7).getTier());
   }
 
   @Test
@@ -70,9 +76,9 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.GOLD, clans.get(0).getTier()); 
+    assertEquals(Tier.GOLD, clans.get(0).getTier());
     for (int i = 1; i <= 5; i++) assertEquals(Tier.SILVER, clans.get(i).getTier());
-    assertEquals(Tier.BRONZE, clans.get(6).getTier()); 
+    assertEquals(Tier.BRONZE, clans.get(6).getTier());
   }
 
   @Test
@@ -82,9 +88,9 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.GOLD, clans.get(0).getTier()); 
-    assertEquals(Tier.SILVER, clans.get(1).getTier()); 
-    assertEquals(Tier.BRONZE, clans.get(2).getTier()); 
+    assertEquals(Tier.GOLD, clans.get(0).getTier());
+    assertEquals(Tier.SILVER, clans.get(1).getTier());
+    assertEquals(Tier.BRONZE, clans.get(2).getTier());
   }
 
   @Test
@@ -94,7 +100,7 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.SILVER, lone.getTier()); 
+    assertEquals(Tier.SILVER, lone.getTier());
   }
 
   @Test
@@ -104,8 +110,8 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.SILVER, clans.get(0).getTier()); 
-    assertEquals(Tier.BRONZE, clans.get(1).getTier()); 
+    assertEquals(Tier.SILVER, clans.get(0).getTier());
+    assertEquals(Tier.BRONZE, clans.get(1).getTier());
     assertEquals(Tier.BRONZE, clans.get(2).getTier());
   }
 
@@ -116,9 +122,19 @@ class SeasonServiceTest {
 
     seasonService.endSeason();
 
-    assertEquals(Tier.DIAMOND, clans.get(0).getTier()); 
+    assertEquals(Tier.DIAMOND, clans.get(0).getTier());
     assertEquals(Tier.DIAMOND, clans.get(1).getTier());
-    assertEquals(Tier.GOLD, clans.get(2).getTier()); 
+    assertEquals(Tier.GOLD, clans.get(2).getTier());
+  }
+
+  @Test
+  void endSeason_startsNewSeasonToResetDebuffWindow() {
+    List<Clan> clans = clansInTier(Tier.SILVER, 300, 200, 100);
+    when(clanRepository.findByTierOrderByScoreDesc(Tier.SILVER)).thenReturn(clans);
+
+    seasonService.endSeason();
+
+    verify(seasonState).startNewSeason(any(java.time.LocalDateTime.class));
   }
 
   @Test
@@ -152,6 +168,116 @@ class SeasonServiceTest {
     assertTrue(
         silverInput.stream().allMatch(d -> d.score() > 0),
         "ClanScoreData passed to rank() must carry pre-reset scores (>0), not zeros");
+  }
+
+  @Test
+  void endSeason_clanPromotedToDiamond_publishesClanPromotedEvent() {
+    List<Clan> clans = clansInTier(Tier.GOLD, 300, 100);
+    when(clanRepository.findByTierOrderByScoreDesc(Tier.GOLD)).thenReturn(clans);
+
+    UUID promotedClanId = clans.get(0).getId();
+    UUID member1 = UUID.randomUUID();
+    UUID member2 = UUID.randomUUID();
+    when(clanMemberRepository.findByClanId(promotedClanId))
+        .thenReturn(
+            List.of(
+                ClanMember.join(promotedClanId, member1),
+                ClanMember.join(promotedClanId, member2)));
+
+    seasonService.endSeason();
+
+    assertEquals(Tier.DIAMOND, clans.get(0).getTier());
+
+    ArgumentCaptor<ClanPromotedEvent> captor = ArgumentCaptor.forClass(ClanPromotedEvent.class);
+    verify(eventPublisher).publishEvent(captor.capture());
+    ClanPromotedEvent event = captor.getValue();
+    assertEquals(Tier.DIAMOND, event.newTier());
+    assertEquals(promotedClanId, event.clanId());
+    assertEquals(clans.get(0).getName(), event.clanName());
+    assertEquals(List.of(member1, member2), event.memberUserIds());
+  }
+
+  @Test
+  void endSeason_promotionToNonDiamond_doesNotPublishClanPromotedEvent() {
+    List<Clan> clans = clansInTier(Tier.SILVER, 300, 100);
+    when(clanRepository.findByTierOrderByScoreDesc(Tier.SILVER)).thenReturn(clans);
+
+    seasonService.endSeason();
+
+    assertEquals(Tier.GOLD, clans.get(0).getTier());
+    verify(eventPublisher, never()).publishEvent(any(ClanPromotedEvent.class));
+  }
+
+  @Test
+  void endSeason_clanStaysInDiamond_publishesClanPromotedEvent() {
+    List<Clan> clans = clansInTier(Tier.DIAMOND, 300, 100);
+    when(clanRepository.findByTierOrderByScoreDesc(Tier.DIAMOND)).thenReturn(clans);
+
+    UUID stayingClanId = clans.get(0).getId();
+    UUID member1 = UUID.randomUUID();
+    when(clanMemberRepository.findByClanId(stayingClanId))
+        .thenReturn(List.of(ClanMember.join(stayingClanId, member1)));
+
+    seasonService.endSeason();
+
+    assertEquals(Tier.DIAMOND, clans.get(0).getTier());
+    assertEquals(Tier.GOLD, clans.get(1).getTier());
+
+    ArgumentCaptor<ClanPromotedEvent> captor = ArgumentCaptor.forClass(ClanPromotedEvent.class);
+    verify(eventPublisher, times(1)).publishEvent(captor.capture());
+    ClanPromotedEvent event = captor.getValue();
+    assertEquals(Tier.DIAMOND, event.newTier());
+    assertEquals(stayingClanId, event.clanId());
+    assertTrue(event.memberUserIds().contains(member1));
+  }
+
+  @Test
+  void endSeason_bothNewAndExistingDiamondClans_bothGetEvents() {
+    // Gold butuh ≥2 clan agar guard (total < 2) tidak skip promotion/demotion.
+    // Satu Diamond clan sudah ada dan tetap (1 clan → guard skip, jadi tetap di Diamond).
+    UUID existingDiamondId = UUID.randomUUID();
+    Clan existingDiamond = new Clan();
+    existingDiamond.setId(existingDiamondId);
+    existingDiamond.setName("Existing-Diamond");
+    existingDiamond.setTier(Tier.DIAMOND);
+    existingDiamond.setScore(500L);
+
+    UUID newDiamondId = UUID.randomUUID();
+    Clan topGold = new Clan();
+    topGold.setId(newDiamondId);
+    topGold.setName("Top-Gold");
+    topGold.setTier(Tier.GOLD);
+    topGold.setScore(400L);
+
+    Clan bottomGold = clanWithScore(Tier.GOLD, 100);
+
+    when(clanRepository.findByTierOrderByScoreDesc(Tier.DIAMOND))
+        .thenReturn(List.of(existingDiamond));
+    when(clanRepository.findByTierOrderByScoreDesc(Tier.GOLD))
+        .thenReturn(List.of(topGold, bottomGold));
+
+    UUID memberA = UUID.randomUUID();
+    UUID memberB = UUID.randomUUID();
+    when(clanMemberRepository.findByClanId(existingDiamondId))
+        .thenReturn(List.of(ClanMember.join(existingDiamondId, memberA)));
+    when(clanMemberRepository.findByClanId(newDiamondId))
+        .thenReturn(List.of(ClanMember.join(newDiamondId, memberB)));
+
+    seasonService.endSeason();
+
+    assertEquals(Tier.DIAMOND, existingDiamond.getTier());
+    assertEquals(Tier.DIAMOND, topGold.getTier());
+    assertEquals(Tier.SILVER, bottomGold.getTier());
+
+    ArgumentCaptor<ClanPromotedEvent> captor = ArgumentCaptor.forClass(ClanPromotedEvent.class);
+    verify(eventPublisher, times(2)).publishEvent(captor.capture());
+
+    List<UUID> publishedClanIds =
+        captor.getAllValues().stream().map(ClanPromotedEvent::clanId).toList();
+    assertTrue(
+        publishedClanIds.contains(existingDiamondId), "existing Diamond clan harus dapat event");
+    assertTrue(
+        publishedClanIds.contains(newDiamondId), "Gold yang naik ke Diamond harus dapat event");
   }
 
   private List<Clan> clansInTier(Tier tier, int... scores) {

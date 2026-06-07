@@ -10,15 +10,15 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.ClanService;
-import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
-import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
-import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -75,7 +75,6 @@ class ClanControllerTest {
     return new UsernamePasswordAuthenticationToken(
         securityUser, null, securityUser.getAuthorities());
   }
-
 
   @Test
   void createClan_happyPath_returns201() throws Exception {
@@ -226,8 +225,10 @@ class ClanControllerTest {
     when(clanService.getClan(CLAN_ID)).thenReturn(new ClanResponse(clan, 2L));
 
     UUID memberId = UUID.randomUUID();
-    ClanMember leader = new ClanMember(UUID.randomUUID(), CLAN_ID, USER_ID, ClanMemberRole.LEADER, Instant.now());
-    ClanMember member = new ClanMember(UUID.randomUUID(), CLAN_ID, memberId, ClanMemberRole.MEMBER, Instant.now());
+    ClanMember leader =
+        new ClanMember(UUID.randomUUID(), CLAN_ID, USER_ID, ClanMemberRole.LEADER, Instant.now());
+    ClanMember member =
+        new ClanMember(UUID.randomUUID(), CLAN_ID, memberId, ClanMemberRole.MEMBER, Instant.now());
     when(clanMemberRepository.findByClanId(CLAN_ID)).thenReturn(List.of(leader, member));
     when(userLookup.findUsernameById(USER_ID)).thenReturn(Optional.of("leader_user"));
     when(userLookup.findUsernameById(memberId)).thenReturn(Optional.of("member_user"));

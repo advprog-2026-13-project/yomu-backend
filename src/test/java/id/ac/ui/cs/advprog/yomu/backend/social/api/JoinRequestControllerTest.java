@@ -9,10 +9,10 @@ import id.ac.ui.cs.advprog.yomu.backend.auth.domain.Role;
 import id.ac.ui.cs.advprog.yomu.backend.auth.domain.User;
 import id.ac.ui.cs.advprog.yomu.backend.auth.infrastructure.security.SecurityUser;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.JoinRequestService;
-import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateJoinRequestException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.JoinRequestAlreadyResolvedException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.UserLookupPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.JoinRequest;
 import java.util.List;
 import java.util.UUID;
@@ -67,7 +67,6 @@ class JoinRequestControllerTest {
     return new UsernamePasswordAuthenticationToken(
         securityUser, null, securityUser.getAuthorities());
   }
-
 
   @Test
   void submit_happyPath_returns201WithPendingStatus() throws Exception {

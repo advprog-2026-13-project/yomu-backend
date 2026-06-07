@@ -29,7 +29,7 @@ class DiamondRankingStrategyTest {
   @Test
   void rank_exactlyThreeMembers_stillCountsAsValid() {
     ClanScoreData big = scoreData(3000L, 3L);
-    ClanScoreData small = scoreData(100L, 10L); 
+    ClanScoreData small = scoreData(100L, 10L);
     List<ClanScoreData> result = strategy.rank(List.of(small, big));
     assertSame(big, result.get(0));
     assertSame(small, result.get(1));
@@ -37,8 +37,8 @@ class DiamondRankingStrategyTest {
 
   @Test
   void rank_twoMembers_scoreTreatedAsZero() {
-    ClanScoreData below = scoreData(9999L, 2L); 
-    ClanScoreData valid = scoreData(10L, 3L); 
+    ClanScoreData below = scoreData(9999L, 2L);
+    ClanScoreData valid = scoreData(10L, 3L);
     List<ClanScoreData> result = strategy.rank(List.of(below, valid));
     assertSame(valid, result.get(0));
     assertSame(below, result.get(1));
@@ -46,7 +46,7 @@ class DiamondRankingStrategyTest {
 
   @Test
   void rank_oneMember_scoreTreatedAsZero() {
-    ClanScoreData below = scoreData(5000L, 1L); 
+    ClanScoreData below = scoreData(5000L, 1L);
     ClanScoreData valid = scoreData(1L, 3L);
     List<ClanScoreData> result = strategy.rank(List.of(below, valid));
     assertSame(valid, result.get(0));

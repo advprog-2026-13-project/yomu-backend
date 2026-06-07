@@ -10,15 +10,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-/**
- * Menjembatani {@link ClanPromotedEvent} (level-Clan, milik modul Social) ke model achievement yang
- * per-user. Saat Clan mencapai Tier tertinggi (Diamond), setiap anggota dianggap memperoleh
- * pencapaian {@code CLAN_REACHED_DIAMOND}.
- *
- * <p>Untuk tiap anggota diterbitkan satu {@link AchievementEnvelope}, lalu listener achievement
- * generik async ({@code AchievementActivityEventListener}) yang menaikkan progress — sehingga tidak
- * perlu mengubah listener generik itu (Open/Closed).
- */
+// Bridges the clan-level ClanPromotedEvent to per-user achievement progress:
+// publishes one AchievementEnvelope per member, handled by the generic async listener.
 @Component
 public class ClanPromotedAchievementListener {
 

@@ -3,11 +3,7 @@ package id.ac.ui.cs.advprog.yomu.backend.achievements.events.payload;
 import java.util.UUID;
 import lombok.Getter;
 
-/**
- * Payload pencapaian saat anggota Clan berada di Clan yang promosi ke Tier Diamond (tertinggi).
- * Dipublikasikan satu kali per anggota oleh {@code ClanPromotedAchievementListener} sehingga
- * listener achievement generik bisa menaikkan progress per-user tanpa perubahan.
- */
+// One instance published per clan member so the generic listener can increment per-user progress.
 @Getter
 public class ClanReachedDiamondPayload implements AchievementActivityPayload {
   private final UUID userId;

@@ -43,4 +43,34 @@ class ModifierResolverTest {
     ScoreModifier modifier = resolver.resolve(new ClanActivitySnapshot(0.3, 0.5));
     assertEquals(1000L, modifier.apply(1000));
   }
+
+  @Test
+  void describe_bothActive_reportsBuffAndDebuff() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.6, 0.4));
+    assertTrue(status.productivityBuffActive());
+    assertTrue(status.lowAccuracyPenaltyActive());
+    assertTrue(status.hasAnyModifier());
+    assertEquals(0.6, status.dailyMissionCompletionRate());
+    assertEquals(0.4, status.averageAccuracy());
+  }
+
+  @Test
+  void describe_onlyBuff_reportsBuffOnly() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.5, 0.8));
+    assertTrue(status.productivityBuffActive());
+    assertFalse(status.lowAccuracyPenaltyActive());
+  }
+
+  @Test
+  void describe_onlyDebuff_reportsDebuffOnly() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.3, 0.4));
+    assertFalse(status.productivityBuffActive());
+    assertTrue(status.lowAccuracyPenaltyActive());
+  }
+
+  @Test
+  void describe_none_reportsNoModifier() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.3, 0.8));
+    assertFalse(status.hasAnyModifier());
+  }
 }

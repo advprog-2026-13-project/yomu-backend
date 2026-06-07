@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import id.ac.ui.cs.advprog.yomu.backend.reading.domain.QuizAttempt;
 import id.ac.ui.cs.advprog.yomu.backend.reading.infrastructure.QuizAttemptRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,12 +41,12 @@ class QuizStatsQueryServiceTest {
 
     when(quizAttemptRepository.findByStudentIdIn(userIds)).thenReturn(List.of(a1, a2, a3));
 
-    assertEquals(0.8, quizStatsQueryService.averageScore(userIds), 0.001);
+    assertEquals(0.8, quizStatsQueryService.averageScore(userIds, LocalDateTime.MIN), 0.001);
   }
 
   @Test
   void averageScore_returnsOnePointZeroWhenUserIdsEmpty() {
-    assertEquals(1.0, quizStatsQueryService.averageScore(List.of()), 0.001);
+    assertEquals(1.0, quizStatsQueryService.averageScore(List.of(), LocalDateTime.MIN), 0.001);
   }
 
   @Test
@@ -53,7 +54,7 @@ class QuizStatsQueryServiceTest {
     List<UUID> userIds = List.of(UUID.randomUUID());
     when(quizAttemptRepository.findByStudentIdIn(userIds)).thenReturn(List.of());
 
-    assertEquals(1.0, quizStatsQueryService.averageScore(userIds), 0.001);
+    assertEquals(1.0, quizStatsQueryService.averageScore(userIds, LocalDateTime.MIN), 0.001);
   }
 
   @Test
@@ -67,6 +68,37 @@ class QuizStatsQueryServiceTest {
 
     when(quizAttemptRepository.findByStudentIdIn(userIds)).thenReturn(List.of(a1, a2));
 
-    assertEquals(0.0, quizStatsQueryService.averageScore(userIds), 0.001);
+    assertEquals(0.0, quizStatsQueryService.averageScore(userIds, LocalDateTime.MIN), 0.001);
+  }
+
+  @Test
+  void averageScore_excludesAttemptsCompletedBeforeSince() {
+    List<UUID> userIds = List.of(UUID.randomUUID());
+    LocalDateTime seasonStart = LocalDateTime.of(2026, 6, 1, 0, 0);
+
+    QuizAttempt oldAttempt = new QuizAttempt();
+    oldAttempt.setScore(20);
+    oldAttempt.setCompletedAt(seasonStart.minusDays(1));
+    QuizAttempt newAttempt = new QuizAttempt();
+    newAttempt.setScore(80);
+    newAttempt.setCompletedAt(seasonStart.plusDays(1));
+
+    when(quizAttemptRepository.findByStudentIdIn(userIds))
+        .thenReturn(List.of(oldAttempt, newAttempt));
+
+    assertEquals(0.8, quizStatsQueryService.averageScore(userIds, seasonStart), 0.001);
+  }
+
+  @Test
+  void averageScore_returnsOnePointZeroWhenAllAttemptsBeforeSince() {
+    List<UUID> userIds = List.of(UUID.randomUUID());
+    LocalDateTime seasonStart = LocalDateTime.of(2026, 6, 1, 0, 0);
+
+    QuizAttempt oldAttempt = new QuizAttempt();
+    oldAttempt.setScore(10);
+    oldAttempt.setCompletedAt(seasonStart.minusDays(2));
+
+    when(quizAttemptRepository.findByStudentIdIn(userIds)).thenReturn(List.of(oldAttempt));
+    assertEquals(1.0, quizStatsQueryService.averageScore(userIds, seasonStart), 0.001);
   }
 }

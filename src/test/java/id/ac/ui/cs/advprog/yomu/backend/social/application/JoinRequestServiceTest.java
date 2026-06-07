@@ -210,4 +210,62 @@ class JoinRequestServiceTest {
         () -> joinRequestService.rejectRequest(CLAN_ID, REQUEST_ID, nonLeader));
     verify(joinRequestRepository, never()).save(any());
   }
+
+  @Test
+  void approveRequest_clanNotFound_throwsClanNotFoundException() {
+    when(clanRepository.findById(CLAN_ID)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClanNotFoundException.class,
+        () -> joinRequestService.approveRequest(CLAN_ID, REQUEST_ID, LEADER_ID));
+  }
+
+  @Test
+  void approveRequest_requestNotFound_throwsClanNotFoundException() {
+    when(joinRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClanNotFoundException.class,
+        () -> joinRequestService.approveRequest(CLAN_ID, REQUEST_ID, LEADER_ID));
+  }
+
+  @Test
+  void rejectRequest_clanNotFound_throwsClanNotFoundException() {
+    when(clanRepository.findById(CLAN_ID)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClanNotFoundException.class,
+        () -> joinRequestService.rejectRequest(CLAN_ID, REQUEST_ID, LEADER_ID));
+  }
+
+  @Test
+  void rejectRequest_requestNotFound_throwsClanNotFoundException() {
+    when(joinRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClanNotFoundException.class,
+        () -> joinRequestService.rejectRequest(CLAN_ID, REQUEST_ID, LEADER_ID));
+  }
+
+  @Test
+  void rejectRequest_alreadyRejected_throwsJoinRequestAlreadyResolvedException() {
+    JoinRequest alreadyRejected = JoinRequest.create(CLAN_ID, USER_ID);
+    alreadyRejected.setId(REQUEST_ID);
+    alreadyRejected.reject();
+    when(joinRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.of(alreadyRejected));
+
+    assertThrows(
+        JoinRequestAlreadyResolvedException.class,
+        () -> joinRequestService.rejectRequest(CLAN_ID, REQUEST_ID, LEADER_ID));
+    verify(joinRequestRepository, never()).save(any());
+  }
+
+  @Test
+  void listPendingRequests_clanNotFound_throwsClanNotFoundException() {
+    when(clanRepository.findById(CLAN_ID)).thenReturn(Optional.empty());
+
+    assertThrows(
+        ClanNotFoundException.class,
+        () -> joinRequestService.listPendingRequests(CLAN_ID, LEADER_ID));
+  }
 }
