@@ -82,25 +82,26 @@ public class SeasonService {
 
       for (int i = 0; i < promoteCount; i++) {
         Clan clan = clanMap.get(ranked.get(i).clanId());
-        Tier oldTier = clan.getTier();
-        Tier promotedTier = oldTier.nextTier();
-        clan.setTier(promotedTier);
+        clan.setTier(clan.getTier().nextTier());
         clanRepository.save(clan);
-        if (promotedTier == Tier.DIAMOND && oldTier != Tier.DIAMOND) {
-          List<UUID> memberUserIds =
-              clanMemberRepository.findByClanId(clan.getId()).stream()
-                  .map(ClanMember::getUserId)
-                  .toList();
-          eventPublisher.publishEvent(
-              new ClanPromotedEvent(
-                  clan.getId(), clan.getName(), promotedTier, clan.getLeaderId(), memberUserIds));
-        }
       }
 
       for (int i = 0; i < demoteCount; i++) {
         Clan clan = clanMap.get(ranked.get(total - 1 - i).clanId());
         clan.setTier(clan.getTier().previousTier());
         clanRepository.save(clan);
+      }
+    }
+
+    for (Clan clan : allClans) {
+      if (clan.getTier() == Tier.DIAMOND) {
+        List<UUID> memberUserIds =
+            clanMemberRepository.findByClanId(clan.getId()).stream()
+                .map(ClanMember::getUserId)
+                .toList();
+        eventPublisher.publishEvent(
+            new ClanPromotedEvent(
+                clan.getId(), clan.getName(), Tier.DIAMOND, clan.getLeaderId(), memberUserIds));
       }
     }
 
