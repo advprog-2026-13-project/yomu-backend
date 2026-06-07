@@ -20,7 +20,6 @@ class BronzeRankingStrategyTest {
 
   @Test
   void rank_multipleClans_sortsDescendingByTotalScore() {
-    // Bronze: total score is the only metric — highest wins
     ClanScoreData low = score(100L);
     ClanScoreData mid = score(300L);
     ClanScoreData high = score(500L);

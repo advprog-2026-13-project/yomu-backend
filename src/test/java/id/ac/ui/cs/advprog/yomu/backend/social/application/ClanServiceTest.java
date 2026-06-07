@@ -8,12 +8,16 @@ import id.ac.ui.cs.advprog.yomu.backend.social.api.dto.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInClanException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanModifierStatus;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,16 +29,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-/**
- * Characterization tests — pin behavior SAAT INI (termasuk yang audit-flagged 🟡) sebagai safety
- * net sebelum refactor 4B/4C. Komentar PIN-CURRENT menandai perilaku yang nantinya mau direvisi di
- * Gelombang 3.
- */
 @ExtendWith(MockitoExtension.class)
 class ClanServiceTest {
 
   @Mock private ClanRepositoryPort clanRepository;
   @Mock private ClanMemberRepositoryPort clanMemberRepository;
+  @Mock private ClanActivityProvider activityProvider;
+  @Mock private ModifierResolver modifierResolver;
 
   @InjectMocks private ClanService clanService;
 
@@ -47,6 +48,11 @@ class ClanServiceTest {
     leaderId = UUID.randomUUID();
     clanId = UUID.randomUUID();
     otherUserId = UUID.randomUUID();
+
+    lenient()
+        .when(activityProvider.getActivity(any()))
+        .thenReturn(new ClanActivitySnapshot(0.0, 1.0));
+    lenient().when(modifierResolver.describe(any())).thenReturn(ClanModifierStatus.none());
   }
 
   @Test
@@ -68,9 +74,6 @@ class ClanServiceTest {
     assertEquals(leaderId, response.getLeaderId());
     assertEquals(Tier.BRONZE, response.getTier());
     assertEquals(0L, response.getScore());
-    // PIN-CURRENT (audit 🟢 #17): memberCount di-hardcode 1L tanpa query countByClanId.
-    // Konsisten kalau leader baru, tapi inkonsisten dengan branch lain (joinClan, getClan)
-    // yang re-query. Pertahankan dulu.
     assertEquals(1L, response.getMemberCount());
 
     ArgumentCaptor<ClanMember> memberCaptor = ArgumentCaptor.forClass(ClanMember.class);
@@ -83,9 +86,6 @@ class ClanServiceTest {
 
   @Test
   void leaveClan_asLeader_hardDeletesAllMembersAndClanItself() {
-    // PIN-CURRENT (audit 🟡): leader leave => hard-delete semua member + Clan. Tidak ada
-    // transfer ownership, tidak ada warning, tidak publish event. Behavior implicit.
-    // Mau di-revisit di Gelombang 3 (auto-transfer / disband flow eksplisit).
     ClanMember leader = new ClanMember();
     leader.setUserId(leaderId);
     leader.setClanId(clanId);
@@ -121,8 +121,6 @@ class ClanServiceTest {
     verify(clanMemberRepository, never()).deleteAll(anyIterable());
   }
 
-  // --- getClan ---
-
   @Test
   void getClan_happyPath_returnsClanResponseWithMemberCount() {
     Clan clan = new Clan();
@@ -147,8 +145,6 @@ class ClanServiceTest {
 
     assertThrows(ClanNotFoundException.class, () -> clanService.getClan(clanId));
   }
-
-  // --- getMyClan ---
 
   @Test
   void getMyClan_userInClan_returnsClanResponse() {
@@ -182,8 +178,6 @@ class ClanServiceTest {
     verify(clanRepository, never()).findById(any());
   }
 
-  // --- leaveClan error path ---
-
   @Test
   void leaveClan_userNotInAnyClan_throwsClanNotFoundException() {
     when(clanMemberRepository.findByUserId(leaderId)).thenReturn(Optional.empty());
@@ -208,8 +202,6 @@ class ClanServiceTest {
     verify(clanRepository).save(clan);
   }
 
-  // --- UC-4.1: createClan error paths ---
-
   @Test
   void createClan_duplicateName_throwsDuplicateClanNameException() {
     when(clanMemberRepository.existsByUserId(leaderId)).thenReturn(false);
@@ -225,8 +217,6 @@ class ClanServiceTest {
 
     assertThrows(AlreadyInClanException.class, () -> clanService.createClan("Vipers", leaderId));
   }
-
-  // --- UC-4.6: Delete Clan (operasi eksplisit, terpisah dari leaveClan) ---
 
   @Test
   void deleteClan_asLeader_deletesAllMembersAndClan() {
@@ -278,5 +268,65 @@ class ClanServiceTest {
 
     verify(clanMemberRepository, never()).deleteAll(anyIterable());
     verify(clanRepository, never()).deleteById(any(UUID.class));
+  }
+
+  @Test
+  void adminDeleteClan_clanExists_deletesAllMembersAndClan() {
+    Clan clan = new Clan();
+    clan.setId(clanId);
+    clan.setLeaderId(leaderId);
+    ClanMember member = new ClanMember();
+    member.setUserId(leaderId);
+    member.setClanId(clanId);
+    List<ClanMember> members = List.of(member);
+    when(clanRepository.findById(clanId)).thenReturn(Optional.of(clan));
+    when(clanMemberRepository.findByClanId(clanId)).thenReturn(members);
+
+    clanService.adminDeleteClan(clanId);
+
+    verify(clanMemberRepository).deleteAll(members);
+    verify(clanRepository).deleteById(clanId);
+  }
+
+  @Test
+  void adminDeleteClan_clanNotFound_throwsClanNotFoundException() {
+    when(clanRepository.findById(clanId)).thenReturn(Optional.empty());
+
+    assertThrows(
+        id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException.class,
+        () -> clanService.adminDeleteClan(clanId));
+  }
+
+  @Test
+  void adminRemoveMember_memberFound_deletesMember() {
+    ClanMember member = new ClanMember();
+    member.setUserId(otherUserId);
+    member.setClanId(clanId);
+    when(clanMemberRepository.findByUserId(otherUserId)).thenReturn(Optional.of(member));
+
+    clanService.adminRemoveMember(clanId, otherUserId);
+
+    verify(clanMemberRepository).delete(member);
+  }
+
+  @Test
+  void adminRemoveMember_memberNotInThisClan_throwsClanNotFoundException() {
+    ClanMember memberOfOtherClan = new ClanMember();
+    memberOfOtherClan.setUserId(otherUserId);
+    memberOfOtherClan.setClanId(UUID.randomUUID());
+    when(clanMemberRepository.findByUserId(otherUserId)).thenReturn(Optional.of(memberOfOtherClan));
+
+    assertThrows(
+        id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException.class,
+        () -> clanService.adminRemoveMember(clanId, otherUserId));
+  }
+
+  @Test
+  void addScoreToMemberClan_userNotInAnyClan_noOp() {
+    when(clanMemberRepository.findByUserId(otherUserId)).thenReturn(Optional.empty());
+
+    clanService.addScoreToMemberClan(otherUserId, 50L);
+
+    verify(clanRepository, never()).save(any());
   }
 }

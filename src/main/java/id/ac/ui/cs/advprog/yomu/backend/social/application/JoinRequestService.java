@@ -78,6 +78,9 @@ public class JoinRequestService {
     } catch (IllegalStateException e) {
       throw new JoinRequestAlreadyResolvedException(e.getMessage());
     }
+    if (clanMemberRepository.existsByUserId(request.getUserId())) {
+      throw new AlreadyMemberException("User is already a member of a clan");
+    }
     clanMemberRepository.save(ClanMember.join(request.getClanId(), request.getUserId()));
     joinRequestRepository.save(request);
   }

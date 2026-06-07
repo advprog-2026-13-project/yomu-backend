@@ -10,13 +10,24 @@ public class LeaderboardEntryResponse {
   private final String clanName;
   private final long score;
   private final Tier tier;
+  private final boolean buffActive;
+  private final boolean debuffActive;
 
-  public LeaderboardEntryResponse(int rank, UUID clanId, String clanName, long score, Tier tier) {
+  public LeaderboardEntryResponse(
+      int rank,
+      UUID clanId,
+      String clanName,
+      long score,
+      Tier tier,
+      boolean buffActive,
+      boolean debuffActive) {
     this.rank = rank;
     this.clanId = clanId;
     this.clanName = clanName;
     this.score = score;
     this.tier = tier;
+    this.buffActive = buffActive;
+    this.debuffActive = debuffActive;
   }
 
   public int getRank() {
@@ -37,5 +48,13 @@ public class LeaderboardEntryResponse {
 
   public Tier getTier() {
     return tier;
+  }
+
+  public boolean isBuffActive() {
+    return buffActive;
+  }
+
+  public boolean isDebuffActive() {
+    return debuffActive;
   }
 }

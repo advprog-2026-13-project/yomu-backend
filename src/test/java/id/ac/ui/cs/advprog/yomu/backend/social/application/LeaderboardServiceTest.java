@@ -12,6 +12,7 @@ import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanScoreData;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Tier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanActivitySnapshot;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanModifierStatus;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.IdentityModifier;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.strategy.RankingStrategy;
@@ -24,10 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-/**
- * Characterization test — pin behavior SAAT INI dari LeaderboardService sebagai safety net sebelum
- * refactor 4B/4C.
- */
 @ExtendWith(MockitoExtension.class)
 class LeaderboardServiceTest {
 
@@ -62,9 +59,8 @@ class LeaderboardServiceTest {
     when(clanMemberRepository.countByClanId(c2Id)).thenReturn(3L);
     when(activityProvider.getActivity(any())).thenReturn(new ClanActivitySnapshot(0.0, 1.0));
     when(modifierResolver.resolve(any())).thenReturn(new IdentityModifier());
+    when(modifierResolver.describe(any())).thenReturn(ClanModifierStatus.none());
 
-    // Pin: factory dipanggil dengan tier, strategy mengubah / mengurutkan data,
-    // dan rank diisi sequentially dari index+1 (bukan dari skor — sudah ranked oleh strategy).
     ClanScoreData ranked1 = new ClanScoreData(c1Id, "Alpha", Tier.BRONZE, 100L, 5L);
     ClanScoreData ranked2 = new ClanScoreData(c2Id, "Beta", Tier.BRONZE, 50L, 3L);
     when(strategyFactory.getStrategy(Tier.BRONZE)).thenReturn(rankingStrategy);

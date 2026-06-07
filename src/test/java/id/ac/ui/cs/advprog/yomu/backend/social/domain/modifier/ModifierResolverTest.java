@@ -10,48 +10,67 @@ class ModifierResolverTest {
 
   @Test
   void onlyProductivity_highCompletion_highAccuracy_apply1000_returns1200() {
-    // completion 0.6 >= 0.5 -> Productivity aktif
-    // accuracy  0.8 >= 0.5 -> Low Accuracy TIDAK aktif
     ScoreModifier modifier = resolver.resolve(new ClanActivitySnapshot(0.6, 0.8));
     assertEquals(1200L, modifier.apply(1000));
   }
 
   @Test
   void bothModifiers_highCompletion_lowAccuracy_apply1000_returns960() {
-    // completion 0.6 >= 0.5 -> Productivity aktif (×1.2)
-    // accuracy  0.4 <  0.5 -> Low Accuracy aktif  (×0.8)
-    // 1000 × 1.2 × 0.8 = 960
     ScoreModifier modifier = resolver.resolve(new ClanActivitySnapshot(0.6, 0.4));
     assertEquals(960L, modifier.apply(1000));
   }
 
   @Test
   void noModifier_lowCompletion_highAccuracy_apply1000_returns1000() {
-    // completion 0.3 <  0.5 -> Productivity TIDAK aktif
-    // accuracy  0.8 >= 0.5 -> Low Accuracy TIDAK aktif
     ScoreModifier modifier = resolver.resolve(new ClanActivitySnapshot(0.3, 0.8));
     assertEquals(1000L, modifier.apply(1000));
   }
 
   @Test
   void onlyLowAccuracy_lowCompletion_lowAccuracy_apply1000_returns800() {
-    // completion 0.3 <  0.5 -> Productivity TIDAK aktif
-    // accuracy  0.4 <  0.5 -> Low Accuracy aktif (×0.8)
     ScoreModifier modifier = resolver.resolve(new ClanActivitySnapshot(0.3, 0.4));
     assertEquals(800L, modifier.apply(1000));
   }
 
   @Test
   void boundary_completionExactly05_productivityActive() {
-    // tepat 0.5 -> >= 0.5 -> Productivity AKTIF
     ScoreModifier modifier = resolver.resolve(new ClanActivitySnapshot(0.5, 0.8));
     assertEquals(1200L, modifier.apply(1000));
   }
 
   @Test
   void boundary_accuracyExactly05_lowAccuracyNotActive() {
-    // tepat 0.5 -> NOT < 0.5 -> Low Accuracy TIDAK aktif
     ScoreModifier modifier = resolver.resolve(new ClanActivitySnapshot(0.3, 0.5));
     assertEquals(1000L, modifier.apply(1000));
+  }
+
+  @Test
+  void describe_bothActive_reportsBuffAndDebuff() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.6, 0.4));
+    assertTrue(status.productivityBuffActive());
+    assertTrue(status.lowAccuracyPenaltyActive());
+    assertTrue(status.hasAnyModifier());
+    assertEquals(0.6, status.dailyMissionCompletionRate());
+    assertEquals(0.4, status.averageAccuracy());
+  }
+
+  @Test
+  void describe_onlyBuff_reportsBuffOnly() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.5, 0.8));
+    assertTrue(status.productivityBuffActive());
+    assertFalse(status.lowAccuracyPenaltyActive());
+  }
+
+  @Test
+  void describe_onlyDebuff_reportsDebuffOnly() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.3, 0.4));
+    assertFalse(status.productivityBuffActive());
+    assertTrue(status.lowAccuracyPenaltyActive());
+  }
+
+  @Test
+  void describe_none_reportsNoModifier() {
+    ClanModifierStatus status = resolver.describe(new ClanActivitySnapshot(0.3, 0.8));
+    assertFalse(status.hasAnyModifier());
   }
 }

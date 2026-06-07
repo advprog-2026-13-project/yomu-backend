@@ -5,11 +5,14 @@ import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.AlreadyInCl
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.ClanNotFoundException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.DuplicateClanNameException;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.exception.NotClanLeaderException;
+import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanActivityProvider;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanMemberRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.application.port.out.ClanRepositoryPort;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.Clan;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMember;
 import id.ac.ui.cs.advprog.yomu.backend.social.domain.ClanMemberRole;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ClanModifierStatus;
+import id.ac.ui.cs.advprog.yomu.backend.social.domain.modifier.ModifierResolver;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -21,11 +24,22 @@ public class ClanService {
 
   private final ClanRepositoryPort clanRepository;
   private final ClanMemberRepositoryPort clanMemberRepository;
+  private final ClanActivityProvider activityProvider;
+  private final ModifierResolver modifierResolver;
 
   public ClanService(
-      ClanRepositoryPort clanRepository, ClanMemberRepositoryPort clanMemberRepository) {
+      ClanRepositoryPort clanRepository,
+      ClanMemberRepositoryPort clanMemberRepository,
+      ClanActivityProvider activityProvider,
+      ModifierResolver modifierResolver) {
     this.clanRepository = clanRepository;
     this.clanMemberRepository = clanMemberRepository;
+    this.activityProvider = activityProvider;
+    this.modifierResolver = modifierResolver;
+  }
+
+  private ClanModifierStatus modifiersFor(UUID clanId) {
+    return modifierResolver.describe(activityProvider.getActivity(clanId));
   }
 
   public ClanResponse createClan(String clanName, UUID leaderId) {
@@ -70,7 +84,7 @@ public class ClanService {
             .findById(clanId)
             .orElseThrow(() -> new ClanNotFoundException("Clan not found"));
     long memberCount = clanMemberRepository.countByClanId(clanId);
-    return new ClanResponse(clan, memberCount);
+    return new ClanResponse(clan, memberCount, modifiersFor(clanId));
   }
 
   @Transactional(readOnly = true)
@@ -84,7 +98,7 @@ public class ClanService {
                       .findById(m.getClanId())
                       .orElseThrow(() -> new ClanNotFoundException("Clan not found"));
               long count = clanMemberRepository.countByClanId(m.getClanId());
-              return new ClanResponse(clan, count);
+              return new ClanResponse(clan, count, modifiersFor(m.getClanId()));
             });
   }
 
