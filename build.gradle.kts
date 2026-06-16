@@ -71,6 +71,8 @@ dependencies {
     implementation("com.google.api-client:google-api-client:${googleApiClientVersion}")
     implementation("com.google.http-client:google-http-client-gson:${googleHttpClientGsonVersion}")
     implementation("com.google.oauth-client:google-oauth-client:${googleOauthClientVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:${jjwtVersion}")
